@@ -1,0 +1,52 @@
+{
+  "name": "my-react-tailwind-app",
+  "version": "1.0.0",
+  "description": "A React 18 project with Tailwind CSS",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@reduxjs/toolkit": "^2.6.0",
+    "autoprefixer": "^10.4.20",
+    "axios": "^1.7.9",
+    "bootstrap": "^5.3.3",
+    "chart.js": "^4.4.8",
+    "framer-motion": "^12.4.10",
+    "lucide-react": "^0.477.0",
+    "postcss": "^8.5.1",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.10.9",
+    "react-chartjs-2": "^5.3.0",
+    "react-cookie": "^7.2.2",
+    "react-dom": "^18.2.0",
+    "react-rating-stars-component": "^2.2.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.1.5",
+    "react-scripts": "^5.0.1",
+    "recharts": "^2.15.1",
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
