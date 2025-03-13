@@ -33,7 +33,7 @@ const LoginPage = lazy(() => import("../pages/loginout/LoginPage"));
 const LogoutPage = lazy(() => import("../pages/loginout/LogoutPage"));
 const Signup = lazy(() => import("../pages/loginout/SignupPage"));
 const Mypage = lazy(() => import("../pages/loginout/MyPage"));
-
+const SuccessOrder = lazy(() => import("../pages/loginout/SuccessOrderPage"));
 const memberRouter = () => {
   return [
     {
@@ -65,6 +65,14 @@ const memberRouter = () => {
       element: (
         <Suspense fallback={Loading}>
           <Mypage />
+        </Suspense>
+      ),
+    },
+    {
+      path: "success/:order",
+      element: (
+        <Suspense fallback={Loading}>
+          < SuccessOrder/>
         </Suspense>
       ),
     },

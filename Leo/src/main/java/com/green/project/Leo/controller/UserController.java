@@ -2,6 +2,7 @@ package com.green.project.Leo.controller;
 
 import com.green.project.Leo.dto.product.ProductCartDTO;
 
+import com.green.project.Leo.dto.product.ProductOrderDTO;
 import com.green.project.Leo.dto.product.RequestCartDTO;
 
 import com.green.project.Leo.service.user.UserService;
@@ -29,6 +30,11 @@ public class UserController {
     public List<ProductCartDTO> selectCartlist(@PathVariable(name = "userId")String userId){
 
         return service.selectCartList(userId);
+    }
+
+    @PostMapping("/purchase")
+    public String purchaseProduct(@RequestBody  ProductOrderDTO orderDTO){
+        return service.addOrder(orderDTO);
     }
 
 }

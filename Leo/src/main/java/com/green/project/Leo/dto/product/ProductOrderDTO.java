@@ -1,15 +1,22 @@
 package com.green.project.Leo.dto.product;
 
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.dto.UserDTO;
+import lombok.*;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 public class ProductOrderDTO {
     private Long orderNum;
 
 
-    private User user;
+    private UserDTO userdto;
 
     private String payment;
 
@@ -17,6 +24,7 @@ public class ProductOrderDTO {
 
     private String shippingAdress;  // 배송 주소
     private String trackingNumber;  // 배송 추적 번호
-
+    private String note;
+    private String totalPrice;
     private List<OrderItemDTO> orderItems;
 }

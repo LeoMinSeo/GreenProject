@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @ToString
 public class ResponseProductReviewDTO {
 
-    private Long pReivewNo;
+    private Long proReivewNo;
     private String userId;
     private String reviewtext;
     private Double reviewRating;

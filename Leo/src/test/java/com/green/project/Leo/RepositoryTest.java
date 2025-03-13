@@ -2,9 +2,11 @@ package com.green.project.Leo;
 
 import com.green.project.Leo.entity.product.ProductReviewRating;
 import com.green.project.Leo.repository.product.ProductReviewRatingRepository;
+import com.green.project.Leo.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -12,7 +14,8 @@ import java.util.List;
 public class RepositoryTest {
     @Autowired
     private ProductReviewRatingRepository repository;
-
+    @Autowired
+    private UserService userService;
     @Test
     public void test (){
         List<ProductReviewRating> result = repository.findAll();

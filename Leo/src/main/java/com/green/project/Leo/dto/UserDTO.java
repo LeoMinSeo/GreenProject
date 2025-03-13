@@ -1,5 +1,7 @@
 package com.green.project.Leo.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import lombok.*;
 
@@ -10,8 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDTO {
-    private Long uId;
-
+    private Long uid;
 
     private String userId;
 
@@ -24,4 +25,5 @@ public class UserDTO {
     private String userEmail;
 
     private String userAdress;
+
 }

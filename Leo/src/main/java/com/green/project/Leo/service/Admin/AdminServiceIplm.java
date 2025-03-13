@@ -1,9 +1,13 @@
 package com.green.project.Leo.service.Admin;
 
+import com.green.project.Leo.dto.product.OrderItemDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
-import com.green.project.Leo.entity.product.Product;
-import com.green.project.Leo.entity.product.ProductImage;
+import com.green.project.Leo.dto.product.ProductOrderDTO;
+import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.product.*;
+import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductImageRepository;
+import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductRepository;
 import com.green.project.Leo.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +31,8 @@ public class AdminServiceIplm implements AdminService{
     private final CustomFileUtil fileUtil;
     private final ProductImageRepository imageRepository;
     private final ModelMapper modelMapper;
-
+    private final OrderItemRepository orderItemRepository;
+    private final ProductOrderRepository orderRepository;
     @Override
     public void addProduct(ProductDTO dto) {
 
@@ -112,4 +121,7 @@ public class AdminServiceIplm implements AdminService{
         }
 
     }
+
+
+
 }

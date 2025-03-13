@@ -2,10 +2,7 @@ package com.green.project.Leo.entity.product;
 
 import com.green.project.Leo.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 import java.time.LocalDateTime;
@@ -16,6 +13,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class ProductOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,8 +32,9 @@ public class ProductOrder {
 
     private String shippingAdress;  // 배송 주소
     private String trackingNumber;  // 배송 추적 번호
-
-    @OneToMany(mappedBy = "productOrder")
+    private String note;//요청사항
+    private String totalPrice;
+    @OneToMany(mappedBy = "productOrder", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
 

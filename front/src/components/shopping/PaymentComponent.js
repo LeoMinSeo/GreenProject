@@ -1,69 +1,45 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import SubMenuber from "../menu/SubMenubar";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, CheckCircle, Truck } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faToss, faPaypal } from "@fortawesome/free-brands-svg-icons";
-import { useLocation } from "react-router-dom";
-
-const init = [
-  {
-    cartNo: null,
-    userDTO: {
-      userId: "",
-      userPw: "",
-      userName: "",
-      userEmail: "",
-      userAdress: "",
-      uid: null,
-    },
-    productDTO: {
-      pno: null,
-      pname: "",
-      price: "",
-      pdesc: "",
-      pstock: null,
-      files: [],
-      uploadFileNames: [],
-    },
-    numofItem: 0,
-  },
-];
+import { faPaypal } from "@fortawesome/free-brands-svg-icons";
+import { useLocation, useNavigate } from "react-router-dom";
+import { addOrder } from "../../api/userApi";
 
 const PaymentComponent = () => {
+  const [sendData, setSendData] = useState({});
   const [form, setForm] = useState({
     name: "",
     address: "",
     phonenumber: "",
     note: "",
-    card: "",
   });
+  const [cartData, setCartData] = useState([]);
+  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const totalPrice = queryParams.get("totalPrice");
-  const [cartData, setCartData] = useState(init);
+  const requestData = JSON.parse(queryParams.get("cartData"));
 
   useEffect(() => {
-    const savedCartData = localStorage.getItem("cartData"); // 로컬 스토리지에서 cartData 가져오기
-
-    if (savedCartData) {
-      const parsedCartData = JSON.parse(savedCartData); // JSON 문자열을 객체로 변환
-      setCartData(parsedCartData); // cartItems 상태에 저장
-
-      // 사용자 정보를 form에 채우기
-      const user = parsedCartData[0]?.userDTO; // 사용자 정보가 있을 경우
-      if (user) {
-        setForm({
-          name: user.userName || "",
-          address: user.userAdress || "",
-          phonenumber: "010-9064-9217", // 전화번호 정보가 없으므로 빈값으로 처리
-          note: "", // 요청사항은 빈값으로 처리
-          card: "", // 카드정보는 아직 사용하지 않으므로 빈값
-        });
-      }
-    }
+    setCartData(requestData);
+    console.log(requestData);
+    setForm({
+      name: requestData[0].userDTO.userName || "",
+      address: requestData[0].userDTO.userAdress || "",
+      phonenumber: "010-9064-9217", // 전화번호 정보가 없으므로 빈값으로 처리
+      note: "", // 요청사항은 빈값으로 처리
+    });
   }, []);
+  useEffect(() => {
+    if (sendData && Object.keys(sendData).length > 0) {
+      addOrder(sendData).then((i) => {
+        console.log(i);
+        navigate(`/member/success/${i}`);
+      });
+    }
+  }, [sendData]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -82,7 +58,6 @@ const PaymentComponent = () => {
       setIsFormCompleted(false);
     }
   };
-
   // 기본정보 입력 완료 후 결제 진행 가능 여부 활성화
   const handleFormCompletion = () => {
     checkFormCompletion();
@@ -90,13 +65,26 @@ const PaymentComponent = () => {
       setCanProceedToPayment(true);
     }
   };
-
   const handlePayment = () => {
     setIsPaymentDIVOpen(true); // 결제 버튼 클릭 시 모달 열기
   };
-  const clickSubmit = () =>{
 
-  }
+  const clickSubmit = (e) => {
+    const sendData = {
+      userdto: {
+        uid: cartData[0].userDTO.uid,
+      },
+      payment: e.target.value,
+      shippingAdress: form.address,
+      note: form.note,
+      totalPrice: totalPrice,
+      orderItems: cartData.map((i) => {
+        return { pno: i.productDTO.pno, numOfItem: i.numofItem };
+      }),
+    };
+    setSendData({ ...sendData });
+  };
+
   return (
     <div>
       <SubMenuber />
@@ -124,7 +112,7 @@ const PaymentComponent = () => {
                       item.productDTO.uploadFileNames.length > 0
                         ? `http://localhost:8089/product/view/s_${item.productDTO.uploadFileNames[0]}`
                         : "/images/defalt.jpg"
-                    } // 이미지 URL 수정
+                    }
                     alt={item.productDTO.pname}
                     className="w-16 h-16 object-cover rounded-md"
                   />
@@ -190,7 +178,6 @@ const PaymentComponent = () => {
                   checkFormCompletion();
                 }}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-400 outline-none"
-                placeholder="서울특별시 강남구"
               />
             </div>
 
@@ -255,7 +242,12 @@ const PaymentComponent = () => {
             <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold mb-4">결제 방법 선택</h2>
               <div className="flex flex-wrap gap-2">
-                <button className="w-[calc(50%-4px)] py-3 bg-blue-400 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2">
+                <button
+                  className="w-[calc(50%-4px)] py-3 bg-blue-400 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2"
+                  name="card"
+                  value="토스"
+                  onClick={clickSubmit}
+                >
                   <img
                     src="/images/toss.png"
                     alt="Toss"
@@ -263,7 +255,12 @@ const PaymentComponent = () => {
                   />
                   토스
                 </button>
-                <button className="w-[calc(50%-4px)] py-3 bg-green-400 hover:bg-green-500 text-white rounded-lg flex items-center justify-center gap-2">
+                <button
+                  className="w-[calc(50%-4px)] py-3 bg-green-400 hover:bg-green-500 text-white rounded-lg flex items-center justify-center gap-2"
+                  name="card"
+                  value="네이버페이"
+                  onClick={clickSubmit}
+                >
                   <svg
                     className="w-7 h-7 mr-2"
                     viewBox="0 0 256 256"
@@ -277,11 +274,21 @@ const PaymentComponent = () => {
                   </svg>
                   네이버페이
                 </button>
-                <button className="w-[calc(50%-4px)] py-3 bg-red-400 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-2">
+                <button
+                  className="w-[calc(50%-4px)] py-3 bg-red-400 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-2"
+                  name="card"
+                  value="페이코"
+                  onClick={clickSubmit}
+                >
                   <FontAwesomeIcon icon={faPaypal} />
-                  PAYCO
+                  페이코
                 </button>
-                <button className="w-[calc(50%-4px)] py-3 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg flex items-center justify-center gap-2">
+                <button
+                  className="w-[calc(50%-4px)] py-3 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg flex items-center justify-center gap-2"
+                  name="card"
+                  value="카카오페이"
+                  onClick={clickSubmit}
+                >
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg"
                     alt="Kakao"
@@ -289,7 +296,12 @@ const PaymentComponent = () => {
                   />
                   카카오페이
                 </button>
-                <button className="w-[calc(50%-4px)] py-3 bg-[#9c7bc3] hover:bg-[#9c7bc3] text-white rounded-lg flex items-center justify-center gap-2">
+                <button
+                  className="w-[calc(50%-4px)] py-3 bg-[#9c7bc3] hover:bg-[#9c7bc3] text-white rounded-lg flex items-center justify-center gap-2"
+                  name="card"
+                  value="신용카드"
+                  onClick={clickSubmit}
+                >
                   <img
                     src="/images/sinyoung.png"
                     alt="Kakao"

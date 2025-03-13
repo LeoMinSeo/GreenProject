@@ -1,23 +1,25 @@
 package com.green.project.Leo.service.user;
 
 import com.green.project.Leo.dto.UserDTO;
-import com.green.project.Leo.dto.product.ProductCartDTO;
-import com.green.project.Leo.dto.product.ProductDTO;
-import com.green.project.Leo.dto.product.RequestCartDTO;
+import com.green.project.Leo.dto.product.*;
 
-import com.green.project.Leo.entity.product.Product;
-import com.green.project.Leo.entity.product.ProductCart;
+import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.product.*;
 
 import com.green.project.Leo.repository.UserRepository;
-import com.green.project.Leo.repository.product.ProductCartRepository;
-import com.green.project.Leo.repository.product.ProductImageRepository;
-import com.green.project.Leo.repository.product.ProductRepository;
+import com.green.project.Leo.repository.product.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -31,6 +33,10 @@ public class UserServiceImpl implements UserService{
     private ProductImageRepository imageRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private ProductOrderRepository orderRepository;
+    @Autowired
+    private OrderItemRepository itemRepository;
     @Override
     public String addCart(RequestCartDTO cartDTO) {
         ProductCart result = cartRepository.selectDuplicate(cartDTO.getUserId(), cartDTO.getPNo());
@@ -70,6 +76,46 @@ public class UserServiceImpl implements UserService{
 
         return cartDTOList;
     }
+
+    @Override
+    public String addOrder(ProductOrderDTO orderDTO) {
+        System.out.println(orderDTO);
+        User user = new User();
+        user.uId(orderDTO.getUserdto().getUid());
+        ProductOrder productOrder = new ProductOrder();
+        productOrder.setUser(user);
+        productOrder.setPayment(orderDTO.getPayment());
+        productOrder.setStatus(OrderStatus.PAY_COMPLETED);
+        productOrder.setShippingAdress(orderDTO.getShippingAdress());
+        productOrder.setOrderDate(LocalDateTime.now());
+        productOrder.setNote(orderDTO.getNote());
+        productOrder.setTotalPrice(orderDTO.getTotalPrice());
+
+
+        List<OrderItemDTO> itemListDto = orderDTO.getOrderItems();
+        List<OrderItem> itemlist = new ArrayList<>();
+        for(OrderItemDTO i : itemListDto){
+            Product product = new Product();
+            product.pNo(i.getPno());
+            OrderItem orderItem = OrderItem.builder()
+                    .numOfItem(i.getNumOfItem())
+                    .product(product)
+                    .productOrder(productOrder)
+                    .build();
+            itemlist.add(orderItem);
+        }
+
+        productOrder.setOrderItems(itemlist);
+        ProductOrder orderInformation = orderRepository.save(productOrder);
+
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String formatDate = date.format(formatter);
+        String ordercode =  formatDate+orderInformation.getOrderNum();
+        return "주문번호:"+ordercode;
+    }
+
+
 
 
 }

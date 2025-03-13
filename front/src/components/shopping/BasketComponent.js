@@ -32,20 +32,10 @@ const BasketComponent = () => {
   const navigate = useNavigate();
   const [cartData, setCartData] = useState(init);
 
-  // 컴포넌트 렌더링 시 로컬스토리지에서 데이터 확인
   useEffect(() => {
-    const savedCartData = localStorage.getItem("cartData");
-
-    if (savedCartData) {
-      // 로컬스토리지에 데이터가 있으면 그 데이터를 사용
-      setCartData(JSON.parse(savedCartData));
-    } else {
-      // 로컬스토리지에 데이터가 없으면 백엔드에서 가져오기
-      getCartlist("leo1657").then((data) => {
-        setCartData(data); // 받아온 데이터를 상태로 저장
-        localStorage.setItem("cartData", JSON.stringify(data)); // 받아온 데이터를 로컬 스토리지에 저장
-      });
-    }
+    getCartlist("leo1657").then((data) => {
+      setCartData(data); // 받아온 데이터를 상태로 저장
+    });
   }, []);
 
   // 수량 업데이트 함수
@@ -56,8 +46,6 @@ const BasketComponent = () => {
           ? { ...item, numofItem: Math.max(1, item.numofItem + amount) }
           : item
       );
-      // 수량 변경 후 로컬스토리지에 데이터 저장
-      localStorage.setItem("cartData", JSON.stringify(updatedData));
       return updatedData;
     });
   };
@@ -66,8 +54,6 @@ const BasketComponent = () => {
   const removeItem = (cartNo) => {
     setCartData((prevData) => {
       const updatedData = prevData.filter((item) => item.cartNo !== cartNo);
-      // 아이템 삭제 후 로컬스토리지에 데이터 저장
-      localStorage.setItem("cartData", JSON.stringify(updatedData));
       return updatedData;
     });
   };
@@ -84,9 +70,12 @@ const BasketComponent = () => {
   const formattedTotalPrice = new Intl.NumberFormat().format(totalPrice);
 
   const handlePayment = () => {
-    // 결제하기 전에 로컬스토리지에 데이터를 저장
-    localStorage.setItem("cartData", JSON.stringify(cartData));
-    navigate(`/shopping/payment?totalPrice=${formattedTotalPrice}`); // 결제 완료 후 이동할 페이지
+    // cartData를 JSON으로 변환하고 URL로 전달
+    navigate(
+      `/shopping/payment?totalPrice=${formattedTotalPrice}&cartData=${encodeURIComponent(
+        JSON.stringify(cartData)
+      )}`
+    );
   };
 
   return (

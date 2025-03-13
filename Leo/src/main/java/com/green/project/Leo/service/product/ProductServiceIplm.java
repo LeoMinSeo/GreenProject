@@ -152,7 +152,7 @@ public class ProductServiceIplm implements ProductService{
         List<ResponseProductReviewDTO> reviewDTOList = new ArrayList<>();
         for(ProductReview i: reviewList){
             ResponseProductReviewDTO dto = ResponseProductReviewDTO.builder()
-                    .pReivewNo(i.getPReivewNo())
+                    .proReivewNo(i.getPReivewNo())
                     .reviewRating(i.getReviewRating())
                     .userId(i.getUser().userId())
                     .reviewtext(i.getReviewtext())
