@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import SubMenubar from "../menu/SubMenubar";
+
 import { useParams } from "react-router-dom";
 import { getOne } from "../../api/productsApi";
 import ReviewComponent from "../menu/ReviewComponent";
 import { addCart } from "../../api/userApi";
 import ResultModal from "../common/ResultModal";
+import MainMenubar from "../menu/MainMenubar";
 
 const init = [
   {
@@ -50,7 +51,7 @@ const ReadComponent = () => {
       ) : (
         <></>
       )}
-      <SubMenubar />
+      <MainMenubar />
       {/* 전체 컨테이너 */}
       {fetching ? (
         <div className="text-center text-2xl font-bold">로딩 중...</div> // 로딩 상태일 때 표시할 메시지
@@ -61,7 +62,7 @@ const ReadComponent = () => {
             <img
               src={
                 product.productDTO.uploadFileNames.length > 0
-                  ? `http://localhost:8089/product/view/s_${product.productDTO.uploadFileNames[0]}`
+                  ? `http://localhost:8089/product/view/${product.productDTO.uploadFileNames[0]}`
                   : "/images/defalt.jpg"
               }
               alt="상품 이미지"
@@ -81,7 +82,7 @@ const ReadComponent = () => {
 
             {/* 간단설명 */}
             <div className="mt-4 p-3 border rounded-lg">
-              <p className="font-bold">간단설명</p>
+              <p className="font-bold">상품설명</p>
               <p className="text-gray-600 text-sm mt-1">
                 {product.productDTO.pdesc}
               </p>

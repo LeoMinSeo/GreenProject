@@ -85,6 +85,7 @@ public class UserServiceImpl implements UserService{
         ProductOrder productOrder = new ProductOrder();
         productOrder.setUser(user);
         productOrder.setPayment(orderDTO.getPayment());
+        productOrder.setCardName(orderDTO.getCardName());
         productOrder.setStatus(OrderStatus.PAY_COMPLETED);
         productOrder.setShippingAdress(orderDTO.getShippingAdress());
         productOrder.setOrderDate(LocalDateTime.now());
@@ -112,6 +113,7 @@ public class UserServiceImpl implements UserService{
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String formatDate = date.format(formatter);
         String ordercode =  formatDate+orderInformation.getOrderNum();
+        cartRepository.deleteById(orderDTO.getUserdto().getUid());
         return "주문번호:"+ordercode;
     }
 

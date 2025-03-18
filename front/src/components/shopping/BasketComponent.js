@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { ShoppingCart, Trash } from "lucide-react";
-import SubMenuber from "../menu/SubMenubar";
+
 import { useNavigate } from "react-router-dom";
 import { getCartlist } from "../../api/userApi"; // 백엔드 API 호출
+import MainMenubar from "../menu/MainMenubar";
 
 const init = [
   {
@@ -80,7 +81,7 @@ const BasketComponent = () => {
 
   return (
     <div>
-      <SubMenuber />
+      <MainMenubar />
       <div className="mt-24 max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <ShoppingCart size={32} /> 장바구니

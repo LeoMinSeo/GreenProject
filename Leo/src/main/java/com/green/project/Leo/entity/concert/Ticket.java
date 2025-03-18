@@ -25,12 +25,7 @@ public class Ticket {
 
     private int numSeats;
 
-    public  void book(){
-        if (!schedule.isPossibleBooking()){
-            throw new IllegalStateException("해당 공연은 예매가 불가능합니다");
-        }
-        schedule.renewSeats(numSeats);
-    }
+
 
 
 }

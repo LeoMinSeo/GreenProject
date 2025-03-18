@@ -1,3 +1,4 @@
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
@@ -20,7 +21,8 @@ configurations {
 }
 
 repositories {
-	mavenCentral()
+	mavenCentral()  // 기본 Maven 저장소
+	maven { url 'https://jitpack.io' }  // JitPack 저장소 추가
 }
 
 dependencies {
@@ -35,6 +37,9 @@ dependencies {
 	implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.1.1'
 	// https://mvnrepository.com/artifact/net.coobird/thumbnailator
 	implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.19'
+	implementation 'com.github.iamport:iamport-rest-client-java:0.2.23'
+
+
 }
 
 tasks.named('test') {

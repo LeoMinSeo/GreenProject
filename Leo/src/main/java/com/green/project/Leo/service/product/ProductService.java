@@ -11,7 +11,6 @@ public interface ProductService {
     public ProductReviewRatingDTO selectReview(Long pno);
     public PageResponseDTO<ProductDTO>  getProductList(PageRequestDTO dto);
     public ProductReadDTO getProductByPno(Long pno);
-    public List<ProductCartDTO> getCartList(String userId);
     public List<ResponseProductReviewDTO> getReview(Long pno);
 
 }

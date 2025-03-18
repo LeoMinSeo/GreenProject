@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import SubMenubar from "../menu/SubMenubar";
+import MainMenubar from "../menu/MainMenubar";
 
 const Culture = [
   {
@@ -38,14 +38,14 @@ const ListComponent = () => {
   return (
     <div>
       <div>
-        <SubMenubar />
+        <MainMenubar />
       </div>
       {/* 로고 */}
       <div className="mt-24 mb-10 relative flex items-center justify-center h-[40vh] w-full bg-cover bg-center group overflow-hidden">
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-80"
-          src="https://videos.pexels.com/video-files/5648488/5648488-uhd_2732_1440_25fps.mp4"
+          src="https://videos.pexels.com/video-files/7095842/7095842-uhd_2732_1440_25fps.mp4"
           loop
           playsInline
           autoPlay
@@ -53,11 +53,9 @@ const ListComponent = () => {
         ></video>
         <div className="absolute inset-0 bg-[#ad9e87] opacity-30"></div>
         <div className="relative text-center z-10 flex flex-col items-center text-white font-bold text-3xl uppercase tracking-widest lg:text-4xl">
-          Cultures
+          CONCERT
         </div>
-        <button className="absolute border-none bottom-20 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-30 border rounded-lg px-4 py-2 text-white">
-          VIEW
-        </button>
+        
       </div>
       {/* 로고 끝  */}
       {/* 하단 DIV */}

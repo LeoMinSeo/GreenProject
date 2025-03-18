@@ -4,7 +4,6 @@ import com.green.project.Leo.dto.UserDTO;
 import com.green.project.Leo.dto.pageable.PageRequestDTO;
 import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.dto.product.*;
-import com.green.project.Leo.entity.User;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.product.*;
@@ -16,8 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,39 +110,6 @@ public class ProductServiceIplm implements ProductService{
         }
     }
 
-
-
-
-
-    @Override
-    public List<ProductCartDTO> getCartList(String userId) {
-        List<ProductCart> result = cartRepository.selectCartByUserId(userId);
-        List<ProductCartDTO> cartDTOList = new ArrayList<>();
-        for (ProductCart i : result){
-            //상품 이미지가져와서 상품정보,이미지 dto로 변환 (모델맵퍼로 하려고했지만 상품에 해당하는 이미지를 조회해서 가져와야해가지고 빌더로 세팅)
-            List<String> imageList = imageRepository.findFileNamesByPNo(i.getProduct().pNo());
-            ProductDTO productDTO = ProductDTO.builder()
-                    .price(i.getProduct().pPrice())
-                    .pname(i.getProduct().pName())
-                    .pno(i.getProduct().pNo())
-                    .pdesc(i.getProduct().pdesc())
-                    .pstock(i.getProduct().pStock())
-                    .uploadFileNames(imageList != null
-                            ? imageList
-                            : new ArrayList<>())
-                    .build();
-
-            //카트dto에 엔티티타입인것 변환하고 user,product세팅
-           ProductCartDTO cartDTO = ProductCartDTO.builder()
-                    .cartNo(i.getCartNo())
-                    .userDTO(modelMapper.map(i.getUser(),UserDTO.class))
-                    .productDTO(productDTO)
-                    .numofItem(i.getNumOfItem())
-                    .build();
-            cartDTOList.add(cartDTO);
-        }
-        return cartDTOList;
-    }
 
     @Override
     public List<ResponseProductReviewDTO> getReview(Long pno) {

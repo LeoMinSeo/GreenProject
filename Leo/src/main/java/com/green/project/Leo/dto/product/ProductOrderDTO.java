@@ -17,7 +17,7 @@ public class ProductOrderDTO {
 
 
     private UserDTO userdto;
-
+    private String cardName;
     private String payment;
 
     private LocalDateTime orderDate;

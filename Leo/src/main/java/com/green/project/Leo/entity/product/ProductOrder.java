@@ -24,7 +24,7 @@ public class ProductOrder {
     private User user;
 
     private String payment;
-
+    private String cardName;
     private LocalDateTime orderDate;
 
     @Enumerated(EnumType.STRING)

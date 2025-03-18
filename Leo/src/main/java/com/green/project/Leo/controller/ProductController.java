@@ -34,18 +34,12 @@ public class ProductController {
 
 
     @GetMapping("/read/{pno}")
-    public ProductReadDTO getRating(@PathVariable(name = "pno")Long pno){
+    public ProductReadDTO getProduct(@PathVariable(name = "pno")Long pno){
 
         return service.getProductByPno(pno);
     }
 
 
-    @GetMapping("/cart/{userId}")
-    public String cartList(@PathVariable(name = "userId")String userId){
-        List<ProductCartDTO> cartdtolist = service.getCartList(userId);
-        System.out.println(cartdtolist);
-        return "성공";
-    }
 
     @GetMapping("/view/{fileName}") //img src="/view/123445_s송준항.jpg"
     public ResponseEntity<Resource> viewFileGET(@PathVariable String fileName){

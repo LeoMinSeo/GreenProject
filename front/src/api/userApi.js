@@ -16,9 +16,9 @@ export const getCartlist = async (userId) => {
   return res.data;
 };
 
-export const addOrder = async (data) => {
+export const addOrder = async (uid, data) => {
   console.log(data);
-  const res = await axios.post(`${host}/purchase`, data, {
+  const res = await axios.post(`${host}/purchase/${uid}`, data, {
     headers: {
       "Content-Type": "application/json",
     },

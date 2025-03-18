@@ -1,10 +1,10 @@
 import React from "react";
-import SubMenubar from "../menu/SubMenubar";
+import MainMenubar from "../menu/MainMenubar";
 
 const ReadComponent = () => {
   return (
     <div className="border-2 border-sky-200 p-4">
-      <SubMenubar />
+      <MainMenubar />
       <div>레저베이션 리드 페이지</div>
     </div>
   );

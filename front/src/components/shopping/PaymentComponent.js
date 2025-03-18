@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import SubMenuber from "../menu/SubMenubar";
 import { motion } from "framer-motion";
 import { CreditCard, CheckCircle, Truck } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaypal } from "@fortawesome/free-brands-svg-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addOrder } from "../../api/userApi";
+import MainMenubar from "../menu/MainMenubar";
 
 const PaymentComponent = () => {
   const [sendData, setSendData] = useState({});
@@ -66,15 +64,10 @@ const PaymentComponent = () => {
     }
   };
   const handlePayment = () => {
-    setIsPaymentDIVOpen(true); // 결제 버튼 클릭 시 모달 열기
-  };
-
-  const clickSubmit = (e) => {
-    const sendData = {
+    const send = {
       userdto: {
         uid: cartData[0].userDTO.uid,
       },
-      payment: e.target.value,
       shippingAdress: form.address,
       note: form.note,
       totalPrice: totalPrice,
@@ -82,12 +75,36 @@ const PaymentComponent = () => {
         return { pno: i.productDTO.pno, numOfItem: i.numofItem };
       }),
     };
-    setSendData({ ...sendData });
+    const realprice = parseInt(totalPrice.replace(/,/g, ""));
+    const ProductCount = new Set(cartData.map((item) => item.productDTO.pno))
+      .size;
+    const imp = window.IMP; // 아이엠포트 객체
+
+    imp.init("imp82633673"); // 가맹점 ID (확인 필요)
+
+    imp.request_pay(
+      {
+        pg: "mobilians",
+        pay_method: "card",
+        name: `${cartData[0].productDTO.pname}외 ${ProductCount}건`,
+        amount: realprice,
+      },
+      function (rsp) {
+        if (rsp.success) {
+          alert("결제가 완료되었습니다.");
+          addOrder(rsp.imp_uid, send).then((i) => {
+            navigate(`/member/success/${i}`);
+          });
+        } else {
+          alert("결제에 실패하였습니다. 실패 사유: " + rsp.error_msg);
+        }
+      }
+    );
   };
 
   return (
     <div>
-      <SubMenuber />
+      <MainMenubar />
 
       <div className="h-screen overflow-hidden mt-24 bg-gray-100 flex flex-col md:flex-row items-start justify-center p-6 gap-8">
         {/* 왼쪽 - 배송 정보 */}
@@ -223,7 +240,7 @@ const PaymentComponent = () => {
             <motion.button
               whileTap={{ scale: 0.95 }}
               disabled={!canProceedToPayment}
-              onClick={handlePayment} // 결제하기 버튼 클릭 시 결제 모달 열기
+              onClick={handlePayment} // 여기에 지금 넣은거
               className={`mt-6 w-full ${
                 canProceedToPayment ? "bg-gray-400" : "bg-gray-300"
               } text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-600 transition`}
@@ -236,82 +253,6 @@ const PaymentComponent = () => {
               보장됩니다.
             </p>
           </div>
-
-          {/* 결제 방법 박스 (결제하기 버튼을 누르면 나타남) */}
-          {isPaymentDIVOpen && (
-            <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold mb-4">결제 방법 선택</h2>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  className="w-[calc(50%-4px)] py-3 bg-blue-400 hover:bg-blue-500 text-white rounded-lg flex items-center justify-center gap-2"
-                  name="card"
-                  value="토스"
-                  onClick={clickSubmit}
-                >
-                  <img
-                    src="/images/toss.png"
-                    alt="Toss"
-                    className="w-7 h-7 mr-2 "
-                  />
-                  토스
-                </button>
-                <button
-                  className="w-[calc(50%-4px)] py-3 bg-green-400 hover:bg-green-500 text-white rounded-lg flex items-center justify-center gap-2"
-                  name="card"
-                  value="네이버페이"
-                  onClick={clickSubmit}
-                >
-                  <svg
-                    className="w-7 h-7 mr-2"
-                    viewBox="0 0 256 256"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect width="256" height="256" fill="#03C75A" />
-                    <path
-                      d="M82.8 72.6h33.1l39.8 54.4V72.6h28.5v110.8h-33.1l-39.8-54.4v54.4H82.8V72.6z"
-                      fill="#fff"
-                    />
-                  </svg>
-                  네이버페이
-                </button>
-                <button
-                  className="w-[calc(50%-4px)] py-3 bg-red-400 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-2"
-                  name="card"
-                  value="페이코"
-                  onClick={clickSubmit}
-                >
-                  <FontAwesomeIcon icon={faPaypal} />
-                  페이코
-                </button>
-                <button
-                  className="w-[calc(50%-4px)] py-3 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg flex items-center justify-center gap-2"
-                  name="card"
-                  value="카카오페이"
-                  onClick={clickSubmit}
-                >
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/e/e3/KakaoTalk_logo.svg"
-                    alt="Kakao"
-                    className="w-7 h-7 mr-2 "
-                  />
-                  카카오페이
-                </button>
-                <button
-                  className="w-[calc(50%-4px)] py-3 bg-[#9c7bc3] hover:bg-[#9c7bc3] text-white rounded-lg flex items-center justify-center gap-2"
-                  name="card"
-                  value="신용카드"
-                  onClick={clickSubmit}
-                >
-                  <img
-                    src="/images/sinyoung.png"
-                    alt="Kakao"
-                    className="w-7 h-7 mr-2 "
-                  />
-                  신용카드
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -1,16 +1,14 @@
 package com.green.project.Leo.entity.concert;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Builder
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Concert {
@@ -23,7 +21,7 @@ public class Concert {
     private String cName;
 
     @Column(nullable = false)
-    private int cPrice;
+    private String cPrice;
 
     private String cdesc;
 

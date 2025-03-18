@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { getList } from "../../api/productsApi";
-import SubMenubar from "../menu/SubMenubar";
+
 import React, { useEffect, useRef, useState } from "react";
+import MainMenubar from "../menu/MainMenubar";
 
 const ListComponent = () => {
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -60,7 +61,7 @@ const ListComponent = () => {
   return (
     <div>
       <div>
-        <SubMenubar />
+        <MainMenubar />
       </div>
       <div className="mt-24  relative flex items-center justify-center h-[40vh] w-full bg-cover bg-center group overflow-hidden">
         <video
@@ -106,17 +107,19 @@ const ListComponent = () => {
                 className="bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg" // 원래 스타일 적용
                 onClick={() => moveToRead(product.pno)}
               >
-                <img
-                  src={
-                    product.uploadFileNames.length > 0
-                      ? `http://localhost:8089/product/view/s_${product.uploadFileNames[0]}`
-                      : "/images/defalt.jpg"
-                  }
-                  alt={product.pname}
-                  className="w-full max-h-64 object-contain rounded-lg" // 원래 스타일 적용
-                />
+                <div className="w-full h-52">
+                  <img
+                    src={
+                      product.uploadFileNames.length > 0
+                        ? `http://localhost:8089/product/view/s_${product.uploadFileNames[0]}`
+                        : "/images/defalt.jpg"
+                    }
+                    alt={product.pname}
+                    className="w-full h-full object-contain rounded-lg" // 원래 스타일 적용
+                  />
+                </div>
+                <hr></hr>
                 <h2 className="text-xl font-semibold mt-4">{product.pname}</h2>
-                <p className="text-gray-600">{product.pdesc}</p>
                 <p className="text-gray-500">{product.price}</p>
                 <p className="text-gray-400">재고: {product.pstock}개</p>
               </div>
