@@ -33,5 +33,8 @@ out/
 /nbdist/
 /.nb-gradle/
 
+# application.properties 파일을 무시
+application.properties
+
 ### VS Code ###
 .vscode/
