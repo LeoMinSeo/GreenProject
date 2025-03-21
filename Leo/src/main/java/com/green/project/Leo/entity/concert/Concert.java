@@ -28,6 +28,8 @@ public class Concert {
     @Column(nullable = false)
     private String cPlace;
 
+    private String category;
+
     @OneToMany(mappedBy ="concert",cascade = CascadeType.ALL)
     private List<ConcertSchedule> schedules;
 

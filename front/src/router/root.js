@@ -2,8 +2,9 @@ import { lazy, Suspense } from "react";
 import productRouter from "./productRouter";
 import reservationRouter from "./reservationRouter";
 import memberRouter from "./memberRouter";
-import adminRouter from "./adminRouter";
 import shoppingRouter from "./shoppingRouter";
+import adminProductsRouter from "./adminProductsRouter";
+import adminConcertRouter from "./adminConcertRouter";
 const { createBrowserRouter } = require("react-router-dom");
 
 const Loading = (
@@ -35,7 +36,8 @@ const Loading = (
   </div>
 );
 const Main = lazy(() => import("../pages/MainPage"));
-
+const AdminMainPage = lazy(() => import("../pages/admin/AdminMainPage"));
+const Testpage = lazy(() => import("../pages/Testpage"));
 const root = createBrowserRouter([
   {
     path: "",
@@ -59,11 +61,31 @@ const root = createBrowserRouter([
   },
   {
     path: "admin",
-    children: adminRouter(),
+    element: (
+      <Suspense fallback={Loading}>
+        <AdminMainPage />
+      </Suspense>
+    ),
   },
   {
     path: "shopping",
     children: shoppingRouter(),
+  },
+  {
+    path: "admin/products",
+    children: adminProductsRouter(),
+  },
+  {
+    path: "admin/concert",
+    children: adminConcertRouter(),
+  },
+  {
+    path: "test",
+    element: (
+      <Suspense fallback={Loading}>
+        <Testpage />
+      </Suspense>
+    ),
   },
 ]);
 

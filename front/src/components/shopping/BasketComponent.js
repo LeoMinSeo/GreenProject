@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ShoppingCart, Trash } from "lucide-react";
-
 import { useNavigate } from "react-router-dom";
-import { getCartlist } from "../../api/userApi"; // 백엔드 API 호출
+import { deleteFromCart, getCartlist } from "../../api/userApi"; // 백엔드 API 호출
 import MainMenubar from "../menu/MainMenubar";
 
 const init = [
@@ -32,12 +31,14 @@ const init = [
 const BasketComponent = () => {
   const navigate = useNavigate();
   const [cartData, setCartData] = useState(init);
-
+  const [refresh, setRefresh] = useState(0);
   useEffect(() => {
-    getCartlist("leo1657").then((data) => {
-      setCartData(data); // 받아온 데이터를 상태로 저장
-    });
-  }, []);
+    getCartlist(JSON.parse(localStorage.getItem("user")).userId).then(
+      (data) => {
+        setCartData(data); // 받아온 데이터를 상태로 저장
+      }
+    );
+  }, [refresh]);
 
   // 수량 업데이트 함수
   const updateQuantity = (cartNo, amount) => {
@@ -53,20 +54,24 @@ const BasketComponent = () => {
 
   // 아이템 제거 함수
   const removeItem = (cartNo) => {
-    setCartData((prevData) => {
-      const updatedData = prevData.filter((item) => item.cartNo !== cartNo);
-      return updatedData;
+    console.log(cartNo);
+    deleteFromCart(cartNo).then(() => {
+      setRefresh(refresh + 1);
     });
   };
 
-  const totalPrice = cartData.reduce(
-    (sum, item) =>
-      sum +
-      parseInt(item.productDTO.price.replace("원", "").replace(",", "")) *
-        item.numofItem,
-    0
-  );
-
+  const totalPrice = cartData.reduce((sum, item) => {
+    const price = item.productDTO.price;
+    console.log("Price before replace:", price); // 가격을 출력하여 문제 확인
+    const cleanedPrice = price.replace(/[^0-9]/g, "");
+    console.log("Cleaned Price:", cleanedPrice); // 정리된 가격 출력
+    const priceNumber = parseInt(cleanedPrice);
+    if (isNaN(priceNumber)) {
+      console.error(`Invalid price format: ${price}`);
+      return sum;
+    }
+    return sum + priceNumber * item.numofItem;
+  }, 0);
   // 숫자에 콤마 추가하기
   const formattedTotalPrice = new Intl.NumberFormat().format(totalPrice);
 

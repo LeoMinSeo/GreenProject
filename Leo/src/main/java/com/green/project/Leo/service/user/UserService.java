@@ -10,5 +10,7 @@ public interface UserService {
     public String addCart(RequestCartDTO cartDTO);
     public List<ProductCartDTO> selectCartList(String userId);
     public String addOrder(ProductOrderDTO orderDTO);
+    public void deleteFromCart(Long cartNo);
+
 
 }

@@ -30,10 +30,12 @@ const Loading = (
   </div>
 );
 const LoginPage = lazy(() => import("../pages/loginout/LoginPage"));
-const LogoutPage = lazy(() => import("../pages/loginout/LogoutPage"));
 const Signup = lazy(() => import("../pages/loginout/SignupPage"));
 const Mypage = lazy(() => import("../pages/loginout/MyPage"));
 const SuccessOrder = lazy(() => import("../pages/loginout/SuccessOrderPage"));
+const Findid = lazy(() => import("../pages/loginout/FindidPage"));
+const Findpw = lazy(() => import("../pages/loginout/FindpwPage"));
+
 const memberRouter = () => {
   return [
     {
@@ -44,14 +46,7 @@ const memberRouter = () => {
         </Suspense>
       ),
     },
-    {
-      path: "logout",
-      element: (
-        <Suspense fallback={Loading}>
-          <LogoutPage />
-        </Suspense>
-      ),
-    },
+
     {
       path: "signup",
       element: (
@@ -61,7 +56,7 @@ const memberRouter = () => {
       ),
     },
     {
-      path: "mypage",
+      path: "mypage/:userId",
       element: (
         <Suspense fallback={Loading}>
           <Mypage />
@@ -69,10 +64,26 @@ const memberRouter = () => {
       ),
     },
     {
+      path: "findid",
+      element: (
+        <Suspense fallback={Loading}>
+          <Findid />
+        </Suspense>
+      ),
+    },
+    {
+      path: "findpw",
+      element: (
+        <Suspense fallback={Loading}>
+          <Findpw />
+        </Suspense>
+      ),
+    },
+    {
       path: "success/:order",
       element: (
         <Suspense fallback={Loading}>
-          < SuccessOrder/>
+          <SuccessOrder />
         </Suspense>
       ),
     },

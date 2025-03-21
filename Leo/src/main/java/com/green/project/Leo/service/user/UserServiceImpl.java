@@ -1,6 +1,6 @@
 package com.green.project.Leo.service.user;
 
-import com.green.project.Leo.dto.UserDTO;
+import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.dto.product.*;
 
 import com.green.project.Leo.entity.User;
@@ -11,15 +11,12 @@ import com.green.project.Leo.repository.product.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -115,6 +112,11 @@ public class UserServiceImpl implements UserService{
         String ordercode =  formatDate+orderInformation.getOrderNum();
         cartRepository.deleteById(orderDTO.getUserdto().getUid());
         return "주문번호:"+ordercode;
+    }
+
+    @Override
+    public void deleteFromCart(Long cartNo) {
+        cartRepository.deleteById(cartNo);
     }
 
 

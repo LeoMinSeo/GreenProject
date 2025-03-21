@@ -20,12 +20,7 @@ export const getReview = async (pno) => {
   const res = await axios.get(`${host}/getreview/${pno}`);
   return res.data;
 };
-export const postAdd = async (product) => {
-  const header = { headers: { "Content-Type": "multipart/form-data" } };
 
-  const res = await jwtAxios.post(`${host}/`, product, header);
-  return res.data;
-};
 
 export const putProduct = async (pno, product) => {
   const header = { headers: { "Content-Type": "multipart/form-data" } };

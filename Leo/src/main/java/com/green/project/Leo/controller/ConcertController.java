@@ -23,7 +23,7 @@ public class ConcertController {
     @GetMapping("/list")
     public PageResponseDTO<ResponseListDTO> getList(PageRequestDTO dto){
 
-        return service.getProductList(dto);
+        return service.getConcertList(dto);
     }
 
     @GetMapping("/read/{cno}")

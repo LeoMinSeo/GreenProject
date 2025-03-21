@@ -8,6 +8,6 @@ import com.green.project.Leo.dto.pageable.PageResponseDTO;
 
 
 public interface ConcertService {
-    public PageResponseDTO<ResponseListDTO> getProductList(PageRequestDTO dto);
+    public PageResponseDTO<ResponseListDTO> getConcertList(PageRequestDTO dto);
     public ConcertDTO getProductByCno(Long cno);
 }

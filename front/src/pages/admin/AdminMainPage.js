@@ -1,10 +1,10 @@
 import React from "react";
-import MainComponent from "../../components/admin/MainComponent";
+import AdminMainComponent from "../../components/admin/AdminMainComponent";
 
 const AdminMainPage = () => {
   return (
     <div>
-      <MainComponent />
+      <AdminMainComponent />
     </div>
   );
 };

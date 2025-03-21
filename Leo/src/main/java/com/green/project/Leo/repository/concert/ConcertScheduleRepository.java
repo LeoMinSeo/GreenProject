@@ -14,4 +14,7 @@ public interface ConcertScheduleRepository extends JpaRepository<ConcertSchedule
     @Modifying
     @Query(value = "delete from concert_schedule where c_no = :cNo" ,nativeQuery = true)
     void deleteScheduleByCno(@Param("cNo")Long cNo);
+
+    @Query(value = "select * from concert_schedule where c_no = :cNo" ,nativeQuery = true)
+    List<ConcertSchedule> getScheduleByCno(@Param("cNo")Long cNo);
 }

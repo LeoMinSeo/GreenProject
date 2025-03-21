@@ -1,6 +1,6 @@
 package com.green.project.Leo.dto.product;
 
-import com.green.project.Leo.dto.UserDTO;
+import com.green.project.Leo.dto.user.UserDTO;
 import lombok.*;
 
 

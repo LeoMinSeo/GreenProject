@@ -31,8 +31,5 @@ public class ConcertSchedule {
     private ConcertStatus status;
 
 
-    public boolean isPossibleBooking(){
-        return status != ConcertStatus.SOLD_OUT;
-    }
 
 }

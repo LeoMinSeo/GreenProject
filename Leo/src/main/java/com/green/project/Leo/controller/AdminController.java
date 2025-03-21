@@ -1,6 +1,8 @@
 package com.green.project.Leo.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.green.project.Leo.dto.admin.AdminConcertDTO;
+import com.green.project.Leo.dto.admin.AdminProductDTO;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
 import com.green.project.Leo.service.Admin.AdminService;
@@ -10,7 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -39,7 +42,7 @@ public class AdminController {
     @PutMapping("/modify/product")
     public String modifyProduct(@ModelAttribute ProductDTO productDTO){
         service.updateProduct(productDTO);
-        return "성공";
+        return "정상적으로 수정을 완료하였습니다";
     }
 
     @DeleteMapping("/remove/product/{pno}")
@@ -61,5 +64,30 @@ public class AdminController {
     public String removeConcert(@PathVariable(name = "cno")Long cno){
             service.removeConcert(cno);
         return "삭제성공";
+    }
+
+    @GetMapping("/product/list")
+    public List<AdminProductDTO> getProductList(){
+
+        return service.getProductList();
+    }
+
+    @GetMapping("/product/read/{pno}")
+    public ProductDTO getProductByPno(@PathVariable(name = "pno") Long pno){
+
+
+        return service.getProductByPno(pno);
+
+    }
+
+    @GetMapping("/concert/list")
+    public List<AdminConcertDTO> getConcertList(){
+
+        return service.getConcertList();
+    }
+    @GetMapping("/concert/read/{cno}")
+    public ConcertDTO getConcertByCno(@PathVariable(name = "cno") Long cno){
+
+        return service.getConcertByCno(cno);
     }
 }

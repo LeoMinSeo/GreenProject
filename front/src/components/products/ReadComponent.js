@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getOne } from "../../api/productsApi";
 import ReviewComponent from "../menu/ReviewComponent";
 import { addCart } from "../../api/userApi";
@@ -15,14 +14,20 @@ const init = [
 ];
 
 const ReadComponent = () => {
+  const loginUser = JSON.parse(localStorage.getItem("user"));
   const pno = useParams();
+  const navigate = useNavigate();
   const [returnMsg, setReturnMsg] = useState(null);
   const [product, setProduct] = useState(init);
   const [fetching, setFetching] = useState(true);
   const [quantity, setQuantity] = useState(1);
+
+  // 수량 증가/감소 함수
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  // 상품 정보 불러오기
   useEffect(() => {
     getOne(pno).then((data) => {
       setProduct(data);
@@ -30,20 +35,61 @@ const ReadComponent = () => {
       console.log(data);
     });
   }, [pno]);
+
+  // FormData 객체
   const formDataRef = useRef(new FormData());
+
+  // 사용자 정보 및 상품, 수량 설정
   useEffect(() => {
-    formDataRef.current.set("userId", "leo1657");
+    let userId;
+
+    // 로그인한 사용자라면, 그 ID를 사용
+    if (loginUser) {
+      userId = loginUser.userId;
+    } else {
+      // 비회원이라면, 임시 사용자 ID를 생성하여 localStorage에 저장
+      userId = localStorage.getItem("guestId");
+      if (!userId) {
+        const guestId = `guest_${Date.now()}`; // 고유한 ID 생성 (임시 사용자 ID)
+        localStorage.setItem("guestId", guestId);
+        userId = guestId;
+      }
+    }
+
+    formDataRef.current.set("userId", userId);
     formDataRef.current.set("pNo", pno.pno);
     formDataRef.current.set("numOfItem", quantity);
-  }, [pno, quantity]);
+  }, [pno, quantity, loginUser]);
+
+  // 장바구니에 상품 추가
   const clickSubmit = () => {
-    addCart(formDataRef.current).then((data) => {
-      setReturnMsg(data);
-    });
+
+    // 로그인한 경우
+    if (loginUser) {
+      addCart(formDataRef.current).then((data) => {
+        setReturnMsg(data);
+      });
+    } else {
+      // 비회원인 경우
+      alert("비회원으로 장바구니에 담겼습니다.");
+
+      // 비회원도 장바구니 담기는 완료됨
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const productData = {
+        pNo: pno.pno,
+        quantity: quantity,
+        productDTO: product.productDTO,
+      };
+      cart.push(productData);
+      localStorage.setItem("cart", JSON.stringify(cart)); // 로컬 스토리지에 장바구니 담기
+    }
   };
+
+  // 모달 닫기
   const closeModal = () => {
     setReturnMsg(null);
   };
+
   return (
     <div className="min-h-screen p-6">
       {returnMsg ? (

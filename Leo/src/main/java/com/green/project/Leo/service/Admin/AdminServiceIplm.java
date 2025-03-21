@@ -1,11 +1,12 @@
 package com.green.project.Leo.service.Admin;
 
+import com.green.project.Leo.dto.admin.AdminConcertDTO;
+import com.green.project.Leo.dto.admin.AdminProductDTO;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.concert.ConcertScheduleDTO;
-import com.green.project.Leo.dto.product.OrderItemDTO;
+
 import com.green.project.Leo.dto.product.ProductDTO;
-import com.green.project.Leo.dto.product.ProductOrderDTO;
-import com.green.project.Leo.entity.User;
+
 import com.green.project.Leo.entity.concert.Concert;
 import com.green.project.Leo.entity.concert.ConcertImage;
 import com.green.project.Leo.entity.concert.ConcertSchedule;
@@ -14,26 +15,25 @@ import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
 import com.green.project.Leo.repository.concert.ConcertRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
-import com.green.project.Leo.repository.product.OrderItemRepository;
+
 import com.green.project.Leo.repository.product.ProductImageRepository;
-import com.green.project.Leo.repository.product.ProductOrderRepository;
+
 import com.green.project.Leo.repository.product.ProductRepository;
 import com.green.project.Leo.util.CustomConcertFileUtil;
 import com.green.project.Leo.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
+
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +56,7 @@ public class AdminServiceIplm implements AdminService{
                 .pdesc(dto.getPdesc())
                 .pPrice(dto.getPrice())
                 .pStock(dto.getPstock())
+                .category(dto.getCategory())
                 .build();
 
         //상품정보를 디비에 저장
@@ -135,6 +136,7 @@ public class AdminServiceIplm implements AdminService{
         }
 
     }
+    @Transactional
     @Override
     public String addConcert(ConcertDTO concertDTO) {
         List<ConcertSchedule> concertScheduleList = new ArrayList<>();
@@ -143,6 +145,7 @@ public class AdminServiceIplm implements AdminService{
                 .cPlace(concertDTO.getCplace())
                 .cdesc(concertDTO.getCdesc())
                 .cPrice(concertDTO.getCprice())
+                .category(concertDTO.getCategory())
                 .build();
         for (ConcertScheduleDTO i : concertDTO.getSchedulesDtoList()) {
             ConcertSchedule schedule = new ConcertSchedule();
@@ -155,7 +158,7 @@ public class AdminServiceIplm implements AdminService{
         }
         concert.setSchedules(concertScheduleList);
         Concert result = concertRepository.save(concert);
-        if (!concertDTO.getFile().isEmpty()) {
+        if (concertDTO.getFile()!=null) {
             String filename = concertFileUtil.saveFiles(concertDTO.getFile());
             ConcertImage image = ConcertImage.builder().fileName(filename).concert(result).build();
             concertImageRepository.save(image);
@@ -179,7 +182,7 @@ public class AdminServiceIplm implements AdminService{
         // 공연번호에 해당하는 스케줄 전부 삭제
         scheduleRepository.deleteScheduleByCno(concertDTO.getCno());
         System.out.println("스케줄삭제부분까지는 진행");
-        // 새로 저장할 스케줄 리스트 생성
+        // 수정할 콘서트 엔티티 작성
         Concert modifyConcert = concertRepository.findById(concertDTO.getCno())
                 .orElseThrow(() -> new RuntimeException("Concert not found"));
         System.out.println("새로저장할 스케줄 리스트생성에서 오류가났니?");
@@ -187,6 +190,7 @@ public class AdminServiceIplm implements AdminService{
         modifyConcert.setCPrice(concertDTO.getCprice());
         modifyConcert.setCdesc(concertDTO.getCdesc());
         modifyConcert.setCPlace(concertDTO.getCplace());
+        modifyConcert.setCategory(concertDTO.getCategory());
 
         // 새로운 스케줄 추가
         List<ConcertSchedule> newScheduleList = new ArrayList<>();
@@ -195,7 +199,7 @@ public class AdminServiceIplm implements AdminService{
             schedule.setStartTime(i.getStartTime());
             schedule.setEndTime(i.getEndTime());
             schedule.setTotalSeats(i.getTotalSeats());
-            schedule.setStatus(ConcertStatus.AVAILABLE);
+            schedule.setStatus(i.getStatus());
             schedule.setConcert(modifyConcert);
             newScheduleList.add(schedule);
             System.out.println("새로운 스케줄 생성 했음");
@@ -237,6 +241,68 @@ public class AdminServiceIplm implements AdminService{
     @Override
     public void removeConcert(Long cno) {
         concertRepository.deleteById(cno);
+    }
+
+    @Override
+    public List<AdminProductDTO> getProductList() {
+
+        return productRepository.findAll().stream().map(i ->{
+           AdminProductDTO adminProductDTO = new AdminProductDTO();
+           adminProductDTO.setPno(i.pNo());
+           adminProductDTO.setPname(i.pName());
+           adminProductDTO.setPrice(i.pPrice());
+           adminProductDTO.setCategory(i.category());
+
+           String imgFileName = imageRepository.findFileNamesByPNo(i.pNo()).stream().findFirst().orElse("");
+           adminProductDTO.setImgFileName(imgFileName);
+
+            return adminProductDTO;
+        }).toList();
+    }
+
+    @Override
+    public ProductDTO getProductByPno(Long pno) {
+        Product result = productRepository.findById(pno).orElse(null);
+
+        ProductDTO productDTO = modelMapper.map(result,ProductDTO.class);
+        productDTO.setUploadFileNames(imageRepository.findFileNamesByPNo(pno));
+        return productDTO;
+    }
+
+    @Override
+    public List<AdminConcertDTO> getConcertList() {
+        return concertRepository.findAll().stream().map(i->{
+            AdminConcertDTO concertDTO = new AdminConcertDTO();
+            concertDTO.setCno(i.getCNo());
+            concertDTO.setCname(i.getCName());
+            concertDTO.setCprice(i.getCPrice());
+            concertDTO.setCategory(i.getCategory());
+            concertDTO.setImgFileName(concertImageRepository.findFileNameByCNo(i.getCNo()));
+            return concertDTO;
+        }).toList();
+    }
+
+    @Override
+    public ConcertDTO getConcertByCno(Long cno) {
+       Concert concert = concertRepository.findById(cno).orElse(null);
+        return ConcertDTO.builder()
+                .cno(concert.getCNo())
+                .cname(concert.getCName())
+                .cplace(concert.getCPlace())
+                .cdesc(concert.getCdesc())
+                .cprice(concert.getCPrice())
+                .category(concert.getCategory())
+                .uploadFileName(concertImageRepository.findFileNameByCNo(concert.getCNo()))
+                .schedulesDtoList( scheduleRepository.getScheduleByCno(concert.getCNo()).stream().map(i->{
+                    ConcertScheduleDTO scheduleDTO = new ConcertScheduleDTO();
+                    scheduleDTO.setScheduleId(i.getScheduleId());
+                    scheduleDTO.setStartTime(i.getStartTime());
+                    scheduleDTO.setEndTime(i.getEndTime());
+                    scheduleDTO.setTotalSeats(i.getTotalSeats());
+                    scheduleDTO.setStatus(i.getStatus());
+                    return scheduleDTO;
+                }).toList())
+                .build();
     }
 
 

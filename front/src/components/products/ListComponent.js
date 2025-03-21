@@ -6,7 +6,7 @@ import MainMenubar from "../menu/MainMenubar";
 
 const ListComponent = () => {
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const categories = ["전체", "앨범", "아티스트", "상품"];
+  const categories = ["전체", "헤드셋", "이어폰", "스피커", "앰프"];
 
   const [productData, setProductData] = useState({
     dtoList: [],
@@ -26,8 +26,6 @@ const ListComponent = () => {
     getList({ page: 1, size: 10 })
       .then((data) => {
         console.log(data); // data 확인
-
-        // 페이지 관련 정보와 데이터 리스트를 모두 상태에 저장
         setProductData({
           dtoList: data.dtoList,
           pageRequestDTO: data.pageRequestDTO,
@@ -45,25 +43,34 @@ const ListComponent = () => {
         console.error("Error fetching data:", error);
       });
   }, []);
+
   const navigate = useNavigate();
   const moveToRead = (pno) => {
     navigate({
       pathname: `../read/${pno}`,
     });
   };
+
   const videoRef = useRef(null);
 
   useEffect(() => {
     const video = videoRef.current;
-    video.play(); // 동영상이 자동 재생되도록 합니다.
+    video.play(); // 동영상 자동 재생
   }, []);
+
+  // **카테고리 필터링 로직 추가**
+  const filteredProducts =
+    selectedCategory === "전체"
+      ? productData.dtoList
+      : productData.dtoList.filter(
+          (product) => product.category === selectedCategory
+        );
 
   return (
     <div>
-      <div>
-        <MainMenubar />
-      </div>
-      <div className="mt-24  relative flex items-center justify-center h-[40vh] w-full bg-cover bg-center group overflow-hidden">
+      <MainMenubar />
+
+      <div className="mt-24 relative flex items-center justify-center h-[40vh] w-full bg-cover bg-center group overflow-hidden">
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-80"
@@ -77,34 +84,39 @@ const ListComponent = () => {
         <div className="relative text-center z-10 flex flex-col items-center text-white font-bold text-3xl uppercase tracking-widest lg:text-4xl">
           PRODUCT
         </div>
-        <br></br>
       </div>
 
-      <div>
-        <div className="bg-white min-h-screen p-6 ">
-          {/* 카테고리 버튼 */}
-          <div className="flex justify-center mb-6 space-x-4">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedCategory === category
-                    ? "bg-gray-500 text-white font-bold"
-                    : "bg-gray-200 text-black font-bold"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+      <div className="bg-white min-h-screen p-6">
+        {/* 카테고리 버튼 */}
+        <div className="flex justify-center mb-6 space-x-4">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-6 py-2 rounded-full border border-gray-400 text-gray-700 transition-all
+        ${
+          selectedCategory === category
+            ? "bg-[#EED9C4] text-black font-bold border-black"
+            : "bg-white text-gray-700 hover:bg-gray-100"
+        }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
-          {/* 제품 목록 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-screen-lg mx-auto p-6">
-            {productData.dtoList.map((product) => (
+        {/* 제품 목록 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-screen-xl mx-auto p-6">
+          {productData.dtoList
+            .filter(
+              (product) =>
+                selectedCategory === "전체" ||
+                product.category === selectedCategory
+            ) // 필터 적용
+            .map((product) => (
               <div
                 key={product.pno}
-                className="bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg" // 원래 스타일 적용
+                className="bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg"
                 onClick={() => moveToRead(product.pno)}
               >
                 <div className="w-full h-52">
@@ -115,7 +127,7 @@ const ListComponent = () => {
                         : "/images/defalt.jpg"
                     }
                     alt={product.pname}
-                    className="w-full h-full object-contain rounded-lg" // 원래 스타일 적용
+                    className="w-full h-full object-contain rounded-lg"
                   />
                 </div>
                 <hr></hr>
@@ -124,7 +136,6 @@ const ListComponent = () => {
                 <p className="text-gray-400">재고: {product.pstock}개</p>
               </div>
             ))}
-          </div>
         </div>
       </div>
     </div>

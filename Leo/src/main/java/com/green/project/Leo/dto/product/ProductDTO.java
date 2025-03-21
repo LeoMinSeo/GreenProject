@@ -20,7 +20,7 @@ public class ProductDTO {
         private String price;
         private String pdesc;
         private int pstock;
-
+        private String category;
 
         @Builder.Default
         private List<MultipartFile> files =new ArrayList<>();//하나의 상품에 여러개의 이미지를 등록

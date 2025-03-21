@@ -1,5 +1,4 @@
 import axios from "axios";
-import { data } from "react-router-dom";
 
 const host = "http://localhost:8089/user";
 
@@ -24,4 +23,9 @@ export const addOrder = async (uid, data) => {
     },
   });
   return res.data;
+};
+
+export const deleteFromCart = async (cartNo) => {
+  console.log(cartNo + "열로오고임");
+  await axios.delete(`${host}/delete/cart/${cartNo}`);
 };

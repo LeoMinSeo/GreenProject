@@ -10,8 +10,12 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/icons-material": "^6.4.8",
+    "@mui/material": "^6.4.8",
     "@reduxjs/toolkit": "^2.6.0",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
@@ -30,6 +34,7 @@
     "react-router-dom": "^7.1.5",
     "react-scripts": "^5.0.1",
     "recharts": "^2.15.1",
+    "styled-components": "^6.1.16",
     "tailwindcss": "^3.4.17"
   },
   "devDependencies": {

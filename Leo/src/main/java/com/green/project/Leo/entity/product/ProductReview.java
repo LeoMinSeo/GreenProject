@@ -1,5 +1,6 @@
 package com.green.project.Leo.entity.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.green.project.Leo.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class ProductReview {
 
     @Id

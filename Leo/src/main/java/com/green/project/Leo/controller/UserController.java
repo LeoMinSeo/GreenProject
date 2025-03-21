@@ -50,6 +50,10 @@ public class UserController {
 
         return service.selectCartList(userId);
     }
+    @DeleteMapping("/delete/cart/{cartNo}")
+    public void deleteProductFromCart(@PathVariable(name = "cartNo")Long cartNo){
+        service.deleteFromCart(cartNo);
+    }
 
     @PostMapping("/purchase/{imp_uid}")
     public String purchaseProduct(@PathVariable(name = "imp_uid") String imp_uid, @RequestBody  ProductOrderDTO orderDTO)

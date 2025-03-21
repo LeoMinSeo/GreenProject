@@ -1,6 +1,7 @@
 package com.green.project.Leo.dto.concert;
 
 import com.green.project.Leo.entity.concert.ConcertSchedule;
+import com.green.project.Leo.entity.concert.ConcertStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.aspectj.util.FileUtil;
@@ -27,7 +28,10 @@ public class ConcertDTO {
 
     private String cplace;
 
+
     private MultipartFile file;
+
+    private String category;
 
     private String uploadFileName;
 

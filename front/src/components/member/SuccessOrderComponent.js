@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const LoginComponent = () => {
-
   const orderNumber = useParams();
   const navigate = useNavigate();
 
@@ -25,9 +24,15 @@ const LoginComponent = () => {
           </p>
           <button
             className="mt-4 px-6 py-2 bg-[#ad9e87] text-white rounded-lg hover:bg-[#968468] transition duration-300"
-            onClick={() => (navigate("/member/mypage"))}
+            onClick={() =>
+              navigate(
+                `/member/mypage/${
+                  JSON.parse(localStorage.getItem("user")).userId
+                }`
+              )
+            }
           >
-           MyPage
+            MyPage
           </button>
         </div>
       </div>

@@ -18,5 +18,11 @@ public class ResponseListDTO {
 
     private String cplace;
 
+    private String category;
+
+    private String startTime;
+
+    private String endTime;
+
     private String uploadFileName;
 }

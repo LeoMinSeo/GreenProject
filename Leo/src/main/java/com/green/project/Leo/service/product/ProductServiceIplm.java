@@ -1,6 +1,5 @@
 package com.green.project.Leo.service.product;
 
-import com.green.project.Leo.dto.UserDTO;
 import com.green.project.Leo.dto.pageable.PageRequestDTO;
 import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.dto.product.*;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceIplm implements ProductService{
@@ -69,6 +67,7 @@ public class ProductServiceIplm implements ProductService{
                     .price(i.pPrice())
                     .pstock(i.pStock())
                     .uploadFileNames(imageList)
+                    .category(i.category())
                     .build();
             productDTOList.add(productDTO);
         }

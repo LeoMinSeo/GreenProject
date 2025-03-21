@@ -30,6 +30,9 @@ const Loading = (
 );
 const Payment = lazy(() => import("../pages/shopping/Payment"));
 const Basket = lazy(() => import("../pages/shopping/Basket"));
+const NonMemBasket = lazy(() =>
+  import("../pages/shopping/NonMemberBasketPage")
+);
 
 const adminRouter = () => {
   return [
@@ -46,6 +49,14 @@ const adminRouter = () => {
       element: (
         <Suspense fallback={Loading}>
           <Basket />
+        </Suspense>
+      ),
+    },
+    {
+      path: "nonmember/basket",
+      element: (
+        <Suspense fallback={Loading}>
+          <NonMemBasket />
         </Suspense>
       ),
     },

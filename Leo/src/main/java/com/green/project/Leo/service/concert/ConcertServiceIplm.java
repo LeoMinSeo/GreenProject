@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class ConcertServiceIplm implements ConcertService{
     private ConcertImageRepository imageRepository;
 
     @Override
-    public PageResponseDTO<ResponseListDTO> getProductList(PageRequestDTO dto) {
+    public PageResponseDTO<ResponseListDTO> getConcertList(PageRequestDTO dto) {
 
         Pageable pageable = PageRequest.of(
                 dto.getPage()-1, dto.getSize(), Sort.by("cNo").descending()
@@ -39,12 +40,18 @@ public class ConcertServiceIplm implements ConcertService{
         List<ResponseListDTO> responseListDTO =new ArrayList<>();
         for(Concert i : result){
             String imgName = imageRepository.findFileNameByCNo(i.getCNo());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+
             ResponseListDTO listDTO = ResponseListDTO.builder()
                     .cno(i.getCNo())
                     .cname(i.getCName())
                     .cplace(i.getCPlace())
                     .cprice(i.getCPrice())
                     .uploadFileName(imgName)
+                    .startTime(i.getSchedules().get(0).getStartTime().format(formatter))
+                    .endTime(i.getSchedules().get(i.getSchedules().size()-1).getEndTime().format(formatter))
+                    .category(i.getCategory())
                     .build();
             responseListDTO.add(listDTO);
         }

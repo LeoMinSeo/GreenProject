@@ -39,7 +39,7 @@ const ReservationList = lazy(() =>
 const reservationRouter = () => {
   return [
     {
-      path: "read/:pno",
+      path: "read/:cno",
       element: (
         <Suspense fallback={Loading}>
           <ReservationRead />

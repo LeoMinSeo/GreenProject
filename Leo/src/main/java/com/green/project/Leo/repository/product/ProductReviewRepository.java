@@ -10,4 +10,7 @@ import java.util.List;
 public interface ProductReviewRepository extends JpaRepository<ProductReview,Long> {
     @Query(value = "select * from product_review where p_no = :pNo",nativeQuery = true)
     List<ProductReview> selectByPNo(@Param("pNo") Long pno);
+
+    @Query(value = "select * from  product_review where u_id = :uId", nativeQuery = true)
+    List<ProductReview> getReviewList(@Param("uId") Long uId);
 }

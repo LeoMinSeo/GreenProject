@@ -31,5 +31,6 @@ public class Product {
 
     private int pStock;
 
+    private String category;
 
 }
