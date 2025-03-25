@@ -3,11 +3,10 @@ import { CookingPot, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const MainMenubar = ({ currentIndex }) => {
+const MainMenubar = ({ currentIndex, currentPage }) => {
   const loginUser = JSON.parse(localStorage.getItem("user"));
-
+  console.log(currentIndex);
   const [user, setUser] = useState(loginUser);
-  console.log("main menu bar: ", loginUser);
 
   const navigate = useNavigate();
   // const location = useLocation();
@@ -22,7 +21,7 @@ const MainMenubar = ({ currentIndex }) => {
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("user");
 
-    navigate("/");
+    navigate(currentPage ? currentPage : "/");
   };
 
   const handleMyPage = () => {
@@ -49,7 +48,11 @@ const MainMenubar = ({ currentIndex }) => {
   return (
     <div
       className={`absolute top-0 left-0 w-full h-[10vh] z-50 flex items-center px-5 transition-all duration-500 ${
-        currentIndex === 0 ? "bg-transparent" : "bg-[#f1efeb]"
+        currentIndex === 0
+          ? "bg-transparent"
+          : currentIndex === 3
+          ? "bg-white"
+          : "bg-[#f1efeb]"
       }`}
     >
       <div className="ml-4">

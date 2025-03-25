@@ -4,8 +4,8 @@ import com.green.project.Leo.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,12 +13,13 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@Builder
 public class ProductOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderNum;
 
+    // 주문->유저 방향으로는 cascade 설정 없음
     @ManyToOne
     @JoinColumn(name = "uId")
     private User user;
@@ -32,10 +33,10 @@ public class ProductOrder {
 
     private String shippingAdress;  // 배송 주소
     private String trackingNumber;  // 배송 추적 번호
-    private String note;//요청사항
+    private String note; // 요청사항
     private String totalPrice;
-    @OneToMany(mappedBy = "productOrder", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems;
 
-
+    // 주문 삭제시 주문 아이템도 삭제
+    @OneToMany(mappedBy = "productOrder", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
 }

@@ -37,6 +37,7 @@ const ListComponent = () => {
   useEffect(() => {
     getList().then((data) => {
       setConcertData(data);
+      console.log(data.dtoList);
     });
   }, []);
 
@@ -49,23 +50,23 @@ const ListComponent = () => {
         );
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-white min-h-screen">
       <div>
-        <MainMenubar />
+        <MainMenubar currentPage="/reservation/list" />
       </div>
 
-      {/* 헤더 비디오 섹션 */}
-      <div className="mt-16 relative flex items-center justify-center h-64 md:h-80 lg:h-96 w-full overflow-hidden opacity-80">
+      {/* 헤더 비디오 섹션 - 높이와 배경색 수정 */}
+      <div className="mt-24 relative flex items-center justify-center h-[40vh] w-full bg-cover bg-center group overflow-hidden">
         <video
           ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover opacity-80"
           src="https://videos.pexels.com/video-files/7095842/7095842-uhd_2732_1440_25fps.mp4"
           loop
           playsInline
           autoPlay
           muted
         ></video>
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="absolute inset-0 bg-[#ad9e87] opacity-30"></div>
 
         <div className="relative text-center z-10 flex flex-col items-center text-white font-bold text-3xl uppercase tracking-widest lg:text-4xl">
           Culture And Art
@@ -101,11 +102,15 @@ const ListComponent = () => {
                   navigate(`/reservation/read/${concert.cno}`);
                 }}
                 key={concert.cno}
-                className="group bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col cursor-pointer"
+                className="group border border-[#ad9e87] bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col cursor-pointer"
               >
                 <div className="relative h-80 overflow-hidden">
                   <img
-                    src={`http://localhost:8089/concert/view/s_${concert.uploadFileName}`}
+                    src={
+                      concert.uploadFileName === null
+                        ? "/images/defalt.jpg"
+                        : `http://localhost:8089/concert/view/s_${concert.uploadFileName}`
+                    }
                     alt={concert.cname}
                     className="w-full h-full object-fill group-hover:scale-105 transition-all duration-300"
                   />

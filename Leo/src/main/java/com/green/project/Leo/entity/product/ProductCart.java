@@ -15,19 +15,15 @@ public class ProductCart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cartNo;
 
-
+    // 장바구니->유저 방향으로는 cascade 설정 없음
     @ManyToOne
     @JoinColumn(name = "uId")
     private User user;
 
+    // 장바구니->상품 방향으로는 cascade 설정 없음
     @ManyToOne
     @JoinColumn(name = "pNo")
     private Product product;
 
     private int numOfItem;
-
-
-
-
-
 }

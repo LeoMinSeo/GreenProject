@@ -1,6 +1,9 @@
 package com.green.project.Leo.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.green.project.Leo.dto.admin.AdminConcertDTO;
 import com.green.project.Leo.dto.admin.AdminProductDTO;
 import com.green.project.Leo.dto.concert.ConcertDTO;
@@ -9,6 +12,7 @@ import com.green.project.Leo.service.Admin.AdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,12 +56,18 @@ public class AdminController {
     }
 
     @PutMapping(value = "/modify/concert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String modifyConcert(
+    public ResponseEntity<?> modifyConcert(
             @RequestPart("concertDTO")ConcertDTO concertDTO,
-            @RequestPart(value = "file",required = false) MultipartFile file){
-         concertDTO.setFile(file);
-
-        return service.updateConcert(concertDTO);
+            @RequestPart(value = "deleteId", required = false) String deleteScheduleIdJson,
+            @RequestPart(value = "file",required = false) MultipartFile file) throws JsonProcessingException {
+        concertDTO.setFile(file);
+        try {
+            List<Long> deleteScheduleIds = new ObjectMapper().readValue(deleteScheduleIdJson, new TypeReference<List<Long>>() {});
+            String msg = service.updateConcert(concertDTO, deleteScheduleIds);
+            return ResponseEntity.ok(msg);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/remove/concert/{cno}")

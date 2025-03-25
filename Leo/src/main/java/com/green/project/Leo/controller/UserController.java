@@ -25,16 +25,6 @@ import java.util.List;
 @CrossOrigin("http://localhost:3000")
 public class UserController {
 
-    private IamportClient iamportClient;
-    @Value("${iamport.api_key}")
-    private String apiKey;
-    @Value("${iamport.api_secret}")
-    private String secretKey;
-
-    @PostConstruct
-    public void init(){
-        this.iamportClient = new IamportClient(apiKey,secretKey);
-    }
 
     @Autowired
     private UserService service;
@@ -58,13 +48,15 @@ public class UserController {
     @PostMapping("/purchase/{imp_uid}")
     public String purchaseProduct(@PathVariable(name = "imp_uid") String imp_uid, @RequestBody  ProductOrderDTO orderDTO)
             throws IamportResponseException, IOException {
-        IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
-        Payment paymentInformation = payment.getResponse();
-        orderDTO.setPayment(paymentInformation.getPayMethod());
-        orderDTO.setCardName(paymentInformation.getCardName());
-        return service.addOrder(orderDTO);
+
+        return service.addOrder(imp_uid,orderDTO);
     }
 
+    @PostMapping("/reservation/{imp_uid}")
+    public String reservationTicket(@PathVariable(name = "imp_uid")String imp_uid) throws IamportResponseException,IOException{
+                    service.addConcertOrder(imp_uid);
+        return "티켓 예매 성공";
+    }
 
 
 }

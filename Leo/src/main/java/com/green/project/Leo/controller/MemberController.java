@@ -1,5 +1,6 @@
 package com.green.project.Leo.controller;
 
+import com.green.project.Leo.dto.user.MypageRequestOrderDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.product.ProductOrder;
 import com.green.project.Leo.entity.product.ProductReview;
@@ -174,9 +175,9 @@ public class MemberController {
         return ResponseEntity.ok(reviewList);
     }
     @GetMapping("/orders/{id}")
-    public List<ProductOrder> getProduct(@PathVariable Long id) {
-        System.out.println("주문내역조회로옴");
-        return productOrderRepository.getOrderList(id);
+    public List<MypageRequestOrderDTO> getProduct(@PathVariable Long id) {
+
+        return memberService.findOrderByUid(id);
     }
 
 }

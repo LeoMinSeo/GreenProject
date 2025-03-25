@@ -29,3 +29,8 @@ export const deleteFromCart = async (cartNo) => {
   console.log(cartNo + "열로오고임");
   await axios.delete(`${host}/delete/cart/${cartNo}`);
 };
+
+export const addConcertOrder = async (uid) => {
+  const res = await axios.post(`${host}/reservation/${uid}`);
+  return res.data;
+};

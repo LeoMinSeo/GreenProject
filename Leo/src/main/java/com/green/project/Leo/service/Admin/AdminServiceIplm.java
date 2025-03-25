@@ -7,15 +7,13 @@ import com.green.project.Leo.dto.concert.ConcertScheduleDTO;
 
 import com.green.project.Leo.dto.product.ProductDTO;
 
-import com.green.project.Leo.entity.concert.Concert;
-import com.green.project.Leo.entity.concert.ConcertImage;
-import com.green.project.Leo.entity.concert.ConcertSchedule;
-import com.green.project.Leo.entity.concert.ConcertStatus;
+import com.green.project.Leo.entity.concert.*;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
 import com.green.project.Leo.repository.concert.ConcertRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 
+import com.green.project.Leo.repository.concert.ConcertTicketRepository;
 import com.green.project.Leo.repository.product.ProductImageRepository;
 
 import com.green.project.Leo.repository.product.ProductRepository;
@@ -34,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +46,7 @@ public class AdminServiceIplm implements AdminService{
     private final CustomConcertFileUtil concertFileUtil;
     private final ConcertImageRepository concertImageRepository;
     private final ConcertScheduleRepository scheduleRepository;
+    private final ConcertTicketRepository ticketRepository;
     @Override
     public void addProduct(ProductDTO dto) {
 
@@ -168,7 +168,7 @@ public class AdminServiceIplm implements AdminService{
 
     @Transactional
     @Override
-    public String updateConcert(ConcertDTO concertDTO) {
+    public String updateConcert(ConcertDTO concertDTO ,List<Long> deleteIds) {
         System.out.println(concertDTO);
         System.out.println("서비스까지는 넘어옴");
         // 디비에 있는 기존 이미지파일 이름
@@ -179,10 +179,17 @@ public class AdminServiceIplm implements AdminService{
         // 새로 업로드하는 파일 이름
         String newUploadFileName = concertFileUtil.saveFiles(newfile);
 
-        // 공연번호에 해당하는 스케줄 전부 삭제
-        scheduleRepository.deleteScheduleByCno(concertDTO.getCno());
-        System.out.println("스케줄삭제부분까지는 진행");
-        // 수정할 콘서트 엔티티 작성
+        for(Long i : deleteIds){
+            List<ConcertTicket> referenceTicket = ticketRepository.findTicketByScheduleId(i);
+            if(referenceTicket.isEmpty()){
+                scheduleRepository.deleteById(i);
+            }else{
+                    throw new RuntimeException(referenceTicket.get(0).getConcertSchedule().getStartTime()+"에 시작하는 공연에 판매된 티켓이있어 스케줄 삭제가 불가합니다");
+            }
+
+        }
+
+        // 콘서트 수정내용 반영해서 저장
         Concert modifyConcert = concertRepository.findById(concertDTO.getCno())
                 .orElseThrow(() -> new RuntimeException("Concert not found"));
         System.out.println("새로저장할 스케줄 리스트생성에서 오류가났니?");
@@ -191,23 +198,30 @@ public class AdminServiceIplm implements AdminService{
         modifyConcert.setCdesc(concertDTO.getCdesc());
         modifyConcert.setCPlace(concertDTO.getCplace());
         modifyConcert.setCategory(concertDTO.getCategory());
+        Concert modifiedConcert = concertRepository.save(modifyConcert);
 
-        // 새로운 스케줄 추가
-        List<ConcertSchedule> newScheduleList = new ArrayList<>();
+        //스케줄 수정및 새로운스케줄이면 추가 작업
         for (ConcertScheduleDTO i : concertDTO.getSchedulesDtoList()) {
-            ConcertSchedule schedule = new ConcertSchedule();
-            schedule.setStartTime(i.getStartTime());
-            schedule.setEndTime(i.getEndTime());
-            schedule.setTotalSeats(i.getTotalSeats());
-            schedule.setStatus(i.getStatus());
-            schedule.setConcert(modifyConcert);
-            newScheduleList.add(schedule);
-            System.out.println("새로운 스케줄 생성 했음");
+            if (i.getScheduleId() == null) {
+                ConcertSchedule schedule = new ConcertSchedule();
+                schedule.setStartTime(i.getStartTime());
+                schedule.setEndTime(i.getEndTime());
+                schedule.setTotalSeats(i.getTotalSeats());
+                schedule.setStatus(i.getStatus());
+                schedule.setConcert(modifiedConcert);
+                scheduleRepository.save(schedule);
+                System.out.println("새로운 스케줄 생성 했음");
+            } else {
+                ConcertSchedule originalSchedule = scheduleRepository.findById(i.getScheduleId()).orElseThrow(() -> new RuntimeException("Schedule not found"));
+                originalSchedule.setStartTime(i.getStartTime());
+                originalSchedule.setEndTime(i.getEndTime());
+                originalSchedule.setTotalSeats(i.getTotalSeats());
+                originalSchedule.setStatus(i.getStatus());
+                originalSchedule.setConcert(modifiedConcert);
+                scheduleRepository.save(originalSchedule);
+                System.out.println("기존의 스케줄 수정");
+            }
         }
-
-        modifyConcert.setSchedules(newScheduleList);
-
-        concertRepository.save(modifyConcert);
         System.out.println("변경된 콘서트정보와 콘서트스케줄을 저장했음");
         // 새로 추가하는 이미지가 있을때
         if (newUploadFileName != null && !newUploadFileName.isEmpty()) {

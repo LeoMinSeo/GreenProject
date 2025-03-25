@@ -11,3 +11,13 @@ export const getConcertByCno = async (cno) => {
   const res = await axios.get(`${host}/read/${cno}`);
   return res.data;
 };
+
+export const getConcertByCnoAndDate = async (cno, scheduleDate) => {
+  const res = await axios.get(`${host}/test`, {
+    params: {
+      cno: cno,
+      startTime: scheduleDate,
+    },
+  });
+  return res.data;
+};

@@ -2,8 +2,6 @@ package com.green.project.Leo.entity.product;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @AllArgsConstructor
@@ -19,8 +17,8 @@ public class ProductImage {
 
     private String fileName;
 
-    @ManyToOne(cascade = {CascadeType.ALL, CascadeType.REMOVE})
+    // 이미지->상품 방향으로는 cascade 설정 없음
+    @ManyToOne
     @JoinColumn(name = "pNo")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Product product;
 }

@@ -3,6 +3,7 @@ package com.green.project.Leo.service.concert;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.concert.ConcertScheduleDTO;
 import com.green.project.Leo.dto.concert.ResponseListDTO;
+import com.green.project.Leo.dto.concert.ScheduleDtoForBooking;
 import com.green.project.Leo.dto.pageable.PageRequestDTO;
 import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
@@ -11,6 +12,7 @@ import com.green.project.Leo.entity.concert.Concert;
 import com.green.project.Leo.entity.concert.ConcertSchedule;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
 import com.green.project.Leo.repository.concert.ConcertRepository;
+import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,8 @@ public class ConcertServiceIplm implements ConcertService{
     private ConcertRepository concertRepository;
     @Autowired
     private ConcertImageRepository imageRepository;
+    @Autowired
+    private ConcertScheduleRepository scheduleRepository;
 
     @Override
     public PageResponseDTO<ResponseListDTO> getConcertList(PageRequestDTO dto) {
@@ -63,8 +68,32 @@ public class ConcertServiceIplm implements ConcertService{
                 .build();
     }
 
+
+
     @Override
-    public ConcertDTO getProductByCno(Long cno) {
+    public ScheduleDtoForBooking getConcertScheduleByCnoAndStartTime(Long cno, LocalDateTime startTime) {
+        ConcertSchedule concertSchedule = scheduleRepository.getScheduleByCnoAndStartTime(cno, startTime);
+        ScheduleDtoForBooking scheduleDTO = new ScheduleDtoForBooking();
+        scheduleDTO.setScheduleId(concertSchedule.getScheduleId());
+        scheduleDTO.setStartTime(concertSchedule.getStartTime());
+        scheduleDTO.setEndTime(concertSchedule.getEndTime());
+        scheduleDTO.setStatus(concertSchedule.getStatus());
+        scheduleDTO.setTotalSeats(concertSchedule.getTotalSeats());
+        scheduleDTO.setAvailableSeats(concertSchedule.getAvailableSeats());
+        ConcertDTO concertDTO = ConcertDTO.builder()
+                .cno(concertSchedule.getConcert().getCNo())
+                .cname(concertSchedule.getConcert().getCName())
+                .cplace(concertSchedule.getConcert().getCPlace())
+                .cprice(concertSchedule.getConcert().getCPrice())
+                .uploadFileName(imageRepository.findFileNameByCNo(concertSchedule.getConcert().getCNo()))
+                .build();
+        scheduleDTO.setConcertDTO(concertDTO);
+
+        return scheduleDTO;
+    }
+
+    @Override
+    public ConcertDTO getConcertByCno(Long cno) {
         Concert result = concertRepository.findById(cno).orElse(null);
         List<ConcertScheduleDTO> scheduleDTOList = new ArrayList<>();
         for(ConcertSchedule i: result.getSchedules()){

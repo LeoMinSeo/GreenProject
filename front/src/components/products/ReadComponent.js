@@ -41,29 +41,16 @@ const ReadComponent = () => {
 
   // 사용자 정보 및 상품, 수량 설정
   useEffect(() => {
-    let userId;
-
     // 로그인한 사용자라면, 그 ID를 사용
     if (loginUser) {
-      userId = loginUser.userId;
-    } else {
-      // 비회원이라면, 임시 사용자 ID를 생성하여 localStorage에 저장
-      userId = localStorage.getItem("guestId");
-      if (!userId) {
-        const guestId = `guest_${Date.now()}`; // 고유한 ID 생성 (임시 사용자 ID)
-        localStorage.setItem("guestId", guestId);
-        userId = guestId;
-      }
+      formDataRef.current.set("userId", loginUser.userId);
+      formDataRef.current.set("pNo", pno.pno);
+      formDataRef.current.set("numOfItem", quantity);
     }
-
-    formDataRef.current.set("userId", userId);
-    formDataRef.current.set("pNo", pno.pno);
-    formDataRef.current.set("numOfItem", quantity);
   }, [pno, quantity, loginUser]);
 
   // 장바구니에 상품 추가
   const clickSubmit = () => {
-
     // 로그인한 경우
     if (loginUser) {
       addCart(formDataRef.current).then((data) => {
@@ -71,17 +58,54 @@ const ReadComponent = () => {
       });
     } else {
       // 비회원인 경우
-      alert("비회원으로 장바구니에 담겼습니다.");
+      alert("로그인 후 이용해 주십시오.");
+      navigate("/member/login");
+    }
+  };
 
-      // 비회원도 장바구니 담기는 완료됨
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
-      const productData = {
-        pNo: pno.pno,
-        quantity: quantity,
-        productDTO: product.productDTO,
-      };
-      cart.push(productData);
-      localStorage.setItem("cart", JSON.stringify(cart)); // 로컬 스토리지에 장바구니 담기
+  // 바로구매 기능
+  const handleDirectPurchase = () => {
+    // 로그인한 경우에만 바로구매 가능
+    if (loginUser) {
+      // 바로구매용 데이터 구성
+      const directPurchaseData = [
+        {
+          cartNo: `direct_${Date.now()}`, // 임시 카트번호 (실제 DB에 저장되지 않음)
+          userDTO: {
+            userId: loginUser.userId,
+            userPw: "", // 보안상 비밀번호는 전송하지 않음
+            userName: loginUser.userName || "",
+            userEmail: loginUser.userEmail || "",
+            userAdress: loginUser.userAdress || "",
+            uid: loginUser.uid || null,
+          },
+          productDTO: product.productDTO,
+          numofItem: quantity,
+        },
+      ];
+
+      // 가격 계산 (숫자만 추출)
+      const price = product.productDTO.price.replace(/[^0-9]/g, "");
+      const priceNumber = parseInt(price);
+      if (isNaN(priceNumber)) {
+        alert("상품 가격 정보가 올바르지 않습니다.");
+        return;
+      }
+
+      // 총 가격 계산 및 포맷팅
+      const totalPrice = priceNumber * quantity;
+      const formattedTotalPrice = new Intl.NumberFormat().format(totalPrice);
+
+      // 페이먼트 페이지로 이동 (direct=true 파라미터 추가)
+      navigate(
+        `/shopping/payment?totalPrice=${formattedTotalPrice}&cartData=${encodeURIComponent(
+          JSON.stringify(directPurchaseData)
+        )}&direct=true`
+      );
+    } else {
+      // 비회원인 경우
+      alert("로그인 후 이용해 주십시오.");
+      navigate("/member/login");
     }
   };
 
@@ -97,7 +121,7 @@ const ReadComponent = () => {
       ) : (
         <></>
       )}
-      <MainMenubar />
+      <MainMenubar currentPage={`/product/read/${pno.pno}`} />
       {/* 전체 컨테이너 */}
       {fetching ? (
         <div className="text-center text-2xl font-bold">로딩 중...</div> // 로딩 상태일 때 표시할 메시지
@@ -164,7 +188,10 @@ const ReadComponent = () => {
               >
                 장바구니
               </button>
-              <button className="w-1/2 p-3 bg-[#ad9e87] text-white rounded-lg">
+              <button
+                className="w-1/2 p-3 bg-[#ad9e87] text-white rounded-lg"
+                onClick={handleDirectPurchase}
+              >
                 바로구매
               </button>
             </div>

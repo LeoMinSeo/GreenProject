@@ -1,14 +1,23 @@
 package com.green.project.Leo.service.user;
 
+import com.green.project.Leo.dto.user.MypageRequestOrderDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.product.OrderItem;
+import com.green.project.Leo.entity.product.ProductOrder;
 import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductOrderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class MemberServiceImple implements MemberService {
@@ -23,6 +32,8 @@ public class MemberServiceImple implements MemberService {
     @Autowired
     private ProductOrderRepository productOrderRepository;
 
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     @Override
     public void registerMember(UserDTO userDTO) {
@@ -91,6 +102,33 @@ public class MemberServiceImple implements MemberService {
     public Optional<String> findPw(String userName, String userId) {
         Optional<User> user = userRepository.findByUserNameAndUserId(userName, userId);
         return user.map(User::userPw);
+    }
+
+    @Override
+    public List<MypageRequestOrderDTO> findOrderByUid(Long uid) {
+        List<ProductOrder> orderList = productOrderRepository.getOrderList(uid);
+        System.out.println("오더리스트는 가져옴");
+
+                List<MypageRequestOrderDTO> result = new ArrayList<>();
+            for(ProductOrder i : orderList) {
+                List<OrderItem> orderItem = orderItemRepository.getOrderItemByOrderNum(i.getOrderNum());
+                System.out.println("오더아이템"+orderItem.get(0));
+                System.out.println("오더넘"+i.getOrderNum());
+                MypageRequestOrderDTO myPageOrderDto = new MypageRequestOrderDTO();
+                myPageOrderDto.setOrderDate(i.getOrderDate());
+                System.out.println("오더아이템전");
+                myPageOrderDto.setProductName(orderItem.get(0).getProduct().pName() + "외 " + (i.getOrderItems().size() - 1) + "건");
+                System.out.println("오더아이템후");
+                myPageOrderDto.setStatus(i.getStatus());
+                myPageOrderDto.setShippingNum(i.getTrackingNumber() != null && !i.getShippingAdress().isEmpty() ? i.getShippingAdress() : "운송장 등록 전입니다");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                myPageOrderDto.setOrderNo(i.getOrderDate().format(formatter) + i.getOrderNum());
+
+                result.add(myPageOrderDto);
+            }
+
+
+        return result;
     }
 
 }

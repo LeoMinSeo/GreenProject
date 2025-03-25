@@ -1,12 +1,8 @@
 package com.green.project.Leo.entity.concert;
 
-
 import com.green.project.Leo.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -15,6 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Getter
+@Setter
 public class ConcertReview {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +25,12 @@ public class ConcertReview {
 
     private LocalDate dueDate;
 
+    // 리뷰->콘서트 방향으로는 cascade 설정 없음
     @ManyToOne
     @JoinColumn(name = "cNo")
     private Concert concert;
 
+    // 리뷰->유저 방향으로는 cascade 설정 없음 (리뷰 삭제가 유저 삭제로 이어지면 안됨)
     @ManyToOne
     @JoinColumn(name = "userId")
     private User user;

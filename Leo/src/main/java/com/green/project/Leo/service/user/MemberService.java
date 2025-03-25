@@ -1,8 +1,10 @@
 package com.green.project.Leo.service.user;
 
 
+import com.green.project.Leo.dto.user.MypageRequestOrderDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberService {
@@ -13,6 +15,6 @@ public interface MemberService {
     public UserDTO updateProfile(String userId, UserDTO userDTO); // 마이페이지 - 회원정보 수정
     public Optional<String> findId (String userName, String userEmail); // 아이디 찾기
     public Optional<String> findPw (String userName, String userId); // 비밀번호 찾기
-
+    public List<MypageRequestOrderDTO> findOrderByUid(Long uid);
 
 }

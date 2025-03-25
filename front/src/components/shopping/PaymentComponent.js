@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, CheckCircle, Truck } from "lucide-react";
+import { CreditCard, CheckCircle, Truck, ShoppingBag } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addOrder } from "../../api/userApi";
 import MainMenubar from "../menu/MainMenubar";
 
 const PaymentComponent = () => {
-  const [sendData, setSendData] = useState({});
   const [form, setForm] = useState({
     name: "",
     address: "",
@@ -14,56 +13,65 @@ const PaymentComponent = () => {
     note: "",
   });
   const [cartData, setCartData] = useState([]);
+  const [isDirectPurchase, setIsDirectPurchase] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card"); // 기본값: 신용카드/소셜페이
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const totalPrice = queryParams.get("totalPrice");
   const requestData = JSON.parse(queryParams.get("cartData"));
+  const direct = queryParams.get("direct") === "true";
 
   useEffect(() => {
-    setCartData(requestData);
-    console.log(requestData);
-    setForm({
-      name: requestData[0].userDTO.userName || "",
-      address: requestData[0].userDTO.userAdress || "",
-      phonenumber: "010-9064-9217", // 전화번호 정보가 없으므로 빈값으로 처리
-      note: "", // 요청사항은 빈값으로 처리
-    });
-  }, []);
-  useEffect(() => {
-    if (sendData && Object.keys(sendData).length > 0) {
-      addOrder(sendData).then((i) => {
-        console.log(i);
-        navigate(`/member/success/${i}`);
+    // 데이터 로드 및 초기화
+    if (requestData && requestData.length > 0) {
+      setCartData(requestData);
+      setIsDirectPurchase(direct);
+      
+      console.log("장바구니 데이터:", requestData);
+      console.log("바로구매 여부:", direct);
+
+      // 폼 초기화
+      setForm({
+        name: requestData[0].userDTO.userName || "",
+        address: requestData[0].userDTO.userAdress || "",
+        phonenumber: "", // 전화번호 정보가 없으므로 빈값으로 처리
+        note: "", // 요청사항은 빈값으로 처리
       });
     }
-  }, [sendData]);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  }, []);
 
   const [isFormCompleted, setIsFormCompleted] = useState(false); // 기본정보 입력 완료 여부 상태
   const [canProceedToPayment, setCanProceedToPayment] = useState(false); // 결제 진행 가능 여부 상태
-  const [isPaymentDIVOpen, setIsPaymentDIVOpen] = useState(false); // 결제 모달 상태
 
-  // 기본정보 입력이 모두 완료되었는지 체크하는 함수
-  const checkFormCompletion = () => {
-    const { name, address, phonenumber, note } = form;
-    if (name && address && phonenumber && note) {
-      setIsFormCompleted(true);
-    } else {
-      setIsFormCompleted(false);
-    }
+  // 폼 입력값 변경 처리 함수
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    // 새로운 폼 상태를 만들어 업데이트
+    const updatedForm = { ...form, [name]: value };
+    setForm(updatedForm);
+    
+    // 모든 필드가 채워졌는지 즉시 확인
+    const { name: formName, address, phonenumber, note } = updatedForm;
+    const allFieldsFilled = formName && address && phonenumber && note;
+    setIsFormCompleted(allFieldsFilled);
   };
+
   // 기본정보 입력 완료 후 결제 진행 가능 여부 활성화
   const handleFormCompletion = () => {
-    checkFormCompletion();
-    if (isFormCompleted) {
+    // 모든 필드가 채워져 있는지 한 번 더 확인
+    const { name, address, phonenumber, note } = form;
+    const allFieldsFilled = name && address && phonenumber && note;
+    
+    if (allFieldsFilled) {
       setCanProceedToPayment(true);
+    } else {
+      alert('모든 배송 정보를 입력해주세요.');
     }
   };
+
   const handlePayment = () => {
+    // 결제 데이터 준비
     const send = {
       userdto: {
         uid: cartData[0].userDTO.uid,
@@ -75,27 +83,37 @@ const PaymentComponent = () => {
         return { pno: i.productDTO.pno, numOfItem: i.numofItem };
       }),
     };
+
+    // 콤마 제거 후 숫자로 변환
     const realprice = parseInt(totalPrice.replace(/,/g, ""));
+    
+    // 상품 개수 계산
     const ProductCount = new Set(cartData.map((item) => item.productDTO.pno))
       .size;
-    const imp = window.IMP; // 아이엠포트 객체
-
-    imp.init("imp82633673"); // 가맹점 ID (확인 필요)
+    
+    // 아임포트 결제 모듈 초기화
+    const imp = window.IMP;
+    imp.init("imp82633673"); // 가맹점 ID
 
     imp.request_pay(
       {
         pg: "mobilians",
-        pay_method: "card",
-        name: `${cartData[0].productDTO.pname}외 ${ProductCount}건`,
+        pay_method: paymentMethod, // 선택한 결제 방식 사용
+        name: `${cartData[0].productDTO.pname}${ProductCount > 1 ? `외 ${ProductCount - 1}건` : ''}`,
         amount: realprice,
       },
       function (rsp) {
         if (rsp.success) {
+          // 결제 성공 시
           alert("결제가 완료되었습니다.");
-          addOrder(rsp.imp_uid, send).then((i) => {
-            navigate(`/member/success/${i}`);
+          
+          // 서버에 주문 정보 저장
+          addOrder(rsp.imp_uid, send).then((orderId) => {
+            // direct 파라미터를 success 페이지로도 전달하여 바로구매 여부 추적
+            navigate(`/member/success/${orderId}${isDirectPurchase ? '?direct=true' : ''}`);
           });
         } else {
+          // 결제 실패 시
           alert("결제에 실패하였습니다. 실패 사유: " + rsp.error_msg);
         }
       }
@@ -115,7 +133,10 @@ const PaymentComponent = () => {
           className="bg-white shadow-2xl rounded-2xl p-8 w-full md:w-2/3"
         >
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Truck size={24} /> 장바구니 내역
+            {isDirectPurchase ? 
+              <><ShoppingBag size={24} /> 바로구매 상품</> : 
+              <><Truck size={24} /> 장바구니 내역</>
+            }
           </h2>
           <div className="mb-10">
             <div className="md:col-span-2 space-y-4">
@@ -126,7 +147,7 @@ const PaymentComponent = () => {
                 >
                   <img
                     src={
-                      item.productDTO.uploadFileNames.length > 0
+                      item.productDTO.uploadFileNames && item.productDTO.uploadFileNames.length > 0
                         ? `http://localhost:8089/product/view/s_${item.productDTO.uploadFileNames[0]}`
                         : "/images/defalt.jpg"
                     }
@@ -160,10 +181,7 @@ const PaymentComponent = () => {
                 type="text"
                 name="name"
                 value={form.name}
-                onChange={(e) => {
-                  handleChange(e);
-                  checkFormCompletion();
-                }}
+                onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-400 outline-none"
                 placeholder="홍길동"
               />
@@ -175,10 +193,7 @@ const PaymentComponent = () => {
                 type="text"
                 name="phonenumber"
                 value={form.phonenumber}
-                onChange={(e) => {
-                  handleChange(e);
-                  checkFormCompletion();
-                }}
+                onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-400 outline-none"
                 placeholder="010-1234-5678"
               />
@@ -190,10 +205,7 @@ const PaymentComponent = () => {
                 type="text"
                 name="address"
                 value={form.address}
-                onChange={(e) => {
-                  handleChange(e);
-                  checkFormCompletion();
-                }}
+                onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-400 outline-none"
               />
             </div>
@@ -204,10 +216,7 @@ const PaymentComponent = () => {
                 type="text"
                 name="note"
                 value={form.note}
-                onChange={(e) => {
-                  handleChange(e);
-                  checkFormCompletion();
-                }}
+                onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-gray-400 outline-none"
                 placeholder="문앞에 두고 가주세요"
               />
@@ -237,10 +246,53 @@ const PaymentComponent = () => {
               <p className="text-2xl font-bold mt-2">{totalPrice}원</p>
             </div>
 
+            {/* 결제 방법 선택 */}
+            <div className="mt-4">
+              <p className="text-lg font-semibold mb-3">결제 방법 선택</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {/* 신용카드/소셜페이 */}
+                <div 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all flex flex-col items-center justify-center ${
+                    paymentMethod === "card" 
+                      ? "border-2 border-gray-500 bg-gray-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setPaymentMethod("card")}
+                >
+                  <div className="text-yellow-500 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                      <path d="M4.5 3.75a3 3 0 00-3 3v.75h21v-.75a3 3 0 00-3-3h-15z" />
+                      <path fillRule="evenodd" d="M22.5 9.75h-21v7.5a3 3 0 003 3h15a3 3 0 003-3v-7.5zm-18 3.75a.75.75 0 01.75-.75h6a.75.75 0 010 1.5h-6a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h3a.75.75 0 000-1.5h-3z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="text-center">신용카드/소셜페이</span>
+                </div>
+                
+                {/* 무통장입금 */}
+                <div 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all flex flex-col items-center justify-center ${
+                    paymentMethod === "trans" 
+                      ? "border-2 border-gray-500 bg-gray-50" 
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() => setPaymentMethod("trans")}
+                >
+                  <div className="text-green-500 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                      <path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.323.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z" />
+                      <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.502.4 1.102.647 1.719.756v2.978a2.536 2.536 0 01-.921-.421l-.879-.66a.75.75 0 00-.9 1.2l.879.66c.533.4 1.169.645 1.821.75V18a.75.75 0 001.5 0v-.81a3.833 3.833 0 001.719-.756c.712-.566 1.112-1.35 1.112-2.178 0-.829-.4-1.612-1.113-2.178-.502-.4-1.102-.647-1.719-.756V8.334c.32.115.64.278.921.421l.879.66a.75.75 0 00.9-1.2l-.879-.66a3.423 3.423 0 00-1.821-.75V6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="text-center">무통장입금</span>
+                </div>
+              </div>
+            </div>
+
             <motion.button
               whileTap={{ scale: 0.95 }}
               disabled={!canProceedToPayment}
-              onClick={handlePayment} // 여기에 지금 넣은거
+              onClick={handlePayment}
               className={`mt-6 w-full ${
                 canProceedToPayment ? "bg-gray-400" : "bg-gray-300"
               } text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-600 transition`}

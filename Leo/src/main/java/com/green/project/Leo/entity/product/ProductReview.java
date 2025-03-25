@@ -1,11 +1,8 @@
 package com.green.project.Leo.entity.product;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.green.project.Leo.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 
@@ -30,11 +27,12 @@ public class ProductReview {
 
     private LocalDate dueDate;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @OnDelete( action = OnDeleteAction.CASCADE)
+    // 리뷰->상품 방향으로는 cascade 설정 없음
+    @ManyToOne
     @JoinColumn(name = "pNo")
     private Product product;
 
+    // 리뷰->유저 방향으로는 cascade 설정 없음
     @ManyToOne
     @JoinColumn(name = "uId")
     private User user;

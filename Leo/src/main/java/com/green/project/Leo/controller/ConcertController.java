@@ -2,6 +2,7 @@ package com.green.project.Leo.controller;
 
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.concert.ResponseListDTO;
+import com.green.project.Leo.dto.concert.ScheduleDtoForBooking;
 import com.green.project.Leo.dto.pageable.PageRequestDTO;
 import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.service.concert.ConcertService;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/concert")
@@ -29,7 +32,7 @@ public class ConcertController {
     @GetMapping("/read/{cno}")
     public ConcertDTO getConcert(@PathVariable(name = "cno")Long cNo){
 
-        return service.getProductByCno(cNo);
+        return service.getConcertByCno(cNo);
     }
 
     @GetMapping("/view/{fileName}")
@@ -38,5 +41,10 @@ public class ConcertController {
         return fileUtil.getFile(fileName);
     }
 
+    @GetMapping("/test")
+    public ScheduleDtoForBooking testPay(@RequestParam Long cno,
+                                         @RequestParam LocalDateTime startTime){
 
+        return  service.getConcertScheduleByCnoAndStartTime(cno,startTime);
+    }
 }

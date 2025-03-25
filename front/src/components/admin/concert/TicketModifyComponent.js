@@ -16,6 +16,7 @@ const TicketModifyComponent = () => {
     uploadFileName: "", // 이미지 파일명 추가
     schedulesDtoList: [],
   });
+  const [deleteId, setDeleteId] = useState([]);
   const { cno } = useParams();
   const navigate = useNavigate();
   useEffect(() => {
@@ -23,12 +24,14 @@ const TicketModifyComponent = () => {
       .then((data) => {
         setConcertData(data);
         // 스케줄 데이터에서 scheduleId 제거하고 나머지 정보만 사용
+        console.log(data);
         const schedulesWithoutId =
           data.schedulesDtoList?.map((schedule) => ({
             startTime: schedule.startTime,
             endTime: schedule.endTime,
             totalSeats: schedule.totalSeats,
             status: schedule.status,
+            scheduleId: schedule.scheduleId,
           })) || [];
 
         setUpdatedConcertData({
@@ -101,6 +104,7 @@ const TicketModifyComponent = () => {
       ...prev,
       schedulesDtoList: updatedSchedules,
     }));
+    console.log(updatedConcertData.schedulesDtoList);
   };
   // 새 스케줄 추가
   const handleAddSchedule = () => {
@@ -109,6 +113,7 @@ const TicketModifyComponent = () => {
       schedulesDtoList: [
         ...prev.schedulesDtoList,
         {
+          scheduleId: null,
           startTime: "",
           endTime: "",
           totalSeats: 0,
@@ -121,16 +126,58 @@ const TicketModifyComponent = () => {
   // 스케줄 삭제 기능 추가
   const handleDeleteSchedule = (index) => {
     const updatedSchedules = [...updatedConcertData.schedulesDtoList];
+    const scheduleIdToDelete =
+      updatedConcertData.schedulesDtoList[index].scheduleId;
     updatedSchedules.splice(index, 1); // 해당 인덱스의 스케줄 삭제
-
+    setDeleteId((prev) => [...prev, scheduleIdToDelete]);
     setUpdatedConcertData((prev) => ({
       ...prev,
       schedulesDtoList: updatedSchedules,
     }));
   };
 
+  // 폼 유효성 검사 함수
+  const validateForm = () => {
+    // 필수 입력 필드 검사
+    if (
+      !updatedConcertData.cname ||
+      !updatedConcertData.cprice ||
+      !updatedConcertData.cdesc ||
+      !updatedConcertData.cplace ||
+      !updatedConcertData.category
+    ) {
+      return false;
+    }
+
+    // 스케줄 존재 여부 검사
+    if (updatedConcertData.schedulesDtoList.length === 0) {
+      return false;
+    }
+
+    // 스케줄 데이터 유효성 검사
+    for (const schedule of updatedConcertData.schedulesDtoList) {
+      if (
+        !schedule.startTime ||
+        !schedule.endTime ||
+        !schedule.totalSeats ||
+        schedule.totalSeats <= 0 ||
+        !schedule.status
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   // 데이터 전송 함수 (API 호출)
   const handleSubmit = () => {
+    // 입력 데이터 유효성 검사
+    if (!validateForm()) {
+      alert("모든 필수 정보를 입력해주세요.");
+      return;
+    }
+
     const formData = new FormData();
 
     // JSON 데이터를 BLOB으로 감싸서 FormData에 추가
@@ -138,6 +185,7 @@ const TicketModifyComponent = () => {
       type: "application/json",
     });
     formData.append("concertDTO", concertDTO);
+    formData.append("deleteId", JSON.stringify(deleteId));
 
     // 파일이 있다면 함께 추가
     if (file) {
@@ -158,15 +206,23 @@ const TicketModifyComponent = () => {
       }
     }
 
-    try {
-      modifyConcert(formData).then((i) => {
-        alert(i);
+    modifyConcert(formData)
+      .then((response) => {
+        alert(response); // 또는 response가 데이터 자체인 경우 alert(response)
         navigate("/admin/concert/list");
+      })
+      .catch((error) => {
+        if (error.response) {
+          // 서버에서 반환된 에러 메시지 표시
+          console.error("에러:", error.response.data);
+          alert(error.response.data); // 또는 모달 등으로 사용자에게 표시
+          navigate("/admin/concert/list");
+        } else {
+          console.error("요청 중 오류 발생:", error);
+          alert("요청 처리 중 오류가 발생했습니다.");
+          navigate("/admin/concert/list");
+        }
       });
-    } catch (error) {
-      console.error("수정 실패:", error);
-      alert("수정 실패. 다시 시도해 주세요.");
-    }
   };
 
   if (concertData === null) {
@@ -177,10 +233,14 @@ const TicketModifyComponent = () => {
     <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold text-center mb-6">공연 수정</h1>
 
+      {/* 필수 입력 필드 안내 추가 */}
+      <div className="text-sm text-gray-500 mb-4">
+        * 모든 필드는 필수 입력 사항입니다.
+      </div>
       <form className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            공연명
+            공연명 *
           </label>
           <input
             type="text"
@@ -193,7 +253,7 @@ const TicketModifyComponent = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            가격
+            가격 *
           </label>
           <input
             type="text"
@@ -206,7 +266,7 @@ const TicketModifyComponent = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            설명
+            설명 *
           </label>
           <textarea
             name="cdesc"
@@ -218,7 +278,7 @@ const TicketModifyComponent = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            공연 장소
+            공연 장소 *
           </label>
           <input
             type="text"
@@ -288,78 +348,84 @@ const TicketModifyComponent = () => {
         {/* 스케줄 추가 */}
         <div>
           <h2 className="text-lg font-medium text-gray-700">스케줄</h2>
-          {updatedConcertData.schedulesDtoList.map((schedule, index) => (
-            <div
-              key={index} /* scheduleId 대신 index를 key로 사용 */
-              className="border p-4 rounded-lg mb-4"
-            >
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-md font-medium">스케줄 #{index + 1}</h3>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteSchedule(index)}
-                  className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-                >
-                  삭제
-                </button>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  시작 시간
-                </label>
-                <input
-                  type="datetime-local"
-                  name="startTime"
-                  value={schedule.startTime}
-                  onChange={(e) => handleScheduleChange(index, e)}
-                  className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  끝 시간
-                </label>
-                <input
-                  type="datetime-local"
-                  name="endTime"
-                  value={schedule.endTime}
-                  onChange={(e) => handleScheduleChange(index, e)}
-                  className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  좌석 수
-                </label>
-                <input
-                  type="number"
-                  name="totalSeats"
-                  value={schedule.totalSeats}
-                  onChange={(e) => handleScheduleChange(index, e)}
-                  className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              {/* 상태 선택 추가 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  상태
-                </label>
-                <select
-                  name="status"
-                  value={schedule.status}
-                  onChange={(e) => handleScheduleChange(index, e)}
-                  className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="AVAILABLE">AVAILABLE</option>
-                  <option value="SOLD_OUT">SOLD_OUT</option>
-                </select>
-              </div>
+          {updatedConcertData.schedulesDtoList.length === 0 ? (
+            <div className="text-red-500 text-sm mb-4">
+              최소 하나 이상의 스케줄이 필요합니다.
             </div>
-          ))}
+          ) : (
+            updatedConcertData.schedulesDtoList.map((schedule, index) => (
+              <div
+                key={index} /* scheduleId 대신 index를 key로 사용 */
+                className="border p-4 rounded-lg mb-4"
+              >
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-md font-medium">스케줄 #{index + 1}</h3>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSchedule(index)}
+                    className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                  >
+                    삭제
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    시작 시간
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="startTime"
+                    value={schedule.startTime}
+                    onChange={(e) => handleScheduleChange(index, e)}
+                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    끝 시간
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="endTime"
+                    value={schedule.endTime}
+                    onChange={(e) => handleScheduleChange(index, e)}
+                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    좌석 수
+                  </label>
+                  <input
+                    type="number"
+                    name="totalSeats"
+                    value={schedule.totalSeats}
+                    onChange={(e) => handleScheduleChange(index, e)}
+                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                {/* 상태 선택 추가 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    상태
+                  </label>
+                  <select
+                    name="status"
+                    value={schedule.status}
+                    onChange={(e) => handleScheduleChange(index, e)}
+                    className="mt-1 p-2 w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="SOLD_OUT">SOLD_OUT</option>
+                  </select>
+                </div>
+              </div>
+            ))
+          )}
           <button
             type="button"
             onClick={handleAddSchedule}
@@ -373,7 +439,12 @@ const TicketModifyComponent = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            disabled={!validateForm()}
+            className={`mt-4 px-6 py-2 rounded-lg ${
+              validateForm()
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "bg-gray-400 text-gray-200 cursor-not-allowed"
+            }`}
           >
             등록
           </button>

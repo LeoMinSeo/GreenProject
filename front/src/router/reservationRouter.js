@@ -1,3 +1,4 @@
+import { path } from "framer-motion/client";
 import { lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 
@@ -36,6 +37,8 @@ const ReservationList = lazy(() =>
   import("../pages/reservation/ReservationListPage")
 );
 
+const BookingPage = lazy(() => import("../pages/shopping/BookingPage"));
+
 const reservationRouter = () => {
   return [
     {
@@ -59,6 +62,14 @@ const reservationRouter = () => {
       element: (
         <Suspense fallback={Loading}>
           <Navigate to="list" replace />
+        </Suspense>
+      ),
+    },
+    {
+      path: "booking/:cno",
+      element: (
+        <Suspense fallback={Loading}>
+          <BookingPage />
         </Suspense>
       ),
     },

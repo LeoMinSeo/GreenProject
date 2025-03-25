@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ConcertScheduleRepository extends JpaRepository<ConcertSchedule,Long> {
@@ -17,4 +18,7 @@ public interface ConcertScheduleRepository extends JpaRepository<ConcertSchedule
 
     @Query(value = "select * from concert_schedule where c_no = :cNo" ,nativeQuery = true)
     List<ConcertSchedule> getScheduleByCno(@Param("cNo")Long cNo);
+
+    @Query(value = "select * from concert_schedule where c_no = :cNo and start_time = :startTime",nativeQuery = true)
+    ConcertSchedule getScheduleByCnoAndStartTime(@Param("cNo")Long cNo, @Param("startTime")LocalDateTime startTime);
 }

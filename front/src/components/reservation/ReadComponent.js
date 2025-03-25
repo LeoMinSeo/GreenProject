@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import MainMenubar from "../menu/MainMenubar";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getConcertByCno } from "../../api/concertApi";
 
 const ReadComponent = () => {
+  const loginUser = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
   const { cno } = useParams();
   const [performance, setPerformance] = useState({
     cno: null,
@@ -349,14 +351,21 @@ const ReadComponent = () => {
       alert("매진된 회차입니다. 다른 회차를 선택해주세요.");
       return;
     }
-
-    // 예매 로직 구현
-    alert("예매가 완료되었습니다.");
+    if (loginUser) {
+      navigate(`/reservation/booking/${cno}`, {
+        state: {
+          schedule: selectedScheduleData,
+        },
+      });
+    } else {
+      alert("로그인 후 이용해주세요.");
+      navigate("/member/login");
+    }
   };
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <MainMenubar />
+      <MainMenubar currentPage={`/reservation/read/${cno}`} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* 공연 정보 영역 */}

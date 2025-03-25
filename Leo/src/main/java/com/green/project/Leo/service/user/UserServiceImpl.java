@@ -1,25 +1,39 @@
 package com.green.project.Leo.service.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.green.project.Leo.dto.concert.ConcertCustomDataDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.dto.product.*;
 
 import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.concert.ConcertSchedule;
+import com.green.project.Leo.entity.concert.ConcertTicket;
 import com.green.project.Leo.entity.product.*;
 
 import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.concert.ConcertTicketRepository;
 import com.green.project.Leo.repository.product.*;
+import com.siot.IamportRestClient.IamportClient;
+import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.response.IamportResponse;
+import com.siot.IamportRestClient.response.Payment;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UserServiceImpl implements UserService{
+    @Autowired
+    private IamportClient iamportClient;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -34,6 +48,8 @@ public class UserServiceImpl implements UserService{
     private ProductOrderRepository orderRepository;
     @Autowired
     private OrderItemRepository itemRepository;
+    @Autowired
+    private ConcertTicketRepository ticketRepository;
     @Override
     public String addCart(RequestCartDTO cartDTO) {
         ProductCart result = cartRepository.selectDuplicate(cartDTO.getUserId(), cartDTO.getPNo());
@@ -75,8 +91,12 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public String addOrder(ProductOrderDTO orderDTO) {
-        System.out.println(orderDTO);
+    public String addOrder(String imp_uid,ProductOrderDTO orderDTO) throws IamportResponseException, IOException {
+
+        IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
+        Payment paymentInformation = payment.getResponse();
+        orderDTO.setPayment(paymentInformation.getPayMethod());
+        orderDTO.setCardName(paymentInformation.getCardName());
         User user = new User();
         user.uId(orderDTO.getUserdto().getUid());
         ProductOrder productOrder = new ProductOrder();
@@ -119,7 +139,33 @@ public class UserServiceImpl implements UserService{
         cartRepository.deleteById(cartNo);
     }
 
+    @Override
+    public void addConcertOrder(String uid) throws IamportResponseException, IOException {
+        IamportResponse<Payment> payment = iamportClient.paymentByImpUid(uid);
+        Payment paymentInformation = payment.getResponse();
+        NumberFormat formatter = NumberFormat.getNumberInstance(Locale.KOREA);
+        String customDataJson = paymentInformation.getCustomData();
+        ObjectMapper objectMapper = new ObjectMapper();
+        ConcertCustomDataDTO customData = objectMapper.readValue(customDataJson, ConcertCustomDataDTO.class);
+        User user =  new User();
+        user.uId(customData.getUid());
+        ConcertTicket concertTicket =  ConcertTicket.builder()
+                .buyerAddress(paymentInformation.getBuyerAddr())
+                .buyerName(paymentInformation.getBuyerName())
+                .buyerTel(paymentInformation.getBuyerTel())
+                .price(formatter.format(paymentInformation.getAmount())+"원")
+                .buyMethod(paymentInformation.getPayMethod())
+                .concertSchedule(ConcertSchedule.builder().scheduleId(customData.getScheduleId()).build())
+                .ticketQuanity(customData.getTicketQuantity())
+                .deliveryMethod(customData.getDeliveryMethod())
+                .paymentDate(LocalDate.now())
+                .user(user)
+                .build();
 
+         ticketRepository.save(concertTicket);
+
+
+    }
 
 
 }

@@ -101,6 +101,13 @@ const TicketAddComponent = () => {
     });
   };
 
+  // 날짜 포맷 함수 추가
+  const formatDate = (dateString) => {
+    if (!dateString) return null;
+    // 이미 초가 포함되어 있는지 확인
+    return dateString + ":00";
+  };
+
   // 폼 제출 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,20 +116,16 @@ const TicketAddComponent = () => {
     setSuccess("");
 
     try {
-      // ISO 형식으로 날짜 변환
+      // 수정된 부분: new Date()를 사용하지 않고 문자열 그대로 사용하되 초만 추가
       const formattedConcert = {
         ...concert,
         schedulesDtoList: concert.schedulesDtoList.map((schedule) => ({
           ...schedule,
-          startTime: schedule.startTime
-            ? new Date(schedule.startTime).toISOString().slice(0, 19) // 시간대 정보 제거
-            : null,
-          endTime: schedule.endTime
-            ? new Date(schedule.endTime).toISOString().slice(0, 19) // 시간대 정보 제거
-            : null,
+          startTime: formatDate(schedule.startTime),
+          endTime: formatDate(schedule.endTime),
         })),
       };
-
+      console.log(formattedConcert.schedulesDtoList);
       const formData = new FormData();
 
       // concertDTO를 JSON 문자열로 변환하여 FormData에 추가

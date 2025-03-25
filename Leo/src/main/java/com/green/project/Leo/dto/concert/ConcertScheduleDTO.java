@@ -2,10 +2,7 @@ package com.green.project.Leo.dto.concert;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.green.project.Leo.entity.concert.ConcertStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class ConcertScheduleDTO {
     private Long scheduleId;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

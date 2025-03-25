@@ -28,7 +28,6 @@ const MyPageComponent = ({ data, userId }) => {
     if (userId) {
       fetchUserData();
     }
-    console.log(loginUser);
   }, [userId]);
 
   const toggleModify = () => {
@@ -36,7 +35,6 @@ const MyPageComponent = ({ data, userId }) => {
   };
 
   //마이페이지 정보 수정
-
   const handleSubmit = async (e) => {
     e.preventDefault(); // 기본 동작 방지
     try {
@@ -51,36 +49,30 @@ const MyPageComponent = ({ data, userId }) => {
   //주문 내역 확인
   const [orders, setOrders] = useState([]);
 
-  // 주문 내역 조회 (id 사용)
+  // 주문 내역 조회 (id 사용) - 새로운 데이터 형식에 맞게 수정
   useEffect(() => {
     const fetchOrders = async () => {
       if (loginUser && loginUser.uid) {
-        const response = await axios.get(
-          `http://localhost:8089/api/member/orders/${loginUser.uid}` // id 사용
-        );
-        console.log(response.data);
-        // 날짜 형식 변환
-        const updatedOrders = response.data.map((order) => {
-          const formattedDate = new Date(order.orderDate);
-          const year = formattedDate.getFullYear();
-          const month = String(formattedDate.getMonth() + 1).padStart(2, "0");
-          const day = String(formattedDate.getDate()).padStart(2, "0");
-          const formattedOrderDate = `${year}-${month}-${day}`; // "2025-03-18" 형식으로 변환
-
-          const OrderDate = `${year}${month}${day}`; // "20250318" 형식으로 변환
-
-          const formattedOrderNum = `${OrderDate}${String(
-            order.orderNum
-          ).padStart(2, "0")}`; // "2025031801" 형태로 결합
-
-          return { ...order, formattedOrderDate, formattedOrderNum };
-        });
-        setOrders(updatedOrders); // 변환된 데이터 상태 업데이트
+        try {
+          const response = await axios.get(
+            `http://localhost:8089/api/member/orders/${loginUser.uid}`
+          );
+          console.log("주문 내역 응답:", response.data);
+          
+          // 데이터가 배열인지 확인하고, 배열이 아니거나 비어있으면 빈 배열로 설정
+          const ordersData = Array.isArray(response.data) ? response.data : [];
+          setOrders(ordersData);
+        } catch (error) {
+          console.error("주문 내역 조회 중 오류 발생:", error);
+          setOrders([]);
+        }
       }
     };
 
-    fetchOrders();
-  }, [loginUser?.id]);
+    if (loginUser) {
+      fetchOrders();
+    }
+  }, [loginUser?.uid]);
 
   //리뷰 확인
   const [review, setReview] = useState([]);
@@ -96,7 +88,7 @@ const MyPageComponent = ({ data, userId }) => {
       }
     };
     fetchReview();
-  }, [loginUser.uid]);
+  }, [loginUser?.uid]);
 
   const renderContentModify = () => (
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto mt-auto">
@@ -212,6 +204,36 @@ const MyPageComponent = ({ data, userId }) => {
     </div>
   );
 
+  // 주문 상태에 따른 표시 텍스트 및 스타일
+  const getStatusText = (status) => {
+    if (!status) return { text: "상태 미정", color: "text-gray-500" };
+    
+    switch (status) {
+      case "PAY_COMPLETED":
+        return { text: "결제완료", color: "text-green-500" };
+      case "PREPARING":
+        return { text: "상품준비중", color: "text-blue-500" };
+      case "SHIPPING":
+        return { text: "배송중", color: "text-purple-500" };
+      case "DELIVERED":
+        return { text: "배송완료", color: "text-blue-800" };
+      case "CANCELED":
+        return { text: "주문취소", color: "text-red-500" };
+      default:
+        return { text: status, color: "text-gray-500" };
+    }
+  };
+
+  // 날짜 형식 변환 함수 (ISO 문자열 → YYYY-MM-DD)
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const renderContent = () => {
     switch (data) {
       case "profile":
@@ -220,40 +242,36 @@ const MyPageComponent = ({ data, userId }) => {
         return (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">주문 내역</h2>
-            <table className="w-full table-auto border-collapse">
-              <thead>
-                <tr>
-                  <th className="border-b-2 py-2 px-4 text-left text-gray-700">
-                    주문번호
-                  </th>
-                  <th className="border-b-2 py-2 px-4 text-left text-gray-700">
-                    날짜
-                  </th>
-                  <th className="border-b-2 py-2 px-4 text-left text-gray-700">
-                    상품
-                  </th>
-                  <th className="border-b-2 py-2 px-4 text-left text-gray-700">
-                    상태
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.orderNum}>
-                    <td className="border-b py-2 px-4">
-                      {order.formattedOrderNum}
-                    </td>
-                    <td className="border-b py-2 px-4">
-                      {order.formattedOrderDate}
-                    </td>
-                    <td className="border-b py-2 px-4">
-                      {order.product.pname}
-                    </td>
-                    <td className="border-b py-2 px-4">{order.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {orders.length === 0 ? (
+              <p className="text-gray-600 text-center py-4">주문 내역이 없습니다.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <div className="min-w-full">
+                  <div className="grid grid-cols-5 bg-gray-100 font-semibold text-gray-700 p-3 rounded-t-lg">
+                    <div className="px-2">주문번호</div>
+                    <div className="px-2">주문일자</div>
+                    <div className="px-2">상품명</div>
+                    <div className="px-2">운송장번호</div>
+                    <div className="px-2 text-center">상태</div>
+                  </div>
+                  
+                  {orders.map((order) => {
+                    const statusInfo = getStatusText(order.status);
+                    return (
+                      <div key={order.orderNo} className="grid grid-cols-5 border-b py-3 hover:bg-gray-50">
+                        <div className="px-2 break-all">{order.orderNo}</div>
+                        <div className="px-2">{formatDate(order.orderDate)}</div>
+                        <div className="px-2">{order.productName}</div>
+                        <div className="px-2">{order.shippingNum}</div>
+                        <div className={`px-2 font-medium text-center ${statusInfo.color}`}>
+                          {statusInfo.text}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         );
       case "reviews":
