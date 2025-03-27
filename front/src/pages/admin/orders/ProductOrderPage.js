@@ -1,15 +1,13 @@
 import React from "react";
-import TicketAddComponent from "../../../components/admin/concert/TicketAddComponent";
+import ProductOrderComponent from "../../../components/admin/orders/ProductOrderComponent";
 import AdminMenubar from "../../../components/menu/AdminMenubar";
-
-
-const AdminAddPage = () => {
+const ProductOrderPage = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <AdminMenubar />
-      <TicketAddComponent />
+      <ProductOrderComponent />
     </div>
   );
 };
 
-export default AdminAddPage;
+export default ProductOrderPage;

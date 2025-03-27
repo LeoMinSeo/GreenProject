@@ -1,12 +1,12 @@
 package com.green.project.Leo.service.Admin;
 
-import com.green.project.Leo.dto.admin.AdminConcertDTO;
-import com.green.project.Leo.dto.admin.AdminProductDTO;
+import com.green.project.Leo.dto.admin.*;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.concert.ConcertScheduleDTO;
 
 import com.green.project.Leo.dto.product.ProductDTO;
 
+import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.concert.*;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
@@ -14,8 +14,10 @@ import com.green.project.Leo.repository.concert.ConcertRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
+import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductImageRepository;
 
+import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductRepository;
 import com.green.project.Leo.util.CustomConcertFileUtil;
 import com.green.project.Leo.util.CustomFileUtil;
@@ -47,6 +49,8 @@ public class AdminServiceIplm implements AdminService{
     private final ConcertImageRepository concertImageRepository;
     private final ConcertScheduleRepository scheduleRepository;
     private final ConcertTicketRepository ticketRepository;
+    private final ProductOrderRepository productOrderRepository;
+    private final OrderItemRepository orderItemRepository;
     @Override
     public void addProduct(ProductDTO dto) {
 
@@ -129,12 +133,18 @@ public class AdminServiceIplm implements AdminService{
     @Override
     @Transactional
     public void removeProduct(Long pno) {
-        List<String> imglist = imageRepository.findFileNamesByPNo(pno);
-        productRepository.deleteById(pno);
-        if(!imglist.isEmpty()){
-            fileUtil.deleteFiles(imglist);
-        }
+        try {
+            List<String> imglist = imageRepository.findFileNamesByPNo(pno);
+            productRepository.deleteById(pno);
 
+            // 데이터베이스 작업이 성공한 후에만 파일 삭제
+            if(!imglist.isEmpty()){
+                fileUtil.deleteFiles(imglist);
+            }
+        } catch (Exception e) {
+            // 예외 발생 시 트랜잭션 롤백 (자동으로 이루어짐)
+            throw new RuntimeException("제품 삭제 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
     }
     @Transactional
     @Override
@@ -317,6 +327,100 @@ public class AdminServiceIplm implements AdminService{
                     return scheduleDTO;
                 }).toList())
                 .build();
+    }
+
+    @Override
+    public List<ProductOrderListDTO> getProductOrderList() {
+        List<ProductOrder> productOrderList = productOrderRepository.findAll();
+        List<ProductOrderListDTO> ListOfOrderDTO = new ArrayList<>();
+        for(ProductOrder i: productOrderList){
+            ProductOrderListDTO orderListDTO = new ProductOrderListDTO();
+            orderListDTO.setOrderNum(i.getOrderNum());
+            orderListDTO.setOrderDate(i.getOrderDate());
+            orderListDTO.setStatus(i.getStatus());
+            orderListDTO.setUid(i.getUser().uId());
+            ListOfOrderDTO.add(orderListDTO);
+        }
+        return ListOfOrderDTO;
+    }
+
+    @Override
+    public ProductOrderDetailDTO getProductOrderDetail(Long orderNum) {
+        ProductOrder order = productOrderRepository.findById(orderNum).orElse(null);
+        List<OrderItem> orderItemList = orderItemRepository.getOrderItemByOrderNum(orderNum);
+        List<OrderItemDTO> itemDTOList =  new ArrayList<>();
+        ProductOrderDetailDTO orderDetailDTO = new ProductOrderDetailDTO();
+        for(OrderItem i : orderItemList){
+            OrderItemDTO itemDTO = new OrderItemDTO();
+            itemDTO.setPno(i.getProduct().pNo());
+            itemDTO.setPName(i.getProduct().pName());
+            itemDTO.setNumOfItem(i.getNumOfItem());
+            itemDTOList.add(itemDTO);
+        }
+        orderDetailDTO.setOrderNum(order.getOrderNum());
+        orderDetailDTO.setOrderDate(order.getOrderDate());
+        orderDetailDTO.setStatus(order.getStatus());
+        orderDetailDTO.setUserDTO(modelMapper.map(order.getUser(), UserDTO.class));
+        orderDetailDTO.setShippingAddress(order.getShippingAdress());
+        orderDetailDTO.setTrackingNumber(order.getTrackingNumber());
+        orderDetailDTO.setNote(order.getNote());
+        orderDetailDTO.setTotalPrice(order.getTotalPrice());
+        orderDetailDTO.setOrderItemDTOList(itemDTOList);
+
+        return orderDetailDTO;
+    }
+
+    @Override
+    public void modifyProductOrder(RequestOrderModifyDTO modifyDTO) {
+        ProductOrder order = productOrderRepository.findById(modifyDTO.getOrderNum()).orElse(null);
+        order.setStatus(modifyDTO.getStatus());
+        order.setTrackingNumber(modifyDTO.getTrackingNumber());
+        productOrderRepository.save(order);
+    }
+
+    @Override
+    public List<ConcertTicketListDTO> getConcertTicketList() {
+        List<ConcertTicket> ticketList = ticketRepository.findAll();
+        List<ConcertTicketListDTO> ticketListDTO =new ArrayList<>();
+        for(ConcertTicket i : ticketList){
+            ConcertTicketListDTO ticketDto = new ConcertTicketListDTO();
+            ticketDto.setId(i.getId());
+            ticketDto.setUid(i.getUser().uId());
+            ticketDto.setPayment_date(i.getPaymentDate());
+            ticketDto.setStatus(i.getStatus());
+            ticketDto.setCname(i.getConcertSchedule().getConcert().getCName());
+            ticketListDTO.add(ticketDto);
+        }
+        return ticketListDTO;
+    }
+
+    @Override
+    public ConcertTicketDetailDTO getConcertTicketDetail(Long id) {
+        ConcertTicket ticket = ticketRepository.findById(id).orElse(null);
+        return ConcertTicketDetailDTO.builder()
+                .id(ticket.getId())
+                .userDTO(modelMapper.map(ticket.getUser(), UserDTO.class))
+                .scheduleDTO(modelMapper.map(ticket.getConcertSchedule(),ConcertScheduleDTO.class))
+                .price(ticket.getPrice())
+                .buyerName(ticket.getBuyerName())
+                .buyerTel(ticket.getBuyerTel())
+                .buyMethod(ticket.getBuyMethod())
+                .deliveryMethod(ticket.getDeliveryMethod())
+                .paymentDate(ticket.getPaymentDate())
+                .shippingAddress(ticket.getShippingAddress())
+                .ticketQuantity(ticket.getTicketQuantity())
+                .trackingNumber(ticket.getTrackingNumber())
+                .status(ticket.getStatus())
+                .concertName(ticket.getConcertSchedule().getConcert().getCName())
+                .build();
+    }
+
+    @Override
+    public void modifyConcertTicket(RequestTicketModifyDTO modifyDTO) {
+        ConcertTicket ticket = ticketRepository.findById(modifyDTO.getId()).orElse(null);
+        ticket.setStatus(modifyDTO.getStatus());
+        ticket.setTrackingNumber(modifyDTO.getTrackingNumber());
+        ticketRepository.save(ticket);
     }
 
 

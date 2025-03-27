@@ -4,8 +4,7 @@ package com.green.project.Leo.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.green.project.Leo.dto.admin.AdminConcertDTO;
-import com.green.project.Leo.dto.admin.AdminProductDTO;
+import com.green.project.Leo.dto.admin.*;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
 import com.green.project.Leo.service.Admin.AdminService;
@@ -99,5 +98,40 @@ public class AdminController {
     public ConcertDTO getConcertByCno(@PathVariable(name = "cno") Long cno){
 
         return service.getConcertByCno(cno);
+    }
+
+    @GetMapping("/product/order/list")
+    public List<ProductOrderListDTO> getProductOrderList(){
+          return  service.getProductOrderList();
+    }
+
+    @GetMapping("/product/order/detail/{orderNum}")
+    public ProductOrderDetailDTO getProductOrderDetail(@PathVariable(name = "orderNum")Long orderNum){
+        return service.getProductOrderDetail(orderNum);
+    }
+
+    @PutMapping("/product/order/modify")
+    public String modifyProductOrder(@RequestBody RequestOrderModifyDTO modifyDTO){
+        System.out.println("모디파이 ");
+        service.modifyProductOrder(modifyDTO);
+        return "상태 업데이트를 완료하였습니다";
+    }
+
+    @GetMapping("/concert/ticket/list")
+    public List<ConcertTicketListDTO> getConcertTicketList(){
+        return service.getConcertTicketList();
+    }
+
+    @GetMapping("/concert/ticket/detail/{ticketId}")
+    public ConcertTicketDetailDTO getConcertTicketDetail(@PathVariable(name = "ticketId")Long id){
+
+        return service.getConcertTicketDetail(id);
+
+    }
+
+    @PutMapping("/concert/ticket/modify")
+    public String modifyConcertTicket(@RequestBody RequestTicketModifyDTO modifyDTO){
+            service.modifyConcertTicket(modifyDTO);
+        return "티켓 상태를 성공적으로 업데이트 하였습니다";
     }
 }

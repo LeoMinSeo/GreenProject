@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { getList } from "../../api/productsApi";
-
 import React, { useEffect, useRef, useState } from "react";
 import MainMenubar from "../menu/MainMenubar";
+import PageComponent from "../common/PageComponent"; // 페이지 컴포넌트 import
 
 const ListComponent = () => {
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -21,9 +21,12 @@ const ListComponent = () => {
     current: 1,
   });
 
-  // 제품 데이터를 가져오는 useEffect
+  // 현재 페이지 상태 추가
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // 제품 데이터를 가져오는 useEffect - 페이지 변경이나 카테고리 변경 시 재실행
   useEffect(() => {
-    getList({ page: 1, size: 10 })
+    getList({ page: currentPage, size: 10 })
       .then((data) => {
         console.log(data); // data 확인
         setProductData({
@@ -42,7 +45,14 @@ const ListComponent = () => {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-  }, []);
+  }, [currentPage, selectedCategory]); // 페이지 번호나 카테고리가 변경될 때 데이터를 다시 불러옴
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // 페이지 변경 시 상단으로 스크롤
+    window.scrollTo(0, 0);
+  };
 
   const navigate = useNavigate();
   const moveToRead = (pno) => {
@@ -78,8 +88,8 @@ const ListComponent = () => {
         </div>
       </div>
 
-      <div className="bg-white min-h-screen ">
-        {/* 카테고리 네비게이션 - 두 번째 코드 스타일로 수정 */}
+      <div className="bg-white min-h-screen">
+        {/* 카테고리 네비게이션 */}
         <div className="max-w-screen-xl mx-auto px-4 pt-8 pb-4">
           <div className="flex flex-wrap justify-center items-center space-x-2 md:space-x-4 border-b border-gray-200 pb-4">
             {categories.map((category) => (
@@ -90,7 +100,10 @@ const ListComponent = () => {
                     ? "text-purple-600 border-b-2 border-purple-600"
                     : "text-gray-600 hover:text-purple-500"
                 }`}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setCurrentPage(1); // 카테고리 변경 시 첫 페이지로 초기화
+                }}
               >
                 {category}
               </button>
@@ -116,12 +129,13 @@ const ListComponent = () => {
               .map((product) => (
                 <div
                   key={product.pno}
-                  className="bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg"
+                  className="bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg cursor-pointer hover:shadow-xl transition-shadow duration-300"
                   onClick={() => moveToRead(product.pno)}
                 >
                   <div className="w-full h-52">
                     <img
                       src={
+                        product.uploadFileNames &&
                         product.uploadFileNames.length > 0
                           ? `http://localhost:8089/product/view/s_${product.uploadFileNames[0]}`
                           : "/images/defalt.jpg"
@@ -130,11 +144,13 @@ const ListComponent = () => {
                       className="w-full h-full object-contain rounded-lg"
                     />
                   </div>
-                  <hr></hr>
-                  <h2 className="text-xl font-semibold mt-4">
+                  <hr className="my-2" />
+                  <h2 className="text-xl font-semibold mt-2">
                     {product.pname}
                   </h2>
-                  <p className="text-gray-500">{product.price}</p>
+                  <p className="text-gray-500">
+                    {product.price.toLocaleString()}원
+                  </p>
                   <p className="text-gray-400">재고: {product.pstock}개</p>
                 </div>
               ))
@@ -146,6 +162,15 @@ const ListComponent = () => {
               </p>
             </div>
           )}
+        </div>
+
+        {/* 페이지네이션 컴포넌트 */}
+        <div className="flex justify-center my-8">
+          <PageComponent
+            currentPage={productData.current}
+            totalPages={productData.totalPage}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
     </div>

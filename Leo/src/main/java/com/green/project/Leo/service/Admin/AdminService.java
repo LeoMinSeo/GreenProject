@@ -1,7 +1,6 @@
 package com.green.project.Leo.service.Admin;
 
-import com.green.project.Leo.dto.admin.AdminConcertDTO;
-import com.green.project.Leo.dto.admin.AdminProductDTO;
+import com.green.project.Leo.dto.admin.*;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
 
@@ -18,4 +17,10 @@ public interface AdminService {
     public ProductDTO getProductByPno(Long pno);
     public List<AdminConcertDTO> getConcertList();
     public ConcertDTO getConcertByCno(Long cno);
+    public List<ProductOrderListDTO> getProductOrderList();
+    public ProductOrderDetailDTO getProductOrderDetail(Long orderNum);
+    public void modifyProductOrder(RequestOrderModifyDTO modifyDTO);
+    public List<ConcertTicketListDTO> getConcertTicketList();
+    public ConcertTicketDetailDTO getConcertTicketDetail(Long id);
+    public void modifyConcertTicket(RequestTicketModifyDTO modifyDTO);
 }

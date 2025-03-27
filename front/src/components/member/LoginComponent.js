@@ -257,7 +257,7 @@ const LoginComponent = () => {
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("user", JSON.stringify(data));
       setIsAuthenticated(true);
-      navigate("/", { state: { isAuthenticated: true } });
+      navigate(-1, { state: { isAuthenticated: true } });
     } else {
       setErrorMessage("아이디 또는 비밀번호가 잘못되었습니다.");
     }

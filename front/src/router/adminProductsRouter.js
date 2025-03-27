@@ -31,6 +31,12 @@ const MusicModifyPage = lazy(() =>
 const MusicListPage = lazy(() =>
   import("../pages/admin/products/AdminProductsMusicListPage")
 );
+const ProductOrderPage = lazy(() =>
+  import("../pages/admin/orders/ProductOrderPage")
+);
+const ProductOrderDetailPage = lazy(() =>
+  import("../pages/admin/orders/ProductOrderDetailPage")
+);
 
 const adminProductsRouter = () => {
   return [
@@ -55,6 +61,22 @@ const adminProductsRouter = () => {
       element: (
         <Suspense fallback={Loading}>
           <MusicListPage />
+        </Suspense>
+      ),
+    },
+    {
+      path: "order/list",
+      element: (
+        <Suspense fallback={Loading}>
+          <ProductOrderPage />
+        </Suspense>
+      ),
+    },
+    {
+      path: "order/detail/:orderNum",
+      element: (
+        <Suspense fallback={Loading}>
+          <ProductOrderDetailPage />
         </Suspense>
       ),
     },

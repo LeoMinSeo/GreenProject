@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import MainMenubar from "./menu/MainMenubar";
 import { useNavigate } from "react-router-dom";
 
@@ -31,6 +31,17 @@ const MainComponent = () => {
 
   // 이미지 프리로딩을 위한 상태
   const [imagesLoaded, setImagesLoaded] = useState({});
+
+  // 사운드 웨이브 애니메이션을 위한 랜덤값 (리렌더링 방지)
+  const waveHeights = useMemo(
+    () => [...Array(14)].map(() => 8 + Math.random() * 8),
+    []
+  );
+
+  const waveSpeeds = useMemo(
+    () => [...Array(14)].map(() => 0.5 + Math.random() * 0.5),
+    []
+  );
 
   // 이미지 프리로딩
   useEffect(() => {
@@ -216,7 +227,7 @@ const MainComponent = () => {
                     AudiMew
                   </h1>
 
-                  {/* 오디오 웨이브 효과 */}
+                  {/* 오디오 웨이브 효과 - 수정된 부분 */}
                   <div className="flex justify-center items-end h-2 z-0 mt-4">
                     {[...Array(14)].map((_, i) => (
                       <div
@@ -224,10 +235,12 @@ const MainComponent = () => {
                         className="mx-1 rounded-t-full bg-orange-400"
                         style={{
                           width: "4px",
-                          height: `${8 + Math.random() * 8}px`,
-                          animation: `soundWave ${
-                            0.5 + Math.random() * 0.5
-                          }s ease-in-out infinite alternate`,
+                          height: `${waveHeights[i]}px`,
+                          animationName: "soundWave",
+                          animationDuration: `${waveSpeeds[i]}s`,
+                          animationTimingFunction: "ease-in-out",
+                          animationIterationCount: "infinite",
+                          animationDirection: "alternate",
                           animationDelay: `${i * 0.05}s`,
                           opacity: 0.8,
                         }}
@@ -242,7 +255,9 @@ const MainComponent = () => {
                     color: "#f8f8f8",
                     textShadow: "1px 1px 6px rgba(0, 0, 0, 0.7)",
                     lineHeight: "1.8",
-                    animation: "fadeInUp 1.2s ease-out",
+                    animationName: "fadeInUp",
+                    animationDuration: "1.2s",
+                    animationTimingFunction: "ease-out",
                   }}
                 >
                   <span style={{ color: "#FFB74D", fontWeight: 600 }}>
@@ -264,7 +279,9 @@ const MainComponent = () => {
                   style={{
                     color: "#EEEEEE",
                     textShadow: "1px 1px 6px rgba(0, 0, 0, 0.7)",
-                    animation: "fadeInUp 1.5s ease-out",
+                    animationName: "fadeInUp",
+                    animationDuration: "1.5s",
+                    animationTimingFunction: "ease-out",
                   }}
                 >
                   듣고, 경험하고, 소유하는 새로운 방식
@@ -273,7 +290,10 @@ const MainComponent = () => {
                     style={{
                       color: "#FF9E40",
                       textShadow: "0 0 10px rgba(255, 158, 64, 0.6)",
-                      animation: "glow 1.5s infinite alternate",
+                      animationName: "glow",
+                      animationDuration: "1.5s",
+                      animationIterationCount: "infinite",
+                      animationDirection: "alternate",
                     }}
                   >
                     AudiMew
@@ -304,8 +324,8 @@ const MainComponent = () => {
           </div>
         ))}
       </div>
-      {/* 메인 이름 스타일 추가 */}
-      <style jsx>{`
+      {/* 메인 이름 스타일 추가 - 수정된 부분 */}
+      <style>{`
         @keyframes soundWave {
           0% {
             height: 4px;
@@ -315,8 +335,8 @@ const MainComponent = () => {
           }
         }
       `}</style>
-      {/* 애니메이션 스타일 */}
-      <style jsx>{`
+      {/* 애니메이션 스타일 - 수정된 부분 */}
+      <style>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;

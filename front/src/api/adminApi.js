@@ -49,3 +49,33 @@ export const deleteConcert = async (cno) => {
   const res = await axios.delete(`${host}/remove/concert/${cno}`);
   return res.data;
 };
+
+export const getProductOrderList = async () => {
+  const res = await axios.get(`${host}/product/order/list`);
+  return res.data;
+};
+
+export const getProductOrderDetail = async (ono) => {
+  const res = await axios.get(`${host}/product/order/detail/${ono}`);
+  return res.data;
+};
+
+export const modifyProductOrder = async (orderData) => {
+  const res = await axios.put(`${host}/product/order/modify`, orderData);
+  return res.data;
+};
+
+export const getConcertTicketList = async () => {
+  const res = await axios.get(`${host}/concert/ticket/list`);
+  return res.data;
+};
+
+export const getConcertDetail = async (ticketNo) => {
+  const res = await axios.get(`${host}/concert/ticket/detail/${ticketNo}`);
+  return res.data;
+};
+
+export const modifyConcertTicket = async (ticketData) => {
+  const res = await axios.put(`${host}/concert/ticket/modify`, ticketData);
+  return res.data;
+};

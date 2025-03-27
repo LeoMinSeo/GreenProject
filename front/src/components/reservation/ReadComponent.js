@@ -411,6 +411,12 @@ const ReadComponent = () => {
                   <table className="w-full">
                     <tbody>
                       <tr className="border-b border-gray-200">
+                        <td className="py-3 px-4 text-gray-500 w-32">제목</td>
+                        <td className="py-3 px-4 font-medium">
+                          {performance.cname}
+                        </td>
+                      </tr>
+                      <tr className="border-b border-gray-200">
                         <td className="py-3 px-4 text-gray-500 w-32">장소</td>
                         <td className="py-3 px-4 font-medium">
                           {performance.cplace}

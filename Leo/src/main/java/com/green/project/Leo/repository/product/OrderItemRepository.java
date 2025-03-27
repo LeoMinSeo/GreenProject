@@ -10,4 +10,6 @@ import java.util.List;
 public interface OrderItemRepository extends JpaRepository<OrderItem,Long> {
     @Query(value = "select * from order_item where product_order_num = :orderNum ",nativeQuery = true)
     List<OrderItem> getOrderItemByOrderNum(@Param("orderNum")Long orderNum );
+
+
 }

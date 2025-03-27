@@ -38,14 +38,14 @@ public class ConcertTicket {
             )
     )
     private User user;
-
-    private int ticketQuanity;
+    private OrderStatusForConcert status;
+    private int ticketQuantity;
     private String buyMethod;
     private String buyerName;
     private String buyerTel;
-    private String buyerAddress;
     private String price;
     private String deliveryMethod;
     private LocalDate paymentDate;
+    private String trackingNumber;
     private String shippingAddress;
 }

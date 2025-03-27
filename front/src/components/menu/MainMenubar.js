@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const MainMenubar = ({ currentIndex, currentPage }) => {
   const loginUser = JSON.parse(localStorage.getItem("user"));
-  console.log(currentIndex);
+
   const [user, setUser] = useState(loginUser);
 
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ const MainMenubar = ({ currentIndex, currentPage }) => {
     if (loginUser) {
       navigate("/shopping/basket");
     } else {
-      navigate("/shopping/nonmember/basket");
+      navigate("/member/login");
     }
   };
 

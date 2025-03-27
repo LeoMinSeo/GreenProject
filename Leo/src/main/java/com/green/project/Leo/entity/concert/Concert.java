@@ -24,6 +24,7 @@ public class Concert {
     @Column(nullable = false)
     private String cPrice;
 
+    @Column(length = 500)
     private String cdesc;
 
     @Column(nullable = false)

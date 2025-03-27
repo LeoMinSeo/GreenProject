@@ -8,6 +8,7 @@ import com.green.project.Leo.dto.product.*;
 import com.green.project.Leo.entity.User;
 import com.green.project.Leo.entity.concert.ConcertSchedule;
 import com.green.project.Leo.entity.concert.ConcertTicket;
+import com.green.project.Leo.entity.concert.OrderStatusForConcert;
 import com.green.project.Leo.entity.product.*;
 
 import com.green.project.Leo.repository.UserRepository;
@@ -150,15 +151,16 @@ public class UserServiceImpl implements UserService{
         User user =  new User();
         user.uId(customData.getUid());
         ConcertTicket concertTicket =  ConcertTicket.builder()
-                .buyerAddress(paymentInformation.getBuyerAddr())
+                .shippingAddress(paymentInformation.getBuyerAddr())
                 .buyerName(paymentInformation.getBuyerName())
                 .buyerTel(paymentInformation.getBuyerTel())
                 .price(formatter.format(paymentInformation.getAmount())+"원")
                 .buyMethod(paymentInformation.getPayMethod())
                 .concertSchedule(ConcertSchedule.builder().scheduleId(customData.getScheduleId()).build())
-                .ticketQuanity(customData.getTicketQuantity())
+                .ticketQuantity(customData.getTicketQuantity())
                 .deliveryMethod(customData.getDeliveryMethod())
                 .paymentDate(LocalDate.now())
+                .status(OrderStatusForConcert.RESERVATION)
                 .user(user)
                 .build();
 

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MainMenubar from "../menu/MainMenubar";
 import { getList } from "../../api/concertApi";
 import { useNavigate } from "react-router-dom";
+import PageComponent from "../common/PageComponent"; // 페이지 컴포넌트 import
 
 // 카테고리 목록 (실제 데이터의 category 값에 맞춤)
 const categories = [
@@ -15,12 +16,9 @@ const categories = [
 const ListComponent = () => {
   const videoRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
-
-  useEffect(() => {
-    const video = videoRef.current;
-    video.play();
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태 추가
   const navigate = useNavigate();
+
   const [concertData, setConcertData] = useState({
     dtoList: [],
     pageRequestDTO: {},
@@ -35,13 +33,42 @@ const ListComponent = () => {
   });
 
   useEffect(() => {
-    getList().then((data) => {
-      setConcertData(data);
-      console.log(data.dtoList);
-    });
+    const video = videoRef.current;
+    video.play();
   }, []);
 
+  // 페이지나 카테고리 변경 시 데이터 다시 불러오기
+  useEffect(() => {
+    // PageRequestDTO 객체 생성
+    const pageRequestDTO = {
+      page: currentPage,
+      size: 10,
+    };
+
+    // 카테고리가 "all"이 아닌 경우 카테고리 필터링을 서버에 요청할 수 있음
+    if (selectedCategory !== "all") {
+      pageRequestDTO.category = selectedCategory;
+    }
+
+    getList(pageRequestDTO)
+      .then((data) => {
+        setConcertData(data);
+        console.log(data.dtoList);
+      })
+      .catch((error) => {
+        console.error("공연 목록 불러오기 실패:", error);
+      });
+  }, [currentPage, selectedCategory]);
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // 페이지 변경 시 상단으로 스크롤
+    window.scrollTo(0, 0);
+  };
+
   // 선택된 카테고리에 따라 콘서트 필터링
+  // 서버에서 필터링된 결과를 받아오는 경우 이 부분은 필요 없을 수 있음
   const filteredConcerts =
     selectedCategory === "all"
       ? concertData.dtoList
@@ -84,7 +111,10 @@ const ListComponent = () => {
                   ? "text-purple-600 border-b-2 border-purple-600"
                   : "text-gray-600 hover:text-purple-500"
               }`}
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => {
+                setSelectedCategory(category.id);
+                setCurrentPage(1); // 카테고리 변경 시 페이지 초기화
+              }}
             >
               {category.name}
             </button>
@@ -109,12 +139,11 @@ const ListComponent = () => {
                     src={
                       concert.uploadFileName === null
                         ? "/images/defalt.jpg"
-                        : `http://localhost:8089/concert/view/s_${concert.uploadFileName}`
+                        : `http://localhost:8089/concert/view/${concert.uploadFileName}`
                     }
                     alt={concert.cname}
                     className="w-full h-full object-fill group-hover:scale-105 transition-all duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black opacity-60"></div>
                 </div>
                 <div className="p-4 flex flex-col flex-grow">
                   <h3
@@ -154,6 +183,15 @@ const ListComponent = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* 페이지네이션 컴포넌트 */}
+      <div className="flex justify-center my-8">
+        <PageComponent
+          currentPage={concertData.current}
+          totalPages={concertData.totalPage}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );

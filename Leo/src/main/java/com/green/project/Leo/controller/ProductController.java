@@ -28,7 +28,7 @@ public class ProductController {
 
     @GetMapping("/list")
     public PageResponseDTO<ProductDTO> getList(PageRequestDTO dto){
-
+        System.out.println(dto.getPage());
         return service.getProductList(dto);
     }
 

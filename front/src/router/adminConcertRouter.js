@@ -1,5 +1,4 @@
 import React, { lazy, Suspense } from "react";
-import ConcertForm from "../pages/admin/concert/ConcertForm";
 
 const Loading = (
   <div className="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
@@ -22,7 +21,9 @@ const Loading = (
     <p>Loading...</p>
   </div>
 );
-
+const TicketDetailPage = lazy(() =>
+  import("../pages/admin/orders/ConcertOrderDetailPage")
+);
 const TicketAddPage = lazy(() => import("../pages/admin/concert/AdminAddPage"));
 const TicketModifyPage = lazy(() =>
   import("../pages/admin/concert/AdminModifyPage")
@@ -30,7 +31,9 @@ const TicketModifyPage = lazy(() =>
 const TicketListPage = lazy(() =>
   import("../pages/admin/concert/AdminListPage")
 );
-
+const TicketOrderPage = lazy(() =>
+  import("../pages/admin/orders/ConcertOrderPage")
+);
 const adminConcertRouter = () => {
   return [
     {
@@ -58,10 +61,18 @@ const adminConcertRouter = () => {
       ),
     },
     {
-      path: "r",
+      path: "order/list",
       element: (
         <Suspense fallback={Loading}>
-          <ConcertForm />
+          <TicketOrderPage />
+        </Suspense>
+      ),
+    },
+    {
+      path: "order/detail/:ticketNum",
+      element: (
+        <Suspense fallback={Loading}>
+          <TicketDetailPage />
         </Suspense>
       ),
     },

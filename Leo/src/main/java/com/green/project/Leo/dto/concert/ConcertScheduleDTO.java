@@ -19,4 +19,5 @@ public class ConcertScheduleDTO {
     private LocalDateTime endTime;
     private int totalSeats;
     private ConcertStatus status;
+
 }
