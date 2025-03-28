@@ -5,6 +5,7 @@ import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AdminService {
     public void addProduct(ProductDTO dto);
@@ -23,4 +24,5 @@ public interface AdminService {
     public List<ConcertTicketListDTO> getConcertTicketList();
     public ConcertTicketDetailDTO getConcertTicketDetail(Long id);
     public void modifyConcertTicket(RequestTicketModifyDTO modifyDTO);
+    public List<Map<Integer, Long[]>>getStatisticsData(int yearData);
 }

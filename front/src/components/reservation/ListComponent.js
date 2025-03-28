@@ -108,8 +108,8 @@ const ListComponent = () => {
               key={category.id}
               className={`px-4 py-2 text-sm md:text-base font-medium rounded-md transition-all duration-200 ${
                 selectedCategory === category.id
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-gray-600 hover:text-purple-500"
+                  ? "text-orange-400 border-b-2 border-orange-400"
+                  : "text-gray-600 hover:text-orange-600"
               }`}
               onClick={() => {
                 setSelectedCategory(category.id);
@@ -167,7 +167,7 @@ const ListComponent = () => {
                       좌석가격: {concert.cprice}
                     </p>
                     {concert.category === "뮤지컬" && (
-                      <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-sm">
+                      <span className="inline-block bg-orange-100 text-orange-400 text-xs px-2 py-1 rounded-sm">
                         인기공연
                       </span>
                     )}

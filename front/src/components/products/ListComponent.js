@@ -97,8 +97,8 @@ const ListComponent = () => {
                 key={category}
                 className={`px-4 py-2 text-sm md:text-base font-medium rounded-md transition-all duration-200 ${
                   selectedCategory === category
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-gray-600 hover:text-purple-500"
+                    ? "text-orange-500 border-b-2 border-orange-500"
+                    : "text-gray-600 hover:text-orange-500"
                 }`}
                 onClick={() => {
                   setSelectedCategory(category);

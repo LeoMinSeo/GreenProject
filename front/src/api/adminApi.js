@@ -79,3 +79,8 @@ export const modifyConcertTicket = async (ticketData) => {
   const res = await axios.put(`${host}/concert/ticket/modify`, ticketData);
   return res.data;
 };
+
+export const getSalesData = async (year) => {
+  const res = await axios.get(`${host}/statistics/${year}`);
+  return res.data;
+};

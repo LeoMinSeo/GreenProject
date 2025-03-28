@@ -30,11 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -421,6 +418,44 @@ public class AdminServiceIplm implements AdminService{
         ticket.setStatus(modifyDTO.getStatus());
         ticket.setTrackingNumber(modifyDTO.getTrackingNumber());
         ticketRepository.save(ticket);
+    }
+
+    @Override
+    public List<Map<Integer, Long[]>> getStatisticsData(int yearData) {
+        // 티켓 월별 매출과 개수를 저장할 맵 초기화
+        Map<Integer, Long[]> ticketMonthlyRevenue = new HashMap<>();
+        for (int i = 1; i <= 12; i++) {
+            ticketMonthlyRevenue.put(i, new Long[]{0L, 0L}); // 기본값으로 초기화 [금액, 개수]
+        }
+
+        // 주문 월별 매출과 개수를 저장할 맵 초기화
+        Map<Integer, Long[]> orderMonthlyRevenue = new HashMap<>();
+        for (int i = 1; i <= 12; i++) {
+            orderMonthlyRevenue.put(i, new Long[]{0L, 0L}); // 기본값으로 초기화 [금액, 개수]
+        }
+
+        // 티켓 데이터 처리 - 쿼리에서 이미 월별 SUM과 COUNT를 가져옴
+        ticketRepository.findTicketByYear(yearData).forEach(i -> {
+            int month = ((Number) i[0]).intValue();
+            long amount = ((Number) i[1]).longValue();
+            long count = ((Number) i[2]).longValue(); // 쿼리에서 가져온 COUNT 값
+
+            ticketMonthlyRevenue.put(month, new Long[]{amount, count});
+        });
+
+        // 주문 데이터 처리 - 쿼리에서 이미 월별 SUM과 COUNT를 가져옴
+        productOrderRepository.findOrdersByYear(yearData).forEach(i -> {
+            int month = ((Number) i[0]).intValue();
+            long amount = ((Number) i[1]).longValue();
+            long count = ((Number) i[2]).longValue(); // 쿼리에서 가져온 COUNT 값
+
+            orderMonthlyRevenue.put(month, new Long[]{amount, count});
+        });
+
+        List<Map<Integer, Long[]>> responseData = new ArrayList<>();
+        responseData.add(ticketMonthlyRevenue);
+        responseData.add(orderMonthlyRevenue);
+        return responseData;
     }
 
 

@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -133,5 +134,9 @@ public class AdminController {
     public String modifyConcertTicket(@RequestBody RequestTicketModifyDTO modifyDTO){
             service.modifyConcertTicket(modifyDTO);
         return "티켓 상태를 성공적으로 업데이트 하였습니다";
+    }
+    @GetMapping("/statistics/{year}")
+    public  List<Map<Integer, Long[]>> getStatistics(@PathVariable(name = "year") int yearData){
+        return service.getStatisticsData(yearData);
     }
 }

@@ -13,4 +13,7 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder,Long>
 
     @Query(value = "select * from product_order where u_id = :uid ",nativeQuery = true)
     List<ProductOrder> getOrderList(@Param("uid") Long uid);
+
+    @Query(value = "SELECT MONTH(order_date) as month, SUM(CAST(REPLACE(REPLACE(total_price, ',', ''), '원', '') AS DECIMAL(15,0))) as total ,count(*)  FROM product_order WHERE YEAR(order_date) = :yearData GROUP BY MONTH(order_date) ORDER BY month;",nativeQuery = true)
+    List<Object[]> findOrdersByYear(@Param("yearData") int yearData);
 }

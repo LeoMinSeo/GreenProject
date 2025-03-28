@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import MainMenubar from "../menu/MainMenubar";
 import { useNavigate, useParams } from "react-router-dom";
 import { getConcertByCno } from "../../api/concertApi";
+import KakaoMapComponent from "../common/KakaoMapComponent";
 
 const ReadComponent = () => {
+  useEffect(() => {
+    // 페이지가 로드되면 항상 최상단으로 스크롤
+    window.scrollTo(0, 0);
+  }, []);
+  const mapSectionRef = useRef(null);
   const loginUser = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const { cno } = useParams();
@@ -32,7 +38,14 @@ const ReadComponent = () => {
     startDate: null,
     endDate: null,
   });
-
+  const scrollToMap = () => {
+    if (mapSectionRef.current) {
+      mapSectionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
   useEffect(() => {
     getConcertByCno(cno).then((i) => {
       setPerformance(i);
@@ -191,7 +204,7 @@ const ReadComponent = () => {
                         selectedDate.getDate() === dayObj?.day &&
                         selectedDate.getMonth() === month &&
                         selectedDate.getFullYear() === year
-                          ? "bg-purple-600 text-white rounded-full"
+                          ? "bg-orange-400 text-white rounded-full"
                           : ""
                       }
                       ${
@@ -285,7 +298,7 @@ const ReadComponent = () => {
                   isSoldOut
                     ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
                     : selectedSchedule === schedule.scheduleId
-                    ? "bg-purple-600 text-white border-purple-600"
+                    ? "bg-orange-400 text-white border-orange-400"
                     : "border-gray-300 hover:bg-gray-50 text-gray-800"
                 }
               `}
@@ -390,19 +403,6 @@ const ReadComponent = () => {
                     />
                   </div>
                 )}
-                <div className="flex justify-between items-center mt-4">
-                  <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-red-500">
-                    <span>❤️</span> 찜하기
-                  </button>
-                  <div className="flex gap-2">
-                    <button className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-sm text-blue-500 hover:bg-gray-200">
-                      F
-                    </button>
-                    <button className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-sm text-blue-400 hover:bg-gray-200">
-                      T
-                    </button>
-                  </div>
-                </div>
               </div>
 
               {/* 공연 상세 정보 */}
@@ -419,7 +419,20 @@ const ReadComponent = () => {
                       <tr className="border-b border-gray-200">
                         <td className="py-3 px-4 text-gray-500 w-32">장소</td>
                         <td className="py-3 px-4 font-medium">
-                          {performance.cplace}
+                          <button
+                            onClick={scrollToMap}
+                            className="flex items-center gap-2 text-orange-400 hover:text-orange-600 hover:underline cursor-pointer focus:outline-none"
+                            aria-label="공연장 위치 보기"
+                          >
+                            <img
+                              src="/images/icon8.png"
+                              alt=""
+                              className="inline-block"
+                            />
+                            <span className="inline-block">
+                              {performance.cplace}
+                            </span>
+                          </button>
                         </td>
                       </tr>
                       {performance.cprice && (
@@ -475,7 +488,7 @@ const ReadComponent = () => {
                     ${
                       !selectedSchedule
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-purple-600 hover:bg-purple-700"
+                        : "bg-orange-400 hover:bg-orange-700"
                     }
                   `}
                   onClick={handleBooking}
@@ -492,7 +505,7 @@ const ReadComponent = () => {
         <div className="mt-8 bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="border-b border-gray-200">
             <div className="px-6">
-              <button className="py-4 px-2 border-b-2 border-purple-600 font-medium text-purple-600">
+              <button className="py-4 px-2 border-b-2 border-orange-400 font-medium text-orange-400">
                 공연정보
               </button>
             </div>
@@ -500,6 +513,22 @@ const ReadComponent = () => {
 
           <div className="p-6 prose max-w-none">
             {formatDescription(performance.cdesc)}
+          </div>
+        </div>
+        <div
+          ref={mapSectionRef}
+          id="map-section"
+          className="mt-8 bg-white rounded-lg shadow-sm overflow-hidden"
+        >
+          <div className="border-b border-gray-200">
+            <div className="px-6">
+              <button className="py-4 px-2 border-b-2 border-orange-400 font-medium text-orange-400">
+                공연장 위치
+              </button>
+            </div>
+          </div>
+          <div className="p-6" id="kakaomap">
+            <KakaoMapComponent place={performance.cplace} />
           </div>
         </div>
       </div>

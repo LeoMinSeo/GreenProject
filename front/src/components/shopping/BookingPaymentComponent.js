@@ -235,7 +235,7 @@ const BookingPaymentComponent = () => {
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <MainMenubar />
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-400 mx-auto"></div>
           <p className="mt-6 text-xl text-gray-700 font-medium">
             예매 정보를 불러오는 중입니다...
           </p>
@@ -270,7 +270,7 @@ const BookingPaymentComponent = () => {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-md"
+            className="bg-orange-400 hover:bg-orange-500 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-md"
           >
             다시 시도하기
           </button>
@@ -289,7 +289,7 @@ const BookingPaymentComponent = () => {
           {/* 왼쪽 사이드바 - 세로 프로그레스 바 */}
           <div className="w-1/5 relative">
             <div className="sticky top-[15vh] transform translate-y-[10vh]">
-              <h1 className="text-2xl font-bold text-purple-600 mb-8 text-center">
+              <h1 className="text-2xl font-bold text-orange-400 mb-8 text-center">
                 예매 및 결제
               </h1>
 
@@ -298,7 +298,7 @@ const BookingPaymentComponent = () => {
                 <div className="w-full flex items-center mb-2">
                   <div
                     className={`w-10 h-10 rounded-full ${
-                      currentStep >= 1 ? "bg-purple-600" : "bg-gray-300"
+                      currentStep >= 1 ? "bg-orange-400" : "bg-gray-300"
                     } flex items-center justify-center text-white font-bold`}
                   >
                     1
@@ -306,7 +306,7 @@ const BookingPaymentComponent = () => {
                   <div className="ml-3">
                     <span
                       className={`font-medium ${
-                        currentStep >= 1 ? "text-purple-600" : "text-gray-400"
+                        currentStep >= 1 ? "text-orange-400" : "text-gray-400"
                       }`}
                     >
                       티켓 선택
@@ -317,7 +317,7 @@ const BookingPaymentComponent = () => {
                 {/* 연결선 */}
                 <div
                   className={`w-1 h-12 ${
-                    currentStep >= 2 ? "bg-purple-600" : "bg-gray-300"
+                    currentStep >= 2 ? "bg-orange-400" : "bg-gray-300"
                   }`}
                 ></div>
 
@@ -325,7 +325,7 @@ const BookingPaymentComponent = () => {
                 <div className="w-full flex items-center mb-2">
                   <div
                     className={`w-10 h-10 rounded-full ${
-                      currentStep >= 2 ? "bg-purple-600" : "bg-gray-300"
+                      currentStep >= 2 ? "bg-orange-400" : "bg-gray-300"
                     } flex items-center justify-center text-white font-bold`}
                   >
                     2
@@ -333,7 +333,7 @@ const BookingPaymentComponent = () => {
                   <div className="ml-3">
                     <span
                       className={`font-medium ${
-                        currentStep >= 2 ? "text-purple-600" : "text-gray-400"
+                        currentStep >= 2 ? "text-orange-400" : "text-gray-400"
                       }`}
                     >
                       예매정보 입력
@@ -344,7 +344,7 @@ const BookingPaymentComponent = () => {
                 {/* 연결선 */}
                 <div
                   className={`w-1 h-12 ${
-                    currentStep >= 3 ? "bg-purple-600" : "bg-gray-300"
+                    currentStep >= 3 ? "bg-orange-400" : "bg-gray-300"
                   }`}
                 ></div>
 
@@ -352,7 +352,7 @@ const BookingPaymentComponent = () => {
                 <div className="w-full flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full ${
-                      currentStep >= 3 ? "bg-purple-600" : "bg-gray-300"
+                      currentStep >= 3 ? "bg-orange-400" : "bg-gray-300"
                     } flex items-center justify-center text-white font-bold`}
                   >
                     3
@@ -360,7 +360,7 @@ const BookingPaymentComponent = () => {
                   <div className="ml-3">
                     <span
                       className={`font-medium ${
-                        currentStep >= 3 ? "text-purple-600" : "text-gray-400"
+                        currentStep >= 3 ? "text-orange-400" : "text-gray-400"
                       }`}
                     >
                       결제하기
@@ -470,7 +470,7 @@ const BookingPaymentComponent = () => {
                       <span>수량</span>
                       <span>{ticketQuantity}매</span>
                     </div>
-                    <div className="flex justify-between font-bold text-purple-700 mt-2 pt-2 border-t border-gray-300">
+                    <div className="flex justify-between font-bold text-orange-500 mt-2 pt-2 border-t border-gray-300">
                       <span>총 금액</span>
                       <span>
                         {formatPrice(unitPrice)} × {ticketQuantity} ={" "}
@@ -483,7 +483,7 @@ const BookingPaymentComponent = () => {
                 <div className="text-right">
                   <button
                     onClick={handleNextStep}
-                    className="bg-purple-600 text-white px-6 py-2 rounded"
+                    className="bg-orange-400 text-white px-6 py-2 rounded"
                   >
                     다음 단계로
                   </button>
@@ -599,7 +599,7 @@ const BookingPaymentComponent = () => {
                   </button>
                   <button
                     onClick={handleNextStep}
-                    className="bg-purple-600 text-white px-6 py-2 rounded"
+                    className="bg-orange-400 text-white px-6 py-2 rounded"
                   >
                     다음 단계로
                   </button>
@@ -615,7 +615,7 @@ const BookingPaymentComponent = () => {
                   <button
                     className={`p-4 rounded border ${
                       selectedPaymentMethod === "card"
-                        ? "border-purple-600 bg-purple-50"
+                        ? "border-orange-400 bg-orange-50"
                         : "border-gray-200"
                     }`}
                     onClick={() => handlePaymentMethodSelect("card")}
@@ -629,7 +629,7 @@ const BookingPaymentComponent = () => {
                   <button
                     className={`p-4 rounded border ${
                       selectedPaymentMethod === "trans"
-                        ? "border-purple-600 bg-purple-50"
+                        ? "border-orange-400 bg-orange-50"
                         : "border-gray-200"
                     }`}
                     onClick={() => handlePaymentMethodSelect("trans")}
@@ -657,7 +657,7 @@ const BookingPaymentComponent = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between font-bold text-purple-700 mt-2 pt-2 border-t border-gray-300">
+                  <div className="flex justify-between font-bold text-orange-500 mt-2 pt-2 border-t border-gray-300">
                     <span>최종 결제 금액</span>
                     <span>
                       {formatPrice(
@@ -678,7 +678,7 @@ const BookingPaymentComponent = () => {
                   </button>
                   <button
                     onClick={handlePayment}
-                    className="bg-purple-600 text-white px-6 py-2 rounded"
+                    className="bg-orange-400 text-white px-6 py-2 rounded"
                     disabled={!selectedPaymentMethod}
                   >
                     결제하기
