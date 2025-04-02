@@ -84,3 +84,20 @@ export const getSalesData = async (year) => {
   const res = await axios.get(`${host}/statistics/${year}`);
   return res.data;
 };
+
+export const getReviewList = async (pno) => {
+  const res = await axios.get(`${host}/review/list/${pno}`);
+  return res.data;
+};
+
+export const deleteReview = async (reviewNo) => {
+  const res = await axios.delete(`${host}/review/remove/${reviewNo}`);
+  return res.data;
+};
+
+export const getUserList = async () =>{
+  const res = await axios.get(`${host}/user/list`);
+  return res.data;
+}
+
+

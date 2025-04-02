@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -57,7 +58,7 @@ public class UserServiceImpl implements UserService{
         if(result == null) {
             ProductCart productCart = ProductCart.builder()
                     .product(productRepository.findById(cartDTO.getPNo()).orElse(null))
-                    .user(userRepository.seletByUserId(cartDTO.getUserId()))
+                    .user(userRepository.selectByUserId(cartDTO.getUserId()))
                     .numOfItem(cartDTO.getNumOfItem())
                     .build();
             cartRepository.save(productCart);
@@ -114,11 +115,12 @@ public class UserServiceImpl implements UserService{
         List<OrderItemDTO> itemListDto = orderDTO.getOrderItems();
         List<OrderItem> itemlist = new ArrayList<>();
         for(OrderItemDTO i : itemListDto){
-            Product product = new Product();
-            product.pNo(i.getPno());
+            Product product = productRepository.findById(i.getPno()).orElseThrow();
+            product.pStock(product.pStock() - i.getNumOfItem());
+            Product updateProduct = productRepository.save(product);
             OrderItem orderItem = OrderItem.builder()
                     .numOfItem(i.getNumOfItem())
-                    .product(product)
+                    .product(updateProduct)
                     .productOrder(productOrder)
                     .build();
             itemlist.add(orderItem);
@@ -132,6 +134,7 @@ public class UserServiceImpl implements UserService{
         String formatDate = date.format(formatter);
         String ordercode =  formatDate+orderInformation.getOrderNum();
         cartRepository.deleteById(orderDTO.getUserdto().getUid());
+
         return "주문번호:"+ordercode;
     }
 

@@ -3,6 +3,8 @@ package com.green.project.Leo.service.Admin;
 import com.green.project.Leo.dto.admin.*;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
+import com.green.project.Leo.dto.product.ResponseProductReviewDTO;
+import com.green.project.Leo.dto.user.UserDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -25,4 +27,7 @@ public interface AdminService {
     public ConcertTicketDetailDTO getConcertTicketDetail(Long id);
     public void modifyConcertTicket(RequestTicketModifyDTO modifyDTO);
     public List<Map<Integer, Long[]>>getStatisticsData(int yearData);
+    public List<ResponseProductReviewDTO> getReviewList(Long pno);
+    public void deleteReview(Long reviewNo);
+    public List<UserDTO> getUserList();
 }

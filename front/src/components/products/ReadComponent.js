@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getOne } from "../../api/productsApi";
 import ReviewComponent from "../menu/ReviewComponent";
 import { addCart } from "../../api/userApi";
@@ -59,7 +59,7 @@ const ReadComponent = () => {
     } else {
       // 비회원인 경우
       alert("로그인 후 이용해 주십시오.");
-      navigate("/member/login");
+      navigate("/member/login", { state: { from: location.pathname } });
     }
   };
 
@@ -105,7 +105,7 @@ const ReadComponent = () => {
     } else {
       // 비회원인 경우
       alert("로그인 후 이용해 주십시오.");
-      navigate("/member/login");
+      navigate("/member/login",{ state: { from: location.pathname } });
     }
   };
 

@@ -3,6 +3,7 @@ package com.green.project.Leo.service.product;
 import com.green.project.Leo.dto.pageable.PageRequestDTO;
 import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.dto.product.*;
+import com.green.project.Leo.entity.User;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.product.*;
@@ -16,12 +17,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductServiceIplm implements ProductService{
+    @Autowired
+    private ProductOrderRepository orderRepository;
     @Autowired
     private ProductRepository productRepository;
     @Autowired
@@ -49,14 +53,20 @@ public class ProductServiceIplm implements ProductService{
     }
 
     @Override
-    public PageResponseDTO<ProductDTO> getProductList(PageRequestDTO dto) {
+    public PageResponseDTO<ProductDTO> getProductList(PageRequestDTO dto,String category) {
 
         Pageable pageable = PageRequest.of(
                 dto.getPage()-1,
                 dto.getSize(),
                 Sort.by("pNo").descending()
         );
-        Page<Product> result = productRepository.findAll(pageable);
+        Page<Product> result;
+        if (category == null || category.equals("전체")) {
+            result = productRepository.findAll(pageable);
+        } else {
+            // 특정 카테고리만 필터링하여 조회
+            result = productRepository.findByCategory(category, pageable);
+        }
         List<ProductDTO> productDTOList = new ArrayList<>();
         for(Product i : result){
             List<String> imageList = imageRepository.findFileNamesByPNo(i.pNo());
@@ -116,7 +126,7 @@ public class ProductServiceIplm implements ProductService{
         List<ResponseProductReviewDTO> reviewDTOList = new ArrayList<>();
         for(ProductReview i: reviewList){
             ResponseProductReviewDTO dto = ResponseProductReviewDTO.builder()
-                    .proReivewNo(i.getPReivewNo())
+                    .proReivewNo(i.getPReviewNo())
                     .reviewRating(i.getReviewRating())
                     .userId(i.getUser().userId())
                     .reviewtext(i.getReviewtext())
@@ -125,6 +135,29 @@ public class ProductServiceIplm implements ProductService{
             reviewDTOList.add(dto);
         }
        return reviewDTOList;
+    }
+
+    @Override
+    public void addReview(RequestProductReviewDTO reviewDTO) {
+
+        Product product = new Product();
+        product.pNo(reviewDTO.getPno());
+
+        User user = new User();
+        user.uId(reviewDTO.getUid());
+
+        ProductOrder order = new ProductOrder();
+        order.setOrderNum(reviewDTO.getOrderNum());
+
+        ProductReview review = new ProductReview();
+        review.setProduct(product);
+        review.setUser(user);
+        review.setProductOrder(order);
+        review.setReviewtext(reviewDTO.getReviewtext());
+        review.setDueDate(LocalDate.now());
+        review.setReviewRating(reviewDTO.getReviewRating());
+
+        reviewRepository.save(review);
     }
 
 

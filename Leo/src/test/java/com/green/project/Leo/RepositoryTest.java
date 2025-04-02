@@ -2,6 +2,7 @@ package com.green.project.Leo;
 
 import com.green.project.Leo.entity.product.ProductReviewRating;
 import com.green.project.Leo.repository.product.ProductReviewRatingRepository;
+import com.green.project.Leo.service.product.ProductService;
 import com.green.project.Leo.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ public class RepositoryTest {
     private ProductReviewRatingRepository repository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ProductService productService;
     @Test
     public void test (){
         List<ProductReviewRating> result = repository.findAll();

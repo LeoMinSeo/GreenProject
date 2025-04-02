@@ -36,12 +36,17 @@ public class ConcertServiceIplm implements ConcertService{
     private ConcertScheduleRepository scheduleRepository;
 
     @Override
-    public PageResponseDTO<ResponseListDTO> getConcertList(PageRequestDTO dto) {
+    public PageResponseDTO<ResponseListDTO> getConcertList(PageRequestDTO dto,String category) {
 
         Pageable pageable = PageRequest.of(
                 dto.getPage()-1, dto.getSize(), Sort.by("cNo").descending()
         );
-        Page<Concert> result = concertRepository.findAll(pageable);
+        Page<Concert> result;
+        if (category == null || category.equals("전체")) {
+            result = concertRepository.findAll(pageable);
+        }else {
+            result = concertRepository.findByCategory(category,pageable);
+        }
         List<ResponseListDTO> responseListDTO =new ArrayList<>();
         for(Concert i : result){
             String imgName = imageRepository.findFileNameByCNo(i.getCNo());

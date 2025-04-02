@@ -30,7 +30,6 @@ const Loading = (
   </div>
 );
 const LoginPage = lazy(() => import("../pages/loginout/LoginPage"));
-const Signup = lazy(() => import("../pages/loginout/SignupPage"));
 const Mypage = lazy(() => import("../pages/loginout/MyPage"));
 const SuccessOrder = lazy(() => import("../pages/loginout/SuccessOrderPage"));
 const Findid = lazy(() => import("../pages/loginout/FindidPage"));
@@ -43,15 +42,6 @@ const memberRouter = () => {
       element: (
         <Suspense fallback={Loading}>
           <LoginPage />
-        </Suspense>
-      ),
-    },
-
-    {
-      path: "signup",
-      element: (
-        <Suspense fallback={Loading}>
-          <Signup />
         </Suspense>
       ),
     },

@@ -37,6 +37,9 @@ const ProductOrderPage = lazy(() =>
 const ProductOrderDetailPage = lazy(() =>
   import("../pages/admin/orders/ProductOrderDetailPage")
 );
+const ProductReviewPage = lazy(() =>
+  import("../pages/admin/products/AdminReviewListPage")
+);
 
 const adminProductsRouter = () => {
   return [
@@ -77,6 +80,14 @@ const adminProductsRouter = () => {
       element: (
         <Suspense fallback={Loading}>
           <ProductOrderDetailPage />
+        </Suspense>
+      ),
+    },
+    {
+      path: "reviews/:pno",
+      element: (
+        <Suspense fallback={Loading}>
+          <ProductReviewPage />
         </Suspense>
       ),
     },

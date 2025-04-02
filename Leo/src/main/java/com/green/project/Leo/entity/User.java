@@ -16,7 +16,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Accessors(fluent = true)
+//@Where(clause = "is_deleted = false")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +34,11 @@ public class User {
 
     private String userEmail;
 
-    private String userAdress;
+    private String userAddress;
+
+    private String userPhoneNum;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;  // 기본값을 false로 설정
 
     // 유저가 삭제되면 콘서트 티켓도 삭제
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
@@ -55,11 +61,12 @@ public class User {
     private List<ProductOrder> productOrders = new ArrayList<>();
 
     @Builder
-    public User(String userId, String userPw, String userName, String userEmail, String userAdress) {
+    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted) {
         this.userId = userId;
         this.userPw = userPw;
         this.userName = userName;
         this.userEmail = userEmail;
-        this.userAdress = userAdress;
+        this.userAddress = userAddress;
+        this.isDeleted = isDeleted;
     }
 }

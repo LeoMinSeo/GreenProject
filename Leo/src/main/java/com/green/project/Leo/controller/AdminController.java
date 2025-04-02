@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.green.project.Leo.dto.admin.*;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
+import com.green.project.Leo.dto.product.ResponseProductReviewDTO;
+import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.service.Admin.AdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,5 +140,19 @@ public class AdminController {
     @GetMapping("/statistics/{year}")
     public  List<Map<Integer, Long[]>> getStatistics(@PathVariable(name = "year") int yearData){
         return service.getStatisticsData(yearData);
+    }
+
+    @GetMapping("/review/list/{pno}")
+    public List<ResponseProductReviewDTO> getReviewList(@PathVariable(name = "pno") Long pno){
+          return service.getReviewList(pno);
+    }
+    @DeleteMapping("/review/remove/{reviewNo}")
+    public void deleteReview(@PathVariable(name = "reviewNo")Long reviewNo){
+        service.deleteReview(reviewNo);
+    }
+
+    @GetMapping("/user/list")
+    public List<UserDTO> getUserList(){
+        return service.getUserList();
     }
 }

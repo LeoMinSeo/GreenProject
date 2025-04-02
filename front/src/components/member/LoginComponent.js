@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import styled, { createGlobalStyle, keyframes } from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginPost } from "../../api/memberApi";
+import Signup from "../../components/member/SignupComponent";
 
-// 전역 스타일을 설정하기 위한 createGlobalStyle
+// GlobalStyle 정의
 const GlobalStyle = createGlobalStyle`
+   // Google Fonts에서 'Poppins' 폰트를 불러옴
    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap');    
 
-   // CSS 변수(root) 정의: 색상, 폰트 등을 전역적으로 사용 가능하도록 설정
    :root {     
+     // 전역 색상 변수 설정
      --primary-color: #fb923c;     
-     --secondary-color:#1D4ED8;     
+     --secondary-color: #1D4ED8;     
      --black: #000000;     
      --white: #ffffff;     
      --gray: #efefef;     
@@ -21,33 +23,29 @@ const GlobalStyle = createGlobalStyle`
      --insta-color: #E1306C;   
    }    
 
-   // 기본 스타일 초기화
    * {     
-     font-family: 'Poppins', sans-serif;     
-     margin: 0;     
-     padding: 0;     
-     box-sizing: border-box;   
+     margin: 0;     // 모든 요소에 기본 여백 제거
+     padding: 0;    // 모든 요소에 기본 패딩 제거
+     box-sizing: border-box; // 박스 모델을 border-box로 설정하여 padding과 border가 width, height에 포함되도록 설정
    }    
 
-   // html, body의 높이를 100vh로 설정하고 스크롤을 숨김
    html, body {     
-     height: 100vh;     
-     overflow: hidden;   
+     height: 100vh;     // 화면의 전체 높이를 차지하도록 설정
+     overflow: hidden;   // 화면을 벗어나는 영역 숨김
    }
 `;
 
-// 메인 컨테이너 스타일
+// 전체 페이지의 컨테이너 스타일
 const Container = styled.div`
-  position: relative; // 자식 요소의 절대 위치 설정을 위해 필요
-  min-height: 100vh; // 전체 화면 높이 유지
-  overflow: hidden; // 넘치는 요소 숨김
-  display: flex; // Flexbox 레이아웃 사용
+  position: relative;
+  min-height: 100vh; // 최소 높이를 화면 크기로 설정
+  overflow: hidden; // 내용이 벗어나는 부분 숨김
+  display: flex;
   width: 100%;
-  align-items: stretch; // 컨텐츠를 동일한 높이로 맞춤
-  justify-content: flex-start; // 왼쪽 정렬
-  transition: 0.5s ease-in-out; // 부드러운 애니메이션 효과 추가
+  align-items: stretch; // 자식 요소들이 높이를 맞추도록 설정
+  justify-content: flex-start; // 요소들을 왼쪽 정렬
+  transition: 0.5s ease-in-out; // 부드러운 전환 효과
 
-  // 배경 효과 추가
   &::before {
     content: "";
     position: absolute;
@@ -59,110 +57,108 @@ const Container = styled.div`
       -45deg,
       var(--primary-color) 0%,
       var(--secondary-color) 100%
-    ); // 대각선 그라디언트 배경
+    ); // 배경에 그라디언트 색상 적용
     transition: none;
-    z-index: 1; // 다른 요소 위에 배치
+    z-index: 1; // 다른 요소들 위에 배경이 보이도록 설정
     animation: ${({ showForm }) => (showForm ? shrinkBackground : "none")} 2.5s
-      ease-in-out forwards;
-    // showForm이 true일 때 shrinkBackground 애니메이션 적용
+      ease-in-out forwards; // 상태에 따라 애니메이션 설정
   }
 `;
 
-// 컬럼 스타일 (좌우 영역)
+// 내부 컬럼 스타일
 const Column = styled.div`
   display: flex;
-  align-items: center; // 수직 중앙 정렬
-  justify-content: center; // 수평 중앙 정렬
-  width: 50%; // 화면의 반을 차지
-  transition: 0.7s ease-in-out; // 애니메이션 효과
-  z-index: 2; // 배경보다 위에 위치
-
-  // 폼이 있는 컬럼 (애니메이션 효과 추가 가능)
-  // &.form-column {
-  //   opacity: ${({ showForm }) => (showForm ? 1 : 0)};
-  //   transform: translateX(${({ showForm }) => (showForm ? "0" : "100%")});
-  // } // 폼이 나타날 때 애니메이션 효과로 날아오게 설정 가능
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  transition: 0.7s ease-in-out; // 부드러운 전환 효과
+  z-index: 2; // 컨텐츠가 이 요소 위에 보이도록 설정
 `;
 
-// 폼을 감싸는 Wrapper 스타일
+// 폼을 감싸는 wrapper 스타일
 const FormWrapper = styled.div`
-  width: 100%;
-  max-width: 28rem; // 최대 너비 제한
-  text-align: center; // 텍스트 중앙 정렬
-  margin-right: 35px; // 오른쪽 여백 추가
+  width: 100%; // 화면 크기에 따라 조정
+  max-width: 30rem; // 최대 너비
+  text-align: center;
+  margin-right: 90px; // 오른쪽 여백 추가
 `;
 
-// 로그인/회원가입 폼 스타일
+// 폼 자체의 스타일
 const Form = styled.div`
-  padding: 1rem;
-  background-color: var(--white); // 배경색 흰색
-  border-radius: 1.5rem; // 둥근 모서리
+  padding: 1.8rem;
+  background-color: var(--white);
+  border-radius: 1.5rem;
   width: 100%;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; // 그림자 효과 추가
-  transform: scale(1); // 기본 크기 유지
-  transition: 0.7s ease-in-out; // 부드러운 애니메이션 효과
-  transition-delay: 0.2s; // 0.2초 딜레이 후 애니메이션 실행
+  // max-width: 24rem;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 5px 15px;
+  transform: scale(1);
+  transition: 0.7s ease-in-out;
+  transition-delay: 0.2s;
+
+  margin-top: 80px; // 🔥 원하는 만큼 아래로 내릴 수 있음!
 `;
 
-// 입력 필드 그룹 스타일
+// 입력 그룹을 감싸는 스타일 (입력 필드 길이 조정)
 const InputGroup = styled.div`
-  position: relative; // 내부 요소 정렬을 위한 상대 위치 지정
-  width: 100%;
-  margin: 1rem 0; // 위아래 여백 추가
+  position: relative;
+  width: 90%; // 입력 필드의 너비
+  margin: 0.9rem 0;
 `;
 
-// 입력 필드 스타일
+// 입력 필드 스타일 (더 작은 크기 적용)
 const Input = styled.input`
-  width: 100%;
-  padding: 1rem 3rem; // 내부 여백 추가
-  font-size: 1rem;
-  background-color: var(--gray); // 입력 필드 배경색
-  border-radius: 0.5rem;
-  border: 0.125rem solid var(--white); // 기본 테두리 색상
+  width: 100%; // InputGroup의 크기에 맞춤
+  padding: 0.8rem 2rem; // 내부 여백 줄이기
+  font-size: 0.9rem; // 글자 크기 살짝 줄이기
+  background-color: var(--gray);
+  border-radius: 0.4rem;
+  border: 0.1rem solid var(--white);
+  outline: none;
+  margin-left: 1.2rem;
 
   &:focus {
-    border: 0.125rem solid var(--primary-color); // 포커스 시 테두리 색 변경
+    border: 0.1rem solid var(--primary-color);
   }
 `;
 
-// 입력 필드 왼쪽 아이콘 스타일
+// 입력 아이콘 스타일
 const Icon = styled.i`
   position: absolute;
   top: 50%;
   left: 1rem;
-  transform: translateY(-50%); // 수직 중앙 정렬
+  transform: translateY(-50%); // 세로 중앙 정렬
   font-size: 1.4rem;
-  color: var(--gray-2); // 아이콘 색상 설정
+  color: var(--gray-2); // 아이콘 색상
 `;
 
 // 버튼 스타일
 const Button = styled.button`
-  cursor: pointer; // 마우스 커서를 포인터로 변경
-  width: 100%;
-  padding: 0.6rem 0;
-  border-radius: 0.5rem;
+  cursor: pointer;
+  width: 90%;
+  padding: 0.5rem 0;
+  border-radius: 0.5rem; // 둥근 모서리
   border: none;
-  background-color: var(--primary-color); // 기본 색상
+  background-color: var(--primary-color); // 배경 색상
   color: var(--white); // 텍스트 색상
   font-size: 1.2rem;
-  outline: none;
+  outline: none; // 포커스 시 외곽선 제거
 `;
 
-// 안내 텍스트 스타일
+// 텍스트 스타일
 const Text = styled.p`
   text-align: center;
-  margin: 1rem 0;
+  margin: 1rem 0; // 위아래 여백
   font-size: 0.7rem;
 
   // 강조 텍스트 스타일
   b {
-    margin-left: 4px; // "회원가입"만 오른쪽 정렬
+    margin-left: 4px; // 강조 텍스트에 왼쪽 여백 추가
     color: var(--primary-color); // 강조 색상 적용
-    cursor: pointer;
+    cursor: pointer; // 클릭 가능한 느낌을 주기 위한 커서 변경
   }
 `;
 
-// 로그인/회원가입 페이지의 콘텐츠 영역 스타일
+// 콘텐츠를 감싸는 wrapper 스타일
 const ContentWrapper = styled.div`
   position: relative;
   width: 100%;
@@ -171,37 +167,41 @@ const ContentWrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: var(--white);
+  color: var(--white); // 글자 색상
   padding-left: 0;
-  z-index: 3; // 배경보다 위에 배치
-  margin-right: 70px;
-  margin-bottom: 45px;
+  z-index: 3; // 다른 요소 위에 텍스트가 보이도록 설정
+  margin-right: 100px;
+  margin-bottom: 120px;
 `;
 
-// 텍스트 콘텐츠 스타일 (페이지의 설명 부분)
+// 텍스트 콘텐츠 스타일
 const TextContent = styled.div`
   margin: 4rem;
-  color: inherit; // 부모 요소의 색상 상속
+  color: inherit; // 상속된 색상 사용
   transition: 0.7s ease-in-out;
   transform: translateX(0);
   text-align: left;
-  z-index: 3; // 최상위 레이어에 위치
+  z-index: 3;
 
   h2 {
-    font-size: 3.5rem;
+    font-size: 4.2rem;
     font-weight: 800;
-    margin: 2rem 0;
+    margin: 0.5rem 0;
     transition: 0.7s ease-in-out;
   }
 
   p {
     font-weight: 600;
+    color: white;
     transition: 0.7s ease-in-out;
-    transition-delay: 0.2s;
+    transition-delay: 0.2s; // 애니메이션 지연
+    cursor: pointer;
+    user-select: none;
+    margin-top: 2px;
   }
 `;
 
-// 배경 애니메이션 (회원가입/로그인 페이지 전환 시 배경이 줄어드는 효과)
+// 배경 애니메이션 정의
 const shrinkBackground = keyframes`
    25% {
      transform: translateX(0);
@@ -225,12 +225,16 @@ const shrinkBackground = keyframes`
 `;
 
 const LoginComponent = () => {
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [userId, setUserId] = useState("");
   const [userPw, setUserPw] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [showForm, setShowForm] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 비밀번호 보기 상태
+  const [isLogin, setIsLogin] = useState(true); // 로그인/회원가입 전환 상태
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false); // 자동 로그인 상태
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -238,6 +242,18 @@ const LoginComponent = () => {
       setShowForm(true);
     }, 1200);
     return () => clearTimeout(timer);
+  }, []);
+  // 페이지 로드 시 자동 로그인 상태 확인
+  useEffect(() => {
+    const savedUserId = localStorage.getItem("username");
+    const savedUserPw = localStorage.getItem("password");
+    const savedRememberMe = localStorage.getItem("rememberMe") === "true"; // rememberMe 상태를 가져옴
+
+    if (savedUserId && savedUserPw) {
+      setUserId(savedUserId);
+      setUserPw(savedUserPw);
+    }
+    setRememberMe(savedRememberMe); // rememberMe 상태 설정
   }, []);
 
   const handleUserIdChange = (e) => setUserId(e.target.value);
@@ -249,22 +265,58 @@ const LoginComponent = () => {
       return;
     }
 
-    const loginParam = { userId, userPw };
-    const response = await loginPost(loginParam);
-    const { data } = response;
+    try {
+      const loginParam = { userId, userPw };
+      const response = await loginPost(loginParam);
+      const { data } = response;
 
-    if (response && data) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(data));
-      setIsAuthenticated(true);
-      navigate(-1, { state: { isAuthenticated: true } });
-    } else {
-      setErrorMessage("아이디 또는 비밀번호가 잘못되었습니다.");
+      if (data === "탈퇴하신분이에요") {
+        setErrorMessage("존재하지 않는 계정입니다.");
+      } else if (data === "존재하지 않는 아이디입니다.") {
+        setErrorMessage("아이디를 확인해주세요.");
+      } else if (data === "아이디 또는 비밀번호가 잘못되었습니다.") {
+        setErrorMessage("비밀번호를 확인해주세요");
+      } else if (data) {
+        if (rememberMe) {
+          // 자동 로그인 체크된 경우 아이디와 비밀번호를 저장
+          localStorage.setItem("username", userId);
+          localStorage.setItem("password", userPw);
+          localStorage.setItem("rememberMe", "true"); // rememberMe 상태도 저장
+        } else {
+          // 자동 로그인 체크되지 않은 경우, 로컬스토리지에서 제거
+          localStorage.removeItem("username");
+          localStorage.removeItem("password");
+          localStorage.removeItem("rememberMe"); // rememberMe 상태 제거
+        }
+
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("user", JSON.stringify(data));
+
+        navigate(from, { state: { isAuthenticated: true } });
+      } else {
+        setErrorMessage("로그인에 실패했습니다.");
+      }
+    } catch (error) {
+      setErrorMessage("서버 오류가 발생했습니다.");
+      console.log(error);
     }
+  };
+
+  const toggleForm = () => {
+    setIsLogin(!isLogin);
+    setUserId("");
+    setUserPw("");
+    setErrorMessage("");
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleRememberMeChange = (e) => {
+    const isChecked = e.target.checked;
+    setRememberMe(isChecked);
+    localStorage.setItem("rememberMe", isChecked ? "true" : "false"); // 상태를 로컬스토리지에 저장
   };
 
   return (
@@ -273,8 +325,56 @@ const LoginComponent = () => {
       <Container showForm={showForm}>
         <Column>
           <ContentWrapper>
-            <TextContent>
+            <TextContent
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                marginTop: "50px",
+                userSelect: "none",
+              }}
+            >
               <h2>AudiMew</h2>
+              <p
+                style={{
+                  marginTop: "5px",
+                  userSelect: "none",
+                  marginBottom: "10px",
+                  cursor: "default",
+                }}
+              >
+                {isLogin
+                  ? "회원가입하고 AudiMew와 함께 더 나은 경험을 시작하세요!"
+                  : "회원이신가요? AudiMew에 로그인하고 더 많은 서비스를 이용해보세요!"}
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  width: "100%",
+                  marginTop: "10px",
+                }}
+              >
+                <Button
+                  onClick={toggleForm}
+                  style={{
+                    border: "1px solid var(--white)",
+                    borderWidth: "2px",
+                    backgroundColor: "transparent",
+                    color: "var(--white)",
+                    padding: "0.6rem 1rem",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    borderRadius: "1rem",
+                    width: "250px",
+                  }}
+                >
+                  {isLogin ? "SIGN UP" : "LOGIN"}
+                </Button>
+              </div>
             </TextContent>
           </ContentWrapper>
         </Column>
@@ -291,49 +391,65 @@ const LoginComponent = () => {
                 </div>
               )}
 
-              <InputGroup>
-                <Icon className="bx bxs-user" />
-                <Input
-                  type="text"
-                  placeholder="아이디를 입력해주세요."
-                  value={userId}
-                  onChange={handleUserIdChange}
-                  style={{ paddingLeft: "1rem" }}
-                />
-              </InputGroup>
-              <InputGroup>
-                <Icon className="bx bxs-user" />
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="비밀번호를 입력해주세요."
-                  value={userPw}
-                  onChange={handleUserPwChange}
-                  style={{ paddingLeft: "1rem" }} // 여기서 padding-left 값을 줄여서 왼쪽에 텍스트가 더 붙도록 설정
-                />
-                {/* 비밀번호 보기/숨기기 아이콘 */}
-                <span
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                  onClick={togglePasswordVisibility}
-                >
-                  {/* 클릭 시 showPassword 상태에 따라 다른 이미지 표시 */}
-                  <img
-                    src={
-                      showPassword ? "/images/hidePw.png" : "/images/showPw.png"
-                    } // 상태에 맞는 이미지 경로
-                    alt="아이콘"
-                    width="24"
-                    height="24"
-                  />
-                </span>
-              </InputGroup>
+              {isLogin ? (
+                <>
+                  <InputGroup>
+                    <Icon className="bx bxs-user" />
+                    <Input
+                      type="text"
+                      placeholder="아이디를 입력해주세요."
+                      value={userId}
+                      onChange={handleUserIdChange}
+                      style={{ paddingLeft: "1rem" }}
+                    />
+                  </InputGroup>
+                  <InputGroup>
+                    <Icon className="bx bxs-lock-alt" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="비밀번호를 입력해주세요."
+                      value={userPw}
+                      onChange={handleUserPwChange}
+                      style={{ paddingLeft: "1rem" }}
+                    />
+                    <span
+                      className="absolute -right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                      onClick={togglePasswordVisibility}
+                    >
+                      <img
+                        src={
+                          showPassword
+                            ? "/images/showPw.png"
+                            : "/images/hidePw.png"
+                        }
+                        alt="아이콘"
+                        width="24"
+                        height="24"
+                      />
+                    </span>
+                  </InputGroup>
 
-              <Button onClick={handleLogin}>로그인</Button>
+                  {/* 자동 로그인 체크박스 추가 */}
+                  <div>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={handleRememberMeChange}
+                      />
+                      자동 로그인
+                    </label>
+                  </div>
+
+                  <Button onClick={handleLogin}>로그인</Button>
+                </>
+              ) : (
+                <Signup /> // Signup 컴포넌트를 바로 렌더링
+              )}
 
               <Text>
-                계정이 없으신가요?{" "}
-                <b>
-                  <Link to="/member/signup">회원가입</Link>
-                </b>
+                {isLogin ? "계정이 없으신가요? " : "이미 계정이 있으신가요? "}
+                <b onClick={toggleForm}>{isLogin ? "회원가입" : "로그인"}</b>
               </Text>
               <div className="flex justify-center items-center text-sm text-gray-600 mt-4 space-x-4">
                 <Link to="/member/findid" className="hover:underline">

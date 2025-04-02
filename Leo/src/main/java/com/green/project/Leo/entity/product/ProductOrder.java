@@ -37,6 +37,7 @@ public class ProductOrder {
     private String totalPrice;
 
     // 주문 삭제시 주문 아이템도 삭제
+
     @OneToMany(mappedBy = "productOrder", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 }

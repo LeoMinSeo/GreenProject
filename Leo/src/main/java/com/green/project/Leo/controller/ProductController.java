@@ -26,10 +26,11 @@ public class ProductController {
     @Autowired
     private CustomFileUtil fileUtil;
 
-    @GetMapping("/list")
-    public PageResponseDTO<ProductDTO> getList(PageRequestDTO dto){
+    @GetMapping("/list/{category}")
+    public PageResponseDTO<ProductDTO> getList(PageRequestDTO dto,@PathVariable(name = "category") String category){
+        System.out.println(category);
         System.out.println(dto.getPage());
-        return service.getProductList(dto);
+        return service.getProductList(dto,category);
     }
 
 

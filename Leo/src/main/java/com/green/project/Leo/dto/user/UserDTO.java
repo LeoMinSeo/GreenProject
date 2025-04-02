@@ -13,14 +13,16 @@ public class UserDTO {
 
     private String userId;
 
-
     private String userPw;
-
 
     private String userName;
 
     private String userEmail;
 
-    private String userAdress;
+    private String userAddress;
+
+    private boolean isDeleted;
+
+    private String userPhoneNum;
 
 }

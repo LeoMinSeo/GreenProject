@@ -1,8 +1,5 @@
 package com.green.project.Leo.dto.product;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.green.project.Leo.entity.product.Product;
 import lombok.*;
 
 @Getter
@@ -12,7 +9,12 @@ import lombok.*;
 @ToString
 public class OrderItemDTO {
     private Long pno;
-    private int numOfItem;
+    private int numOfItem; //구매 수량
+    private String productName; // 상품명
+    private String productPrice;// 상품 가격
+    private String imgFileName;
+    private Boolean hasReview;
+    private Long realOrderNum;
 
 
 }

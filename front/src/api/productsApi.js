@@ -2,8 +2,8 @@ import axios from "axios";
 
 const host = "http://localhost:8089/product";
 
-export const getList = async (pageParam) => {
-  const res = await axios.get(`${host}/list`, {
+export const getList = async (pageParam,category) => {
+  const res = await axios.get(`${host}/list/${category}`, {
     params: pageParam,
   });
   return res.data;

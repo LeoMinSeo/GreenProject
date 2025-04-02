@@ -17,7 +17,7 @@ public class ProductReview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pReivewNo;
+    private Long pReviewNo;
 
     @Column(nullable = false)
     private double reviewRating;
@@ -31,6 +31,10 @@ public class ProductReview {
     @ManyToOne
     @JoinColumn(name = "pNo")
     private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "orderNum")
+    private ProductOrder productOrder;
 
     // 리뷰->유저 방향으로는 cascade 설정 없음
     @ManyToOne

@@ -34,7 +34,7 @@ const PaymentComponent = () => {
       // 폼 초기화
       setForm({
         name: requestData[0].userDTO.userName || "",
-        address: requestData[0].userDTO.userAdress || "",
+        address: requestData[0].userDTO.userAddress || "",
         phonenumber: "", // 전화번호 정보가 없으므로 빈값으로 처리
         note: "", // 요청사항은 빈값으로 처리
       });
@@ -76,7 +76,7 @@ const PaymentComponent = () => {
       userdto: {
         uid: cartData[0].userDTO.uid,
       },
-      shippingAdress: form.address,
+      shippingAddress: form.address,
       note: form.note,
       totalPrice: totalPrice,
       orderItems: cartData.map((i) => {

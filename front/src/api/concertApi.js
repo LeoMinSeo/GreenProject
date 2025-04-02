@@ -2,8 +2,8 @@ import axios from "axios";
 
 const host = "http://localhost:8089/concert";
 
-export const getList = async (pageRequest) => {
-  const res = await axios.get(`${host}/list`, {
+export const getList = async (pageRequest,category) => {
+  const res = await axios.get(`${host}/list/${category}`, {
     params: pageRequest,
   });
   return res.data;

@@ -26,7 +26,7 @@ const ListComponent = () => {
 
   // 제품 데이터를 가져오는 useEffect - 페이지 변경이나 카테고리 변경 시 재실행
   useEffect(() => {
-    getList({ page: currentPage, size: 10 })
+    getList({ page: currentPage, size: 10 }, selectedCategory)
       .then((data) => {
         console.log(data); // data 확인
         setProductData({
@@ -151,7 +151,11 @@ const ListComponent = () => {
                   <p className="text-gray-500">
                     {product.price.toLocaleString()}원
                   </p>
-                  <p className="text-gray-400">재고: {product.pstock}개</p>
+                  {product.pstock <= 0 ? (
+                    <p className="text-red-500 font-bold">SoldOut</p>
+                  ) : (
+                    <p className="text-gray-400">재고: {product.pstock}개</p>
+                  )}
                 </div>
               ))
           ) : (

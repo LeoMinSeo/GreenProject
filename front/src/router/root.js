@@ -38,6 +38,8 @@ const Loading = (
 const Main = lazy(() => import("../pages/MainPage"));
 const AdminMainPage = lazy(() => import("../pages/admin/AdminMainPage"));
 const Testpage = lazy(() => import("../pages/Testpage"));
+const AdminUserPage = lazy(() => import("../pages/admin/user/AdminUserPage"));
+
 const root = createBrowserRouter([
   {
     path: "",
@@ -78,6 +80,14 @@ const root = createBrowserRouter([
   {
     path: "admin/concert",
     children: adminConcertRouter(),
+  },
+  {
+    path: "admin/user",
+    element: (
+      <Suspense fallback={Loading}>
+        <AdminUserPage />
+      </Suspense>
+    ),
   },
   {
     path: "test",

@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface ProductService {
     public ProductReviewRatingDTO selectReview(Long pno);
-    public PageResponseDTO<ProductDTO>  getProductList(PageRequestDTO dto);
+    public PageResponseDTO<ProductDTO>  getProductList(PageRequestDTO dto,String category);
     public ProductReadDTO getProductByPno(Long pno);
     public List<ResponseProductReviewDTO> getReview(Long pno);
-
+    public void addReview(RequestProductReviewDTO reviewDTO);
 }

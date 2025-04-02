@@ -1,9 +1,70 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser, checkId } from "../../api/memberApi";
-import MainMenubar from "../menu/MainMenubar";
-import { Link } from "react-router-dom";
+import styled from "styled-components";
 
+// 입력 필드와 아이콘을 감싸는 컨테이너
+const InputGroup = styled.div`
+  position: relative;
+  width: 100%;
+  margin: 0.5rem 0;
+`;
+
+// 사용자 입력 필드 스타일
+const Input = styled.input`
+  width: 100%;
+  padding: 0.7rem 3rem;
+  font-size: 0.9rem;
+  background-color: var(--gray);
+  border-radius: 0.5rem;
+  border: 0.125rem solid var(--white);
+  outline: none;
+
+  &:focus {
+    border: 0.1rem solid var(--primary-color);
+  }
+  &::placeholder {
+    padding-right: 300rem; /* placeholder 텍스트가 왼쪽으로 이동 */
+  }
+`;
+
+// 입력 필드 내 아이콘 스타일
+const Icon = styled.i`
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  font-size: 1.4rem;
+  color: var(--gray-2);
+`;
+
+// 회원가입 버튼 스타일
+const SignupButton = styled.button`
+  cursor: pointer;
+  padding: 0.5rem 2rem;
+  background-color: var(--primary-color);
+  font-size: 1.2rem;
+  color: var(--white);
+  border-radius: 0.5rem;
+  border: none;
+  outline: none;
+  margin-top: 0rem; // 쓸 수도 있으므로 남겨두기
+  width: 100%;
+`;
+
+//아이디 중복확인 버튼 스타일
+const IdCheckButton = styled.button`
+  cursor: pointer;
+  padding: 0.7rem 0.2rem;
+  background-color: var(--primary-color);
+  font-size: 0.8rem;
+  color: var(--white);
+  border-radius: 0.5rem;
+  border: none;
+  outline: none;
+  margin-top: 0.1rem;
+  width: auto;
+`;
 const SignUpComponent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -18,48 +79,41 @@ const SignUpComponent = () => {
     agreeAge: false,
     agreeTerms: false,
     agreePrivacy: false,
+    agreeComercial: false,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [idChecked, setIdChecked] = useState(false); // 아이디 중복 확인 여부
-  const [passwordValid, setPasswordValid] = useState(true); // 비밀번호 조건 추가
-  const [passwordMatch, setPasswordMatch] = useState(true); // 비밀번호 일치 여부 확인
-  const [showPassword, setShowPassword] = useState(false); // 비밀번호 표시 여부 상태 추가
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // 비밀번호 확인 표시 여부 상태 추가
+  const [idChecked, setIdChecked] = useState(false);
+  const [passwordValid, setPasswordValid] = useState(true);
+  const [passwordMatch, setPasswordMatch] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // 비밀번호 유효성 검사 정규식
   const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
 
-  //아이디 중복 확인
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    // 입력값을 상태에 업데이트
     setFormData((prevState) => {
       const newState = {
         ...prevState,
         [name]: type === "checkbox" ? checked : value,
       };
 
-      // 비밀번호나 확인 필드가 변경되었을 때 일치 여부 확인
       if (name === "userPw") {
-        //비밀번호 조건 확인
         setPasswordValid(passwordRegex.test(value));
-        // 비밀번호가 변경되었을 때, 비밀번호 확인란과 비교
         setPasswordMatch(value === prevState.confirmPassword);
       } else if (name === "confirmPassword") {
-        // 비밀번호 확인란이 변경되었을 때, 비밀번호와 비교
         setPasswordMatch(value === prevState.userPw);
       }
 
-      // 아이디가 변경되면 중복 확인 리셋
       if (name === "userId") {
         setIdChecked(false);
       }
 
       if (name === "userEmailId" || name === "userEmailDomain") {
-        const domain = newState.userEmailDomain; // 'direct' 옵션을 제외하고 선택된 도메인만 사용
+        const domain = newState.userEmailDomain;
         newState.userEmail =
           domain && newState.userEmailId
             ? `${newState.userEmailId}@${domain}`
@@ -100,11 +154,10 @@ const SignUpComponent = () => {
     const { confirmPassword, ...filteredData } = formData;
     const result = await registerUser(filteredData);
 
-    console.log("회원가입 결과:", result);
-
     if (result && result.success === true) {
       alert("회원가입이 완료되었습니다!");
       navigate("/member/login");
+      window.location.reload(); // 페이지 새로고침 효과
     } else {
       setError(
         result?.message || "회원가입에 실패했습니다. 다시 시도해 주세요."
@@ -124,241 +177,259 @@ const SignUpComponent = () => {
 
     if (result.success) {
       alert("아이디가 사용 가능합니다.");
-      setIdChecked(true); // 중복 확인 성공 true로 설정
+      setIdChecked(true);
     } else {
       alert("아이디가 중복되었습니다. 다른 아이디를 사용해주세요.");
       setFormData((prevState) => ({
         ...prevState,
-        userId: "", //입력값을 초기화
+        userId: "",
       }));
-      setIdChecked(false); // 실패 시 false 유지
+      setIdChecked(false);
     }
   };
 
-  // 비밀번호 표시 토글
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  // 비밀번호 확인 표시 토글
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
+  const handleCheckAll = (e) => {
+    const isChecked = e.target.checked;
+    setFormData((prevState) => ({
+      ...prevState,
+      agreeAge: isChecked,
+      agreeTerms: isChecked,
+      agreePrivacy: isChecked,
+      agreeComercial: isChecked,
+    }));
+  };
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-white">
-      <MainMenubar />
-      <div className="p-8 w-1/3 mt-20">
-        <div className="flex justify-center items-center mb-10">
-          <img src="/images/mainlogo.png" alt="logo" />
+    <div>
+      {error && (
+        <div className="text-red-500 text-sm mb-1 text-center">{error}</div>
+      )}
+
+      <InputGroup style={{ display: "flex", alignItems: "center" }}>
+        <Icon className="bx bxs-user" />
+        <Input
+          type="text"
+          name="userId"
+          placeholder="아이디를 입력해주세요"
+          value={formData.userId}
+          onChange={handleChange}
+          style={{
+            paddingLeft: "1rem",
+            flex: 8, // 아이디 입력 필드가 차지하는 비율을 8로 설정
+          }}
+        />
+        <IdCheckButton
+          type="button"
+          onClick={handleUserIdCheck}
+          style={{
+            marginLeft: "1rem", // 버튼과 입력 필드 사이에 간격 추가
+            flex: 2,
+          }}
+        >
+          중복 확인
+        </IdCheckButton>
+      </InputGroup>
+
+      <InputGroup>
+        <Icon className="bx bxs-lock-alt" />
+        <Input
+          type={showPassword ? "text" : "password"}
+          name="userPw"
+          placeholder="비밀번호를 입력해주세요"
+          value={formData.userPw}
+          onChange={handleChange}
+          style={{ paddingLeft: "1rem" }}
+        />
+        <span
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+          onClick={togglePasswordVisibility}
+        >
+          <img
+            src={showPassword ? "/images/showPw.png" : "/images/hidePw.png"}
+            alt="아이콘"
+            width="24"
+            height="24"
+          />
+        </span>
+      </InputGroup>
+      {!passwordValid && formData.userPw && (
+        <div className="text-xs text-red-600 mb-2 text-left pl-1">
+          영문, 특수문자, 숫자를 모두 포함해야 하며 6글자 이상입니다.
+        </div>
+      )}
+
+      <InputGroup>
+        <Icon className="bx bxs-lock-alt" />
+        <Input
+          type={showConfirmPassword ? "text" : "password"}
+          name="confirmPassword"
+          placeholder="비밀번호를 재입력해주세요"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          style={{ paddingLeft: "1rem" }}
+        />
+        <span
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+          onClick={toggleConfirmPasswordVisibility}
+        >
+          <img
+            src={
+              showConfirmPassword ? "/images/showPw.png" : "/images/hidePw.png"
+            }
+            alt="아이콘"
+            width="24"
+            height="24"
+          />
+        </span>
+      </InputGroup>
+      {formData.confirmPassword && (
+        <div
+          className={`text-xs mb-2  text-left pl-1 ${
+            passwordMatch ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {passwordMatch
+            ? "비밀번호가 일치합니다."
+            : "비밀번호가 일치하지 않습니다."}
+        </div>
+      )}
+
+      <InputGroup>
+        <Icon className="bx bxs-user" />
+        <Input
+          type="text"
+          name="userName"
+          placeholder="이름을 입력해주세요"
+          value={formData.userName}
+          onChange={handleChange}
+          style={{ paddingLeft: "1rem" }}
+        />
+      </InputGroup>
+
+      <InputGroup>
+        <Icon className="bx bxs-map" />
+        <Input
+          type="text"
+          name="userAdress"
+          placeholder="주소를 입력해주세요"
+          value={formData.userAdress}
+          onChange={handleChange}
+          style={{ paddingLeft: "1rem" }}
+        />
+      </InputGroup>
+
+      <InputGroup>
+        <Icon className="bx bxs-envelope" />
+        <div className="flex w-full">
+          <Input
+            type="text"
+            name="userEmailId"
+            placeholder="이메일 아이디"
+            value={formData.userEmailId}
+            onChange={handleChange}
+            style={{
+              paddingLeft: "1rem",
+              width: "60%",
+              marginRight: "10px",
+            }}
+          />
+          <select
+            name="userEmailDomain"
+            value={formData.userEmailDomain}
+            onChange={handleChange}
+            className="w-2/5 border rounded-md p-3 bg-gray-100"
+          >
+            <option value="">직접입력</option>
+            <option value="naver.com">naver.com</option>
+            <option value="gmail.com">gmail.com</option>
+            <option value="daum.net">daum.net</option>
+          </select>
+        </div>
+      </InputGroup>
+      <div className="my-3">
+        {/* 전체 동의 */}
+        <label className="flex items-center mb-2 ml-1">
+          <input
+            type="checkbox"
+            name="agreeAll"
+            checked={
+              formData.agreeAge &&
+              formData.agreeTerms &&
+              formData.agreePrivacy &&
+              formData.agreeComercial
+            }
+            onChange={handleCheckAll}
+            className="mr-2"
+          />
+          <span className="text-sm">전체 동의</span>
+        </label>
+
+        {/* 두 번째 줄: 필수 항목 */}
+        <div className="flex flex-wrap ml-1">
+          <label className="flex items-center w-full sm:w-1/2 mb-1">
+            <input
+              type="checkbox"
+              name="agreeAge"
+              checked={formData.agreeAge}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <span className="text-sm">[필수] 만 14세 이상입니다</span>
+          </label>
+
+          <label className="flex items-center w-full sm:w-1/2 mb-1">
+            <input
+              type="checkbox"
+              name="agreeTerms"
+              checked={formData.agreeTerms}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <span className="text-sm">[필수] 이용약관 동의</span>
+          </label>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* 아이디 필드 */}
-          <div className="mb-4">
-            {/* <div className="text-sm text-gray-500 mb-1">아이디</div> */}
-            <div className="flex items-center border-b border-gray-300 pb-1">
-              <input
-                type="text"
-                name="userId"
-                placeholder="아이디를 입력해주세요"
-                className="w-full py-2 focus:outline-none focus:bg-transparent"
-                autocomplete="off"
-                onChange={handleChange}
-                value={formData.userId}
-                required
-              />
-              <button
-                type="button"
-                className="text-[#3c434b] whitespace-nowrap font-bold"
-                onClick={handleUserIdCheck}
-              >
-                중복 확인
-              </button>
-            </div>
-          </div>
+        {/* 세 번째 줄: 필수 + 선택 항목 */}
+        <div className="flex flex-wrap ml-1">
+          <label className="flex items-center w-full sm:w-1/2 mb-1">
+            <input
+              type="checkbox"
+              name="agreePrivacy"
+              checked={formData.agreePrivacy}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <span className="text-sm">[필수] 개인정보 수집 동의</span>
+          </label>
 
-          {/* 비밀번호 필드 */}
-          <div className="mb-4">
-            {/* <div className="text-sm text-gray-500 mb-1">비밀번호</div> */}
-            <div className="flex items-center border-b border-gray-300 pb-1">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="userPw"
-                placeholder="비밀번호를 입력해주세요"
-                className="w-full py-2 focus:outline-none"
-                onChange={handleChange}
-                value={formData.userPw}
-                required
-              />
-              <button
-                type="button"
-                className="text-[#3c434b] whitespace-nowrap font-bold"
-                onClick={togglePasswordVisibility}
-              >
-                {showPassword ? "숨기기" : "보기"}
-              </button>
-            </div>
-            {!passwordValid && formData.userPw && (
-              <div className="text-xs text-red-600 mt-1">
-                영문, 특수문자, 숫자를 모두 포함해야 하며 6글자 이상입니다.
-              </div>
-            )}
-          </div>
-
-          {/* 비밀번호 확인 필드 */}
-          <div className="mb-4">
-            {/* <div className="text-sm text-gray-500 mb-1">비밀번호 확인</div> */}
-            <div className="flex items-center border-b border-gray-300 pb-1">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="비밀번호를 재입력해주세요"
-                className="w-full py-2 focus:outline-none"
-                onChange={handleChange}
-                value={formData.confirmPassword}
-                required
-              />
-              <button
-                type="button"
-                className="text-[#3c434b] whitespace-nowrap font-bold"
-                onClick={toggleConfirmPasswordVisibility}
-              >
-                {showConfirmPassword ? "숨기기" : "보기"}
-              </button>
-            </div>
-            {formData.confirmPassword && (
-              <p
-                className={`text-xs mt-1 ${
-                  passwordMatch ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {passwordMatch
-                  ? "비밀번호가 일치합니다."
-                  : "비밀번호가 일치하지 않습니다."}
-              </p>
-            )}
-          </div>
-
-          {/* 이름 필드 */}
-          <div className="mb-4">
-            {/* <div className="text-sm text-gray-500 mb-1">이름</div> */}
-            <div className="border-b border-gray-300 pb-1">
-              <input
-                type="text"
-                name="userName"
-                placeholder="이름을 입력해주세요(띄어쓰기 없이 입력해주세요)"
-                className="w-full py-2 focus:outline-none"
-                onChange={handleChange}
-                value={formData.userName}
-                autocomplete="off"
-                required
-              />
-            </div>
-          </div>
-          <div className="mb-4">
-            {/* <div className="text-sm text-gray-500 mb-1">주소</div> */}
-            <div className="border-b border-gray-300 pb-1">
-              <input
-                type="text"
-                name="userAdress"
-                placeholder="주소를 입력해주세요"
-                className="w-full py-1 focus:outline-none"
-                onChange={handleChange}
-                value={formData.userAdress}
-                autocomplete="off"
-                required
-              />
-            </div>
-          </div>
-
-          {/* 이메일 필드 */}
-          <div className="mb-4">
-            {/* <div className="text-sm text-gray-500 mb-1">이메일</div> */}
-            <div className="flex items-center border-b border-gray-300 pb-1">
-              <input
-                type="text"
-                name="userEmailId"
-                placeholder="이메일 아이디"
-                className="w-2/5 py-2 focus:outline-none"
-                onChange={handleChange}
-                value={formData.userEmailId}
-                autocomplete="off"
-                required
-              />
-              <span className="px-2">@</span>
-              <select
-                name="userEmailDomain"
-                className="w-2/5 py-2 focus:outline-none"
-                onChange={handleChange}
-                value={formData.userEmailDomain}
-                required
-              >
-                <option value="">직접입력</option>
-                <option value="naver.com">naver.com</option>
-                <option value="gmail.com">gmail.com</option>
-                <option value="daum.net">daum.net</option>
-              </select>
-            </div>
-          </div>
-
-          {/* 약관 동의 섹션 */}
-          <div className="mb-6 mt-8">
-            <label className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                name="agreeAge"
-                checked={formData.agreeAge}
-                onChange={handleChange}
-                className="mr-2 h-5 w-5 rounded-full border-gray-300"
-              />
-              <span className="text-sm">[필수] 만 14세 이상입니다</span>
-            </label>
-
-            <label className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                name="agreeTerms"
-                checked={formData.agreeTerms}
-                onChange={handleChange}
-                className="mr-2 h-5 w-5 rounded-full border-gray-300"
-              />
-              <span className="text-sm">[필수] 이용약관 동의</span>
-            </label>
-            <label className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                name="agreePrivacy"
-                checked={formData.agreePrivacy}
-                onChange={handleChange}
-                className="mr-2 h-5 w-5 rounded-full border-gray-300"
-              />
-              <span className="text-sm">[필수] 개인정보 수집 동의</span>
-            </label>
-          </div>
-
-          {/* 가입 버튼 */}
-          <button
-            type="submit"
-            className="w-full bg-gray-300 text-white p-3 rounded-md hover:bg-orange-400 transition duration-300 mt-2"
-            disabled={isSubmitting}
-          >
-            가입완료
-          </button>
-        </form>
-
-        {error && <p className="text-red-500 text-center mt-2">{error}</p>}
-
-        <div className="mt-4 flex justify-center items-center text-gray-700">
-          <span className="text-sm">이미 아이디가 있으신가요?</span>
-          <Link
-            to="/member/login"
-            className="text-gray-700 font-bold ml-1 inline-block text-sm"
-          >
-            로그인하러 가기
-          </Link>
+          <label className="flex items-center w-full sm:w-1/2 mb-1">
+            <input
+              type="checkbox"
+              name="agreeComercial"
+              checked={formData.agreeComercial}
+              onChange={handleChange}
+              className="mr-2"
+            />
+            <span className="text-sm">[선택] 광고성 정보 수신 동의</span>
+          </label>
         </div>
       </div>
+
+      <SignupButton
+        type="submit"
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+      >
+        가입완료
+      </SignupButton>
     </div>
   );
 };

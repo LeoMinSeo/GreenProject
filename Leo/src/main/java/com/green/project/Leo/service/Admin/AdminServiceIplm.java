@@ -6,19 +6,20 @@ import com.green.project.Leo.dto.concert.ConcertScheduleDTO;
 
 import com.green.project.Leo.dto.product.ProductDTO;
 
+import com.green.project.Leo.dto.product.RequestProductReviewDTO;
+import com.green.project.Leo.dto.product.ResponseProductReviewDTO;
 import com.green.project.Leo.dto.user.UserDTO;
+import com.green.project.Leo.entity.User;
 import com.green.project.Leo.entity.concert.*;
 import com.green.project.Leo.entity.product.*;
+import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
 import com.green.project.Leo.repository.concert.ConcertRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
-import com.green.project.Leo.repository.product.OrderItemRepository;
-import com.green.project.Leo.repository.product.ProductImageRepository;
+import com.green.project.Leo.repository.product.*;
 
-import com.green.project.Leo.repository.product.ProductOrderRepository;
-import com.green.project.Leo.repository.product.ProductRepository;
 import com.green.project.Leo.util.CustomConcertFileUtil;
 import com.green.project.Leo.util.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,8 @@ public class AdminServiceIplm implements AdminService{
     private final ConcertTicketRepository ticketRepository;
     private final ProductOrderRepository productOrderRepository;
     private final OrderItemRepository orderItemRepository;
+    private final ProductReviewRepository productReviewRepository;
+    private final UserRepository userRepository;
     @Override
     public void addProduct(ProductDTO dto) {
 
@@ -93,7 +96,16 @@ public class AdminServiceIplm implements AdminService{
         }
 
         //변경된 상품정보 업데이트
-        Product modifyProduct = modelMapper.map(dto,Product.class);
+        Product modifyProduct = productRepository.findById(dto.getPno()).orElseThrow(
+                () -> new RuntimeException("상품을 찾을 수 없습니다: " + dto.getPno())
+        );
+        modifyProduct.pName(dto.getPname());
+        modifyProduct.pPrice(dto.getPrice());
+        modifyProduct.pdesc(dto.getPdesc());
+        modifyProduct.pStock(dto.getPstock());
+        modifyProduct.category(dto.getCategory());
+
+
         Product result = productRepository.save(modifyProduct);
 
         if(historyFileNames != null && historyFileNames.size()>0){
@@ -456,6 +468,36 @@ public class AdminServiceIplm implements AdminService{
         responseData.add(ticketMonthlyRevenue);
         responseData.add(orderMonthlyRevenue);
         return responseData;
+    }
+
+    @Override
+    public List<ResponseProductReviewDTO> getReviewList(Long pno) {
+
+
+        return productReviewRepository.selectByPNo(pno).stream().map(i->{
+            ResponseProductReviewDTO reviewDTO =  new ResponseProductReviewDTO();
+            reviewDTO.setProReivewNo(i.getPReviewNo());
+            reviewDTO.setReviewtext(i.getReviewtext());
+            reviewDTO.setReviewRating(i.getReviewRating());
+            reviewDTO.setUserId(i.getUser().userId());
+            reviewDTO.setDueDate(i.getDueDate());
+            reviewDTO.setPname(i.getProduct().pName());
+            return reviewDTO;
+        }).toList();
+
+    }
+
+    @Override
+    public void deleteReview(Long reviewNo) {
+        productReviewRepository.deleteById(reviewNo);
+    }
+
+    @Override
+    public List<UserDTO> getUserList() {
+
+        return userRepository.findAll().stream().map(i ->{
+            return modelMapper.map(i, UserDTO.class);
+        }).toList();
     }
 
 

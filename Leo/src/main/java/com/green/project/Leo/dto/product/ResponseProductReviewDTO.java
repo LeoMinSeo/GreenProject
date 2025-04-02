@@ -17,4 +17,5 @@ public class ResponseProductReviewDTO {
     private String reviewtext;
     private Double reviewRating;
     private LocalDate dueDate;
+    private String pname;
 }

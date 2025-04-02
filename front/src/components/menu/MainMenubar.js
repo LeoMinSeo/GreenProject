@@ -1,17 +1,20 @@
-import { nav } from "framer-motion/client";
-import { CookingPot, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const MainMenubar = ({ currentIndex, currentPage }) => {
-  const loginUser = JSON.parse(localStorage.getItem("user"));
+  let loginUser = {};
+
+  try {
+    const storedUser = localStorage.getItem("user");
+    loginUser = storedUser ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    console.error("JSON 파싱 오류:", error);
+    loginUser = {}; // 예외 발생 시 기본 값 할당
+  }
 
   const [user, setUser] = useState(loginUser);
 
   const navigate = useNavigate();
-  // const location = useLocation();
-  // console.log("location: ", location);
-  // const { state } = location; // Link를 통해 전달된 state를 받음
 
   useEffect(() => {
     setUser(loginUser);
@@ -26,8 +29,7 @@ const MainMenubar = ({ currentIndex, currentPage }) => {
 
   const handleMyPage = () => {
     if (!loginUser) {
-      alert("로그인 해주세요");
-      navigate("/member/login");
+      navigate("/member/login", { state: { from: location.pathname } });
     } else {
       navigate(`/member/mypage/${loginUser.userId}`);
     }
@@ -37,7 +39,7 @@ const MainMenubar = ({ currentIndex, currentPage }) => {
     if (loginUser) {
       navigate("/shopping/basket");
     } else {
-      navigate("/member/login");
+      navigate("/member/login", { state: { from: location.pathname } });
     }
   };
 
@@ -157,8 +159,12 @@ const MainMenubar = ({ currentIndex, currentPage }) => {
         ) : (
           <>
             {/* 로그인되지 않은 상태에서는 Login, Join, MyPage, Cart 버튼 표시 */}
-            <Link
-              to="/member/login"
+            <button
+              onClick={() => {
+                navigate("/member/login", {
+                  state: { from: location.pathname },
+                });
+              }}
               className={`${
                 currentIndex === 0
                   ? "text-[#EED9C4] font-bold"
@@ -166,17 +172,7 @@ const MainMenubar = ({ currentIndex, currentPage }) => {
               } mx-2 relative after:content-['|'] after:absolute after:right-[-12px] after:text-gray-700`}
             >
               Login
-            </Link>
-            <Link
-              to="/member/signup"
-              className={`${
-                currentIndex === 0
-                  ? "text-[#EED9C4] font-bold"
-                  : "text-black font-bold"
-              } mx-2 relative after:content-['|'] after:absolute after:right-[-12px] after:text-gray-700`}
-            >
-              Join
-            </Link>
+            </button>
 
             {/* 로그인되지 않았을 때는 MyPage와 Cart 버튼도 표시 */}
             <button

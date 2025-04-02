@@ -304,7 +304,7 @@ const MainComponent = () => {
                 {/* 세련된 시작하기 버튼 */}
                 <p
                   onClick={() => {
-                    navigate("/member/signup");
+                    navigate("/member/login");
                   }}
                   className="mt-8 px-8 py-3 bg-transparent text-white font-medium rounded-full border-2 border-orange-400 transition duration-300 hover:bg-orange-500 hover:border-orange-500 hover:text-white hover:shadow-lg"
                   style={{

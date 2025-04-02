@@ -6,7 +6,7 @@ import PageComponent from "../common/PageComponent"; // 페이지 컴포넌트 i
 
 // 카테고리 목록 (실제 데이터의 category 값에 맞춤)
 const categories = [
-  { id: "all", name: "전체" },
+  { id: "전체", name: "전체" },
   { id: "뮤지컬", name: "뮤지컬" },
   { id: "연극", name: "연극" },
   { id: "클래식", name: "클래식" },
@@ -15,7 +15,7 @@ const categories = [
 
 const ListComponent = () => {
   const videoRef = useRef(null);
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태 추가
   const navigate = useNavigate();
 
@@ -45,12 +45,11 @@ const ListComponent = () => {
       size: 10,
     };
 
-    // 카테고리가 "all"이 아닌 경우 카테고리 필터링을 서버에 요청할 수 있음
-    if (selectedCategory !== "all") {
+    if (selectedCategory !== "전체") {
       pageRequestDTO.category = selectedCategory;
     }
 
-    getList(pageRequestDTO)
+    getList(pageRequestDTO, selectedCategory)
       .then((data) => {
         setConcertData(data);
         console.log(data.dtoList);
@@ -70,7 +69,7 @@ const ListComponent = () => {
   // 선택된 카테고리에 따라 콘서트 필터링
   // 서버에서 필터링된 결과를 받아오는 경우 이 부분은 필요 없을 수 있음
   const filteredConcerts =
-    selectedCategory === "all"
+    selectedCategory === "전체"
       ? concertData.dtoList
       : concertData.dtoList.filter(
           (concert) => concert.category === selectedCategory

@@ -38,6 +38,9 @@ const AdminMenubar = () => {
         <li className="font-bold text-gray-500 hover:text-red-500 cursor-pointer">
           <Link to={"/admin/concert/order/list"}>티켓 주문 관리</Link>
         </li>
+        <li className="font-bold text-gray-500 hover:text-red-500 cursor-pointer">
+          <Link to={"/admin/user"}>가입 유저 목록</Link>
+        </li>
       </ul>
     </aside>
   );

@@ -12,7 +12,7 @@ const init = [
       userPw: "",
       userName: "",
       userEmail: "",
-      userAdress: "",
+      userAddress: "",
       uid: null,
     },
     productDTO: {

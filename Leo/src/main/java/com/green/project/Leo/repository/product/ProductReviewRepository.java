@@ -13,4 +13,7 @@ public interface ProductReviewRepository extends JpaRepository<ProductReview,Lon
 
     @Query(value = "select * from  product_review where u_id = :uId", nativeQuery = true)
     List<ProductReview> getReviewList(@Param("uId") Long uId);
+
+    boolean existsByProduct_PNoAndProductOrder_OrderNum(Long pNo, Long orderNum);
+
 }

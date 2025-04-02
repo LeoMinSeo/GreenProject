@@ -121,6 +121,14 @@ const ProductsListComponent = () => {
                     >
                       삭제
                     </button>
+                    <button
+                      onClick={() =>
+                        navigate(`/admin/products/reviews/${product.pno}`)
+                      }
+                      className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm"
+                    >
+                      리뷰관리
+                    </button>
                     <ConfirmModal
                       isOpen={isModalOpen}
                       onConfirm={confirmDelete}

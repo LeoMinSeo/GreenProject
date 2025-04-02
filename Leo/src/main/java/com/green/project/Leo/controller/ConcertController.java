@@ -23,10 +23,10 @@ public class ConcertController {
     private CustomConcertFileUtil fileUtil;
     @Autowired
     private ConcertService service;
-    @GetMapping("/list")
-    public PageResponseDTO<ResponseListDTO> getList(PageRequestDTO dto){
+    @GetMapping("/list/{category}")
+    public PageResponseDTO<ResponseListDTO> getList(PageRequestDTO dto,@PathVariable(name = "category")String category){
 
-        return service.getConcertList(dto);
+        return service.getConcertList(dto,category);
     }
 
     @GetMapping("/read/{cno}")

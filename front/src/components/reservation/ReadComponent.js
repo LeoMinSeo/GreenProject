@@ -372,7 +372,7 @@ const ReadComponent = () => {
       });
     } else {
       alert("로그인 후 이용해주세요.");
-      navigate("/member/login");
+      navigate("/member/login",{ state: { from: location.pathname } });
     }
   };
 
