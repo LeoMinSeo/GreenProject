@@ -1,6 +1,6 @@
 package com.green.project.Leo.entity.product;
 
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

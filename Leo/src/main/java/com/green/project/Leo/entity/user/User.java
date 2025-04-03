@@ -1,4 +1,4 @@
-package com.green.project.Leo.entity;
+package com.green.project.Leo.entity.user;
 
 import com.green.project.Leo.entity.concert.ConcertReview;
 import com.green.project.Leo.entity.concert.ConcertTicket;
@@ -37,6 +37,10 @@ public class User {
     private String userAddress;
 
     private String userPhoneNum;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
+
     @Column(name = "is_deleted")
     private boolean isDeleted = false;  // 기본값을 false로 설정
 
@@ -61,12 +65,13 @@ public class User {
     private List<ProductOrder> productOrders = new ArrayList<>();
 
     @Builder
-    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted) {
+    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted,UserRole userRole) {
         this.userId = userId;
         this.userPw = userPw;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userAddress = userAddress;
         this.isDeleted = isDeleted;
+        this.userRole = userRole;
     }
 }

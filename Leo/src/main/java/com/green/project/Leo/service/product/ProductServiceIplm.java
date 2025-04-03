@@ -3,7 +3,7 @@ package com.green.project.Leo.service.product;
 import com.green.project.Leo.dto.pageable.PageRequestDTO;
 import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.dto.product.*;
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.product.*;
@@ -61,12 +61,16 @@ public class ProductServiceIplm implements ProductService{
                 Sort.by("pNo").descending()
         );
         Page<Product> result;
+
         if (category == null || category.equals("전체")) {
+
             result = productRepository.findAll(pageable);
         } else {
             // 특정 카테고리만 필터링하여 조회
+
             result = productRepository.findByCategory(category, pageable);
         }
+
         List<ProductDTO> productDTOList = new ArrayList<>();
         for(Product i : result){
             List<String> imageList = imageRepository.findFileNamesByPNo(i.pNo());
@@ -80,6 +84,7 @@ public class ProductServiceIplm implements ProductService{
                     .category(i.category())
                     .build();
             productDTOList.add(productDTO);
+
         }
         long totalCount = result.getTotalElements();
         return PageResponseDTO.<ProductDTO>withAll()

@@ -1,6 +1,6 @@
 package com.green.project.Leo.entity.concert;
 
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

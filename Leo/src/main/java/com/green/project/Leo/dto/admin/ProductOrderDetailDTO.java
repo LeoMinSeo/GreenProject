@@ -1,9 +1,7 @@
 package com.green.project.Leo.dto.admin;
 
 import com.green.project.Leo.dto.user.UserDTO;
-import com.green.project.Leo.entity.User;
 import com.green.project.Leo.entity.product.OrderStatus;
-import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;

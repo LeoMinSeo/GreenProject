@@ -4,7 +4,7 @@ import com.green.project.Leo.dto.product.OrderItemDTO;
 import com.green.project.Leo.dto.user.MyPageRequestOrderDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.dto.user.userReviewDTO;
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.product.OrderItem;
 import com.green.project.Leo.entity.product.ProductOrder;
 import com.green.project.Leo.entity.product.ProductReview;
@@ -12,16 +12,20 @@ import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductReviewRepository;
+import com.green.project.Leo.util.JWTUtil;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
+@Log4j2
 public class MemberServiceImple implements MemberService {
 
 
@@ -40,9 +44,13 @@ public class MemberServiceImple implements MemberService {
     @Autowired
     private ProductReviewRepository productReviewRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public  ResponseEntity<Map<String, Object>> registerMember(UserDTO userDTO){
         System.out.println("서비스 : " + userDTO);
+        userDTO.setUserPw(passwordEncoder.encode(userDTO.getUserPw()));
         User user = userRepository.convertToEntity(userDTO);
         userRepository.save(user);
 
@@ -78,16 +86,8 @@ public class MemberServiceImple implements MemberService {
     @Override
     public ResponseEntity<Map<String, Object>> login(UserDTO userDTO) {
         Map<String, Object> response = new HashMap<>();
-
-        // 입력값 검증
-        if (userDTO.getUserId() == null || userDTO.getUserPw() == null) {
-            response.put("success", false);
-            response.put("message", "아이디와 비밀번호를 모두 입력해주세요.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-
-        // 사용자 정보 조회
-        User user = userRepository.findByUserId(userDTO.getUserId());
+        //정보조회
+        User user = userRepository.getWithRoles(userDTO.getUserId());
 
         // 존재하지 않는 아이디인 경우
         if (user == null) {
@@ -97,8 +97,9 @@ public class MemberServiceImple implements MemberService {
             return ResponseEntity.ok(response);
         }
 
+
         // 비밀번호가 일치하지 않는 경우
-        if (!userDTO.getUserPw().equals(user.userPw())) {
+        if (!passwordEncoder.matches(userDTO.getUserPw(), user.userPw())) {
             System.out.println("비밀번호 틀렸어요.");
             response.put("success", false);
             response.put("data", "아이디 또는 비밀번호가 잘못되었습니다.");
@@ -113,13 +114,22 @@ public class MemberServiceImple implements MemberService {
             return ResponseEntity.ok(response);
         }
 
+
         // 로그인 성공 - UserDTO 변환
         UserDTO data = modelMapper.map(user, UserDTO.class);
+        Map<String,Object> claims = data.getClaims();
 
+        String accessToken = JWTUtil.generateToken(claims,10);
+        String refreshToken = JWTUtil.generateToken(claims,60*24);
+
+        log.info("엑세스"+ accessToken);
         // 응답 생성
-        System.out.println("올바른 로그인이네요.");
+
         response.put("success", true);
         response.put("data", data);
+        response.put("accessToken", accessToken);    // 액세스 토큰 추가
+        response.put("refreshToken", refreshToken);  // 리프레시 토큰 추가
+
         return ResponseEntity.ok(response);
     }
 

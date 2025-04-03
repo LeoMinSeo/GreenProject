@@ -38,6 +38,12 @@ dependencies {
 	// https://mvnrepository.com/artifact/net.coobird/thumbnailator
 	implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.19'
 	implementation 'com.github.iamport:iamport-rest-client-java:0.2.23'
+// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
+	implementation("org.springframework.boot:spring-boot-starter-security:3.4.3")
+	implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 
 }

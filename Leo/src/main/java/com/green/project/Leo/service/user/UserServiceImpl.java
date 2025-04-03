@@ -5,7 +5,7 @@ import com.green.project.Leo.dto.concert.ConcertCustomDataDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.dto.product.*;
 
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.concert.ConcertSchedule;
 import com.green.project.Leo.entity.concert.ConcertTicket;
 import com.green.project.Leo.entity.concert.OrderStatusForConcert;
@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService{

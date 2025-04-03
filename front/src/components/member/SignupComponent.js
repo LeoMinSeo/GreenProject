@@ -75,7 +75,7 @@ const SignUpComponent = () => {
     userEmail: "",
     userEmailId: "",
     userEmailDomain: "",
-    userAdress: "",
+    userAddress: "",
     agreeAge: false,
     agreeTerms: false,
     agreePrivacy: false,
@@ -318,9 +318,9 @@ const SignUpComponent = () => {
         <Icon className="bx bxs-map" />
         <Input
           type="text"
-          name="userAdress"
+          name="userAddress"
           placeholder="주소를 입력해주세요"
-          value={formData.userAdress}
+          value={formData.userAddress}
           onChange={handleChange}
           style={{ paddingLeft: "1rem" }}
         />

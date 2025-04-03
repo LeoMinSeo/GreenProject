@@ -269,7 +269,7 @@ const LoginComponent = () => {
       const loginParam = { userId, userPw };
       const response = await loginPost(loginParam);
       const { data } = response;
-
+      console.log(data);
       if (data === "탈퇴하신분이에요") {
         setErrorMessage("존재하지 않는 계정입니다.");
       } else if (data === "존재하지 않는 아이디입니다.") {
@@ -277,21 +277,14 @@ const LoginComponent = () => {
       } else if (data === "아이디 또는 비밀번호가 잘못되었습니다.") {
         setErrorMessage("비밀번호를 확인해주세요");
       } else if (data) {
-        if (rememberMe) {
-          // 자동 로그인 체크된 경우 아이디와 비밀번호를 저장
-          localStorage.setItem("username", userId);
-          localStorage.setItem("password", userPw);
-          localStorage.setItem("rememberMe", "true"); // rememberMe 상태도 저장
-        } else {
-          // 자동 로그인 체크되지 않은 경우, 로컬스토리지에서 제거
-          localStorage.removeItem("username");
-          localStorage.removeItem("password");
-          localStorage.removeItem("rememberMe"); // rememberMe 상태 제거
-        }
-
+        localStorage.setItem("accessToken", response.accessToken);
+        localStorage.setItem("refreshToken", response.refreshToken);
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("user", JSON.stringify(data));
 
+        console.log(response.accessToken);
+
+        console.log(data);
         navigate(from, { state: { isAuthenticated: true } });
       } else {
         setErrorMessage("로그인에 실패했습니다.");

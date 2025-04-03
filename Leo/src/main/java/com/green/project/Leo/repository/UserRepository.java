@@ -1,14 +1,23 @@
 package com.green.project.Leo.repository;
 
 import com.green.project.Leo.dto.user.UserDTO;
-import com.green.project.Leo.entity.User;
+import com.green.project.Leo.entity.user.User;
+import com.green.project.Leo.entity.user.UserRole;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
+
+
+
+
     @Query(value = "select * from user where user_id = :userId",nativeQuery = true)
     User selectByUserId(@Param("userId") String userId);
 
@@ -25,7 +34,11 @@ public interface UserRepository extends JpaRepository<User,Long> {
                 .userName(userDTO.getUserName())
                 .userEmail(userDTO.getUserEmail())
                 .userAddress(userDTO.getUserAddress())
+                .userRole(UserRole.USER)
                 .build();
     }
 
+    @EntityGraph(attributePaths = {"userRole"})
+    @Query("SELECT u FROM User u WHERE u.userId = :userId")
+    User getWithRoles(@Param("userId") String userId);
 }
