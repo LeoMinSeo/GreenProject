@@ -5,6 +5,7 @@ import memberRouter from "./memberRouter";
 import shoppingRouter from "./shoppingRouter";
 import adminProductsRouter from "./adminProductsRouter";
 import adminConcertRouter from "./adminConcertRouter";
+import ProtectedRoute from "./ProtectedRoute"; // 추가된 부분
 const { createBrowserRouter } = require("react-router-dom");
 
 const Loading = (
@@ -64,9 +65,11 @@ const root = createBrowserRouter([
   {
     path: "admin",
     element: (
-      <Suspense fallback={Loading}>
-        <AdminMainPage />
-      </Suspense>
+      <ProtectedRoute>
+        <Suspense fallback={Loading}>
+          <AdminMainPage />
+        </Suspense>
+      </ProtectedRoute>
     ),
   },
   {
@@ -84,9 +87,11 @@ const root = createBrowserRouter([
   {
     path: "admin/user",
     element: (
-      <Suspense fallback={Loading}>
-        <AdminUserPage />
-      </Suspense>
+      <ProtectedRoute>
+        <Suspense fallback={Loading}>
+          <AdminUserPage />
+        </Suspense>
+      </ProtectedRoute>
     ),
   },
   {

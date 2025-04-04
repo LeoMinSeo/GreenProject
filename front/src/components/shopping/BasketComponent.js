@@ -13,6 +13,7 @@ const init = [
       userName: "",
       userEmail: "",
       userAddress: "",
+      userPhoneNum: "",
       uid: null,
     },
     productDTO: {
@@ -86,7 +87,7 @@ const BasketComponent = () => {
 
   return (
     <div>
-      <MainMenubar  />
+      <MainMenubar />
       <div className="mt-24 max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
           <ShoppingCart size={32} /> 장바구니

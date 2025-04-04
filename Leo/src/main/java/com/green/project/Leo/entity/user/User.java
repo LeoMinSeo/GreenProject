@@ -65,7 +65,7 @@ public class User {
     private List<ProductOrder> productOrders = new ArrayList<>();
 
     @Builder
-    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted,UserRole userRole) {
+    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted,UserRole userRole , String userPhoneNum) {
         this.userId = userId;
         this.userPw = userPw;
         this.userName = userName;
@@ -73,5 +73,6 @@ public class User {
         this.userAddress = userAddress;
         this.isDeleted = isDeleted;
         this.userRole = userRole;
+        this.userPhoneNum =userPhoneNum;
     }
 }

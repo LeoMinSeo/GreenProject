@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { updateProfile } from "../../api/memberApi";
 
-const MyPageModify = ({ userData, setUserData, userId }) => {
+const MyPageModify = ({ userData, refreshData, userId }) => {
   const [modifiedUserData, setModifiedUserData] = useState({
     userId: "",
     userName: "",
@@ -33,9 +33,8 @@ const MyPageModify = ({ userData, setUserData, userId }) => {
     e.preventDefault();
     try {
       await updateProfile(userId, modifiedUserData);
-      setUserData(modifiedUserData);
+      refreshData();
       alert("회원정보가 수정되었습니다.");
-      window.location.reload();
     } catch (error) {
       alert("수정중에 오류가 발생했습니다");
       console.log(error);
@@ -43,6 +42,7 @@ const MyPageModify = ({ userData, setUserData, userId }) => {
   };
 
   return (
+
     <div className="flex justify-end ml-20 min-h-[92vh] ">
       <div className="bg-white pl-32 pt-5 rounded-lg shadow-lg mt-20 w-full ">
         <h2 className="text-2xl font-bold  text-gray-800 mb-6 border-b pb-4 select-none ml-[-108px]">

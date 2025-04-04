@@ -7,10 +7,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Map;
 
 @Log4j2
@@ -44,6 +48,21 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         if(path.startsWith("/concert/")){
             return true;
         }
+        // 토큰 리프레시 엔드포인트도 체크 안함
+        if (path.startsWith("/auth/refresh")) {
+            return true;
+        }
+        //아이디찾기 제외
+        if(path.startsWith("/api/member/findId")){
+            return true;
+        }
+        //비밀번호찾기 제외
+        if(path.startsWith("/api/member/findPw")){
+            return true;
+        }
+        if(path.startsWith("/api/member/test/pw/")){
+            return true;
+        }
 
 
 
@@ -56,7 +75,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         log.info("---------------------JWTCheckFilter-----------------------");
         String authHeaderStr = request.getHeader("Authorization");
-
+        String path = request.getRequestURI();
         try{
             //Bearer accestoken
             String accessToken = authHeaderStr.substring(7);
@@ -64,7 +83,29 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             log.info("JWT claims:" + claims);
 
-            filterChain.doFilter(request,response);
+
+
+            String userRole = (String) claims.get("userRole");
+
+            if (path.startsWith("/admin") && !"ADMIN".equals(userRole)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                Gson gson = new Gson();
+                String msg = gson.toJson(Map.of("error", "UNAUTHORIZED_ACCESS"));
+                response.setContentType("application/json");
+                PrintWriter printWriter = response.getWriter();
+                printWriter.println(msg);
+                printWriter.close();
+                return;
+            }
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    claims.get("userId"),  // principal
+                    null,  // credentials (null로 설정, 이미 토큰으로 인증됨)
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + userRole)) // 권한
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            filterChain.doFilter(request, response);
 
         }catch (Exception e){
             log.error("JWT Check Error--------------------");
@@ -73,6 +114,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             Gson gson = new Gson();
             String msg = gson.toJson(Map.of("error","ERROR_ACCESS_TOKEN"));
 
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             PrintWriter printWriter = response.getWriter();
             printWriter.println(msg);

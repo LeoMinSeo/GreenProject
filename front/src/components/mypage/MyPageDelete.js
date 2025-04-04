@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import axios from "axios";
+
+import { deleteUser } from "../../api/memberApi";
+import { useNavigate } from "react-router-dom";
 
 const MyPageDelete = ({ userId }) => {
   console.log("userId:", userId);
   const [selectedReasons, setSelectedReasons] = useState([]);
   const [password, setPassword] = useState("");
   const [showModal, setShowModal] = useState(false);
-
+  const navigate = useNavigate();
   // 회원 탈퇴 처리
   const handleDeleteAccount = async () => {
     if (!password) {
@@ -15,31 +17,23 @@ const MyPageDelete = ({ userId }) => {
       return;
     }
 
-    try {
-      const response = await axios.delete(
-        `http://localhost:8089/api/member/delete/${userId}`,
-        { data: { userPw: password, userId } }
-      );
-
-      console.log("응답:", response.data);
-
-      alert(response.data);
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("user");
-
-      window.location.href = "/";
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          alert("비밀번호가 일치하지 않습니다. 다시 시도해주세요.");
-        } else {
-          alert("회원탈퇴 중 오류가 발생했습니다.");
+    deleteUser(userId, password)
+      .then((i) => {
+        alert(i);
+        if (i === "회원탈퇴가 완료되었습니다.") {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("user");
+          navigate("/");
         }
-      } else {
+        setShowModal(false);
+      })
+      .catch((error) => {
         alert("회원탈퇴 중 오류가 발생했습니다.");
-      }
-      setShowModal(false);
-    }
+
+        setShowModal(false);
+      });
   };
 
   // 모달 열기

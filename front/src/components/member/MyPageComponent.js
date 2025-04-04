@@ -3,8 +3,7 @@ import MyPageModify from "../../components/mypage/MyPageModify";
 import MyPageOrders from "../../components/mypage/MyPageOrders";
 import MyPageReview from "../../components/mypage/MyPageReview";
 import DeleteAccount from "../../components/mypage/MyPageDelete";
-
-import axios from "axios";
+import { getProfile, ordersResponse, productReview } from "../../api/memberApi";
 
 const MyPageComponent = ({ userId, data }) => {
   const [userData, setUserData] = useState(null);
@@ -15,28 +14,28 @@ const MyPageComponent = ({ userId, data }) => {
   const loginUser = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userResponse = await axios.get(
-          `http://localhost:8089/api/member/getprofile/${userId}`
-        );
-        setUserData(userResponse.data);
+    getProfile(userId)
+      .then((data) => {
+        setUserData(data);
+      })
+      .catch((error) => {
+        console.log("사용자정보불러오기 에러");
+      });
+    ordersResponse(loginUser.uid)
+      .then((data) => {
+        setOrders(data);
+      })
+      .catch((error) => {
+        console.log("주문내역불러오기 에러");
+      });
 
-        const ordersResponse = await axios.get(
-          `http://localhost:8089/api/member/orders/${loginUser.uid}`
-        );
-        setOrders(ordersResponse.data);
-
-        const reviewsResponse = await axios.get(
-          `http://localhost:8089/api/member/review/${loginUser.uid}`
-        );
-        setReviews(reviewsResponse.data || []);
-      } catch (error) {
-        console.error("데이터 로딩 실패:", error);
-      }
-    };
-
-    fetchData();
+    productReview(loginUser.uid)
+      .then((data) => {
+        setReviews(data || []);
+      })
+      .catch((error) => {
+        console.log("리뷰불러오기 에러");
+      });
   }, [userId, refreshTrigger]);
   const refreshData = () => {
     setRefreshTrigger((prev) => prev + 1); // 값만 변경하면 useEffect가 다시 실행됨
@@ -48,7 +47,7 @@ const MyPageComponent = ({ userId, data }) => {
       return (
         <MyPageModify
           userData={userData}
-          setUserData={setUserData}
+          refreshData={refreshData}
           userId={userId}
         />
       );

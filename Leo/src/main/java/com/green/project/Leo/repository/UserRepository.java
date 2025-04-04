@@ -3,10 +3,12 @@ package com.green.project.Leo.repository;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.user.UserRole;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,9 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
-
-
-
 
     @Query(value = "select * from user where user_id = :userId",nativeQuery = true)
     User selectByUserId(@Param("userId") String userId);
@@ -35,10 +34,17 @@ public interface UserRepository extends JpaRepository<User,Long> {
                 .userEmail(userDTO.getUserEmail())
                 .userAddress(userDTO.getUserAddress())
                 .userRole(UserRole.USER)
+                .userPhoneNum(userDTO.getUserPhoneNum())
                 .build();
     }
 
     @EntityGraph(attributePaths = {"userRole"})
     @Query("SELECT u FROM User u WHERE u.userId = :userId")
     User getWithRoles(@Param("userId") String userId);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE user SET user_pw = :newPassword WHERE u_id = :uId", nativeQuery = true)
+    void updateUserPassword(@Param("uId") Long uId, @Param("newPassword") String newPassword);
 }

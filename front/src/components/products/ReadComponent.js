@@ -73,10 +73,10 @@ const ReadComponent = () => {
           cartNo: `direct_${Date.now()}`, // 임시 카트번호 (실제 DB에 저장되지 않음)
           userDTO: {
             userId: loginUser.userId,
-            userPw: "", // 보안상 비밀번호는 전송하지 않음
             userName: loginUser.userName || "",
             userEmail: loginUser.userEmail || "",
-            userAdress: loginUser.userAdress || "",
+            userAddress: loginUser.userAddress || "",
+            userPhoneNum: loginUser.userPhoneNum || "",
             uid: loginUser.uid || null,
           },
           productDTO: product.productDTO,
@@ -105,7 +105,7 @@ const ReadComponent = () => {
     } else {
       // 비회원인 경우
       alert("로그인 후 이용해 주십시오.");
-      navigate("/member/login",{ state: { from: location.pathname } });
+      navigate("/member/login", { state: { from: location.pathname } });
     }
   };
 

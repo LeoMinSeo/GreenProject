@@ -26,8 +26,6 @@ const BookingPaymentComponent = () => {
   const [unitPrice, setUnitPrice] = useState(0);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
-  // 예매자 정보와 동일하게 설정 체크박스
-  const [sameAsBooker, setSameAsBooker] = useState(false);
 
   // 개인정보 수집 동의
   const [privacyAgreed, setPrivacyAgreed] = useState(false);

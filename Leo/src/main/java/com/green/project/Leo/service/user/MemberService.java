@@ -20,7 +20,7 @@ public interface MemberService {
     public ResponseEntity<Map<String, Object>> findId (String userName, String userEmail); // 아이디 찾기
     public  ResponseEntity<Map<String, Object>> findPw (String userName, String userId); // 비밀번호 찾기
     public List<MyPageRequestOrderDTO> findOrderByUid(Long uid);
-    public Boolean deleteUser(String userId, String userPw); // 회원탈퇴
+    public Boolean deleteUser(UserDTO userDTO); // 회원탈퇴
     User selectByUserId(@Param("userId") String userId);
 
     public List<userReviewDTO> getMyReview(Long uid);

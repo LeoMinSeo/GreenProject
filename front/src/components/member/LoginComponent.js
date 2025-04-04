@@ -374,9 +374,11 @@ const LoginComponent = () => {
         <Column className="form-column" showForm={showForm}>
           <FormWrapper>
             <Form>
-              <div className="flex justify-center items-center mb-5">
-                <img src="/images/mainlogo.png" alt="logo" />
-              </div>
+              {isLogin && (
+                <div className="flex justify-center items-center mb-5">
+                  <img src="/images/mainlogo.png" alt="logo" />
+                </div>
+              )}
 
               {errorMessage && (
                 <div className="text-red-500 text-sm mb-1 text-center">

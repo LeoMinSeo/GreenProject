@@ -52,6 +52,7 @@ public class MemberServiceImple implements MemberService {
         System.out.println("서비스 : " + userDTO);
         userDTO.setUserPw(passwordEncoder.encode(userDTO.getUserPw()));
         User user = userRepository.convertToEntity(userDTO);
+        System.out.println("유저 에 폰넘"+user.userPhoneNum());
         userRepository.save(user);
 
         // 응답을 JSON 객체로 반환
@@ -297,14 +298,12 @@ public class MemberServiceImple implements MemberService {
 
     // 회원 탈퇴 삭제
     @Override
-    public Boolean deleteUser(String userId, String userPw) {
-        System.out.println("service :" +userId+", password:"+userPw);
+    public Boolean deleteUser(UserDTO userDTO) {
 
-        User user = userRepository.findByUserId(userId);
-        System.out.println("user: 100) " +user);
+        User user = userRepository.findByUserId(userDTO.getUserId());
 
-        if (user == null || !user.userPw().equals(userPw)) {
-            return false; // 사용자가 없거나 비밀번호가 일치하지 않음
+        if (!passwordEncoder.matches(userDTO.getUserPw(), user.userPw())) {
+            return false; // 비밀번호가 일치하지 않음
         }
         user.isDeleted(true); // 사용자를 삭제 상태로 표시
         userRepository.save(user);

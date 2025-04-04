@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import MainMenubar from "../../components/menu/MainMenubar"; // 메뉴바 컴포넌트
 import MyPageComponent from "../../components/member/MyPageComponent"; // 마이페이지 콘텐츠 컴포넌트
+import { getProfile } from "../../api/memberApi";
 
 const MyPage = () => {
   const { userId } = useParams();
@@ -10,15 +11,10 @@ const MyPage = () => {
   const [userData, setUserData] = useState({});
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const response = await axios.get(
-        `http://localhost:8089/api/member/getprofile/${userId}`
-      );
-      setUserData(response.data);
-    };
-
     if (userId) {
-      fetchUserData();
+      getProfile(userId).then((i) => {
+        setUserData(i);
+      });
     }
   }, [userId]);
 

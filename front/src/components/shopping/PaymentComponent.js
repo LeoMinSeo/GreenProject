@@ -28,14 +28,11 @@ const PaymentComponent = () => {
       setCartData(requestData);
       setIsDirectPurchase(direct);
 
-      console.log("장바구니 데이터:", requestData);
-      console.log("바로구매 여부:", direct);
-
       // 폼 초기화
       setForm({
         name: requestData[0].userDTO.userName || "",
         address: requestData[0].userDTO.userAddress || "",
-        phonenumber: "", // 전화번호 정보가 없으므로 빈값으로 처리
+        phonenumber: requestData[0].userDTO.userPhoneNum || "", // 전화번호 정보가 없으므로 빈값으로 처리
         note: "", // 요청사항은 빈값으로 처리
       });
     }
