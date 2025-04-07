@@ -70,11 +70,9 @@ public class MemberServiceImple implements MemberService {
 
         Map<String, Object> response = new HashMap<>();
         if (isUserIdExist) {
-            System.out.println("중복된 아이디니까 사용 못해요");
             response.put("success", false);
             response.put("message", "아이디가 이미 존재합니다.");
         } else {
-            System.out.println("사용 가능한 아이디니까 사용해요");
             response.put("success", true);
             response.put("message", "아이디가 사용 가능합니다.");
         }
@@ -119,7 +117,7 @@ public class MemberServiceImple implements MemberService {
         // 로그인 성공 - UserDTO 변환
         UserDTO data = modelMapper.map(user, UserDTO.class);
         Map<String,Object> claims = data.getClaims();
-
+        data.setUserPw(null);
         String accessToken = JWTUtil.generateToken(claims,10);
         String refreshToken = JWTUtil.generateToken(claims,60*24);
 
@@ -155,14 +153,14 @@ public class MemberServiceImple implements MemberService {
 
         User existingMember = userRepository.findByUserId(userId);
 
-        existingMember.userName(userDTO.getUserName()); // fluent 방식으로 setter 사용
+        existingMember.userName(userDTO.getUserName());
         existingMember.userEmail(userDTO.getUserEmail());
         existingMember.userAddress(userDTO.getUserAddress());
+        existingMember.userPhoneNum(userDTO.getUserPhoneNum());
 
         User updatedMember = userRepository.save(existingMember);
-        UserDTO updatedUserDTO = modelMapper.map(updatedMember, UserDTO.class);
 
-        return updatedUserDTO;
+        return modelMapper.map(updatedMember, UserDTO.class);
     }
 
     //아이디 찾기

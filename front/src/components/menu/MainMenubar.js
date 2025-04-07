@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -20,7 +21,11 @@ const MainMenubar = ({ currentIndex, currentPage }) => {
     setUser(loginUser);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const res = await axios.post(`http://localhost:8089/auth/logout`, {
+      refreshToken: localStorage.getItem("refreshToken"),
+    });
+    console.log(res);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("isAuthenticated");

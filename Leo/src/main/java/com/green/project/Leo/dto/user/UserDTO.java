@@ -36,12 +36,7 @@ public class UserDTO {
 
         dataMap.put("uid", uid);
         dataMap.put("userId", userId);
-        dataMap.put("userPw", userPw);  // 주의: 보안상 비밀번호는 토큰에 포함시키지 않는 것이 좋습니다
-        dataMap.put("userName", userName);
-        dataMap.put("userEmail", userEmail);
-        dataMap.put("userAddress", userAddress);
         dataMap.put("isDeleted", isDeleted);
-        dataMap.put("userPhoneNum", userPhoneNum);
         dataMap.put("userRole", userRole != null ? userRole.toString() : null);
 
         return dataMap;

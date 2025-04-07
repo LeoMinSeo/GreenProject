@@ -1,22 +1,55 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 import MainMenubar from "../../components/menu/MainMenubar"; // 메뉴바 컴포넌트
 import MyPageComponent from "../../components/member/MyPageComponent"; // 마이페이지 콘텐츠 컴포넌트
 import { getProfile } from "../../api/memberApi";
+import { jwtDecode } from "jwt-decode";
 
 const MyPage = () => {
   const { userId } = useParams();
   const [data, setData] = useState("orders");
   const [userData, setUserData] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (userId) {
+    // 로컬 스토리지에서 토큰 가져오기
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      // 토큰이 없는 경우
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/");
+      return;
+    }
+
+    try {
+      // 토큰 디코딩하여 저장된 userId 추출
+      const decodedToken = jwtDecode(token);
+      const tokenUserId = decodedToken.userId; // JWT 토큰 내 userId 필드명에 맞게 수정
+
+      // URL의 userId와 토큰의 userId 비교
+      if (userId !== tokenUserId) {
+        // 불일치할 경우 경고창 표시
+        alert("접근 권한이 없습니다.");
+
+        // 로컬 스토리지 데이터 모두 삭제
+        localStorage.clear();
+
+        // 홈페이지로 리다이렉트
+        navigate("/");
+        return;
+      }
+      // userId가 일치하면 프로필 정보 가져오기
       getProfile(userId).then((i) => {
         setUserData(i);
       });
+    } catch (error) {
+      console.error("토큰 검증 오류:", error);
+      alert("인증 정보가 유효하지 않습니다.");
+      localStorage.clear();
+      navigate("/");
     }
-  }, [userId]);
+  }, [userId, navigate]);
 
   const sidebar = [
     { id: "orders", label: "주문내역" },

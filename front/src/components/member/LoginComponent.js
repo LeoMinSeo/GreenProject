@@ -276,18 +276,16 @@ const LoginComponent = () => {
         setErrorMessage("아이디를 확인해주세요.");
       } else if (data === "아이디 또는 비밀번호가 잘못되었습니다.") {
         setErrorMessage("비밀번호를 확인해주세요");
-      } else if (data) {
+      } else {
         localStorage.setItem("accessToken", response.accessToken);
         localStorage.setItem("refreshToken", response.refreshToken);
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("user", JSON.stringify(data));
 
-        console.log(response.accessToken);
+        console.log(response.refreshToken);
 
         console.log(data);
         navigate(from, { state: { isAuthenticated: true } });
-      } else {
-        setErrorMessage("로그인에 실패했습니다.");
       }
     } catch (error) {
       setErrorMessage("서버 오류가 발생했습니다.");
@@ -423,18 +421,6 @@ const LoginComponent = () => {
                       />
                     </span>
                   </InputGroup>
-
-                  {/* 자동 로그인 체크박스 추가 */}
-                  <div>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={handleRememberMeChange}
-                      />
-                      자동 로그인
-                    </label>
-                  </div>
 
                   <Button onClick={handleLogin}>로그인</Button>
                 </>

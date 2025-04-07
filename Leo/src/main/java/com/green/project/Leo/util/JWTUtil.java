@@ -4,21 +4,28 @@ import lombok.extern.log4j.Log4j2;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Map;
 
+@Component
 @Log4j2
 public class JWTUtil {
-    private static String key = "1234567890123456789012345678901234567890";
+    private static String staticKey;
 
+    @Value("${jwt.secret}")
+    public void setKey(String key) {
+        JWTUtil.staticKey = key;
+    }
     public static String generateToken(Map<String,Object> valueMap,int min){
         SecretKey key = null;
 
         try{
-            key = Keys.hmacShaKeyFor(JWTUtil.key.getBytes("UTF-8"));
+            key = Keys.hmacShaKeyFor(staticKey.getBytes("UTF-8"));
         }catch (Exception e){
             throw new RuntimeException(e.getMessage());
         }
@@ -35,7 +42,7 @@ public class JWTUtil {
         Map<String,Object> claim = null;
 
         try{
-            SecretKey key = Keys.hmacShaKeyFor(JWTUtil.key.getBytes("UTF-8"));
+            SecretKey key = Keys.hmacShaKeyFor(staticKey.getBytes("UTF-8"));
 
             claim = Jwts.parserBuilder()
                     .setSigningKey(key)
