@@ -170,6 +170,7 @@ public class AdminServiceIplm implements AdminService{
             schedule.setStartTime(i.getStartTime());
             schedule.setEndTime(i.getEndTime());
             schedule.setTotalSeats(i.getTotalSeats());
+            schedule.setAvailableSeats(i.getTotalSeats());
             schedule.setStatus(ConcertStatus.AVAILABLE);
             concertScheduleList.add(schedule);
         }

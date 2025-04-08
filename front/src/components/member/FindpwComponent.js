@@ -4,85 +4,63 @@ import { Link } from "react-router-dom";
 
 function FindpwComponent() {
   const [id, setId] = useState("");
-  const [name, setName] = useState("");
-  const [userPw, setUserPw] = useState(null);
+  const [email, setEmail] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("아이디:", id);
-    console.log("이름:", name);
     try {
       const response = await axios.post(
-        `http://localhost:8089/api/member/findPw`,
+        `http://localhost:8089/user/send-reset-link`,
         {
-          userName: name,
           userId: id,
+          userEmail: email,
         }
       );
 
-      console.log("비밀번호 찾기:", response.data);
-
-      // 성공적으로 아이디를 찾은 경우
-      if (response.data.success) {
-        alert(`${name} 님의 비밀번호는 ${response.data.data} 입니다.`);
-        setUserPw(response.data.data); // 상태 업데이트
-      } else if (response.data.data === "탈퇴한 계정") {
-        // 실패한 경우 (탈퇴한 계정이나 존재하지 않는 계정)
-        alert("탈퇴한 계정"); // 에러 메시지 표시
-      } else if (response.data.data === "찾을 수 없는 사용자") {
-        alert("해당 사용자를 찾을 수 없습니다.");
-      }
+      alert("비밀번호 재설정 링크가 이메일로 전송되었습니다.");
     } catch (error) {
-      alert("서버 오류가 발생했습니다.");
-      console.log("error", error);
+      if (error.response?.data?.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("서버 오류가 발생했습니다.");
+      }
+      console.error("error", error);
     }
   };
 
   return (
-    // <div className="max-w-sm w-full max-h-md p-6 bg-white rounded-lg shadow-md mx-auto mt-24 border border-gray-300">
     <div className="max-w-lg w-full h-[500px] p-6 mx-auto mt-24 border border-gray-300 rounded-lg shadow-lg bg-white">
       <h2 className="text-center text-2xl font-semibold text-gray-800 mb-8">
         비밀번호 찾기
       </h2>
-
       <form onSubmit={handleSubmit}>
         <div className="mb-6 mt-12">
-          <div className="flex items-center pb-1 px-4">
-            <input
-              type="text"
-              id="name"
-              placeholder="이름을 입력해주세요"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              autoComplete="off"
-              className="w-full py-3 pl-2 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-orange-400 rounded-lg"
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="아이디를 입력해주세요"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            required
+            className="w-full py-3 px-4 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-orange-400 rounded-lg"
+          />
         </div>
-
         <div className="mb-3">
-          <div className="flex items-center pb-1 px-4">
-            <input
-              type="text"
-              id="id"
-              placeholder="아이디를 입력해주세요"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              required
-              autoComplete="off"
-              className="w-full py-3 pl-2 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-orange-400 rounded-lg"
-            />
-          </div>
+          <input
+            type="email"
+            placeholder="이메일을 입력해주세요"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full py-3 px-4 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-orange-400 rounded-lg"
+          />
         </div>
         <button
           type="submit"
-          className="w-[430px] py-3 ml-4 bg-orange-400 text-white text-lg font-semibold rounded-lg hover:bg-orange-500 transition duration-300 mt-6"
+          className="w-full py-3 bg-orange-400 text-white text-lg font-semibold rounded-lg hover:bg-orange-500 transition duration-300 mt-6"
         >
-          비밀번호 찾기
+          비밀번호 재설정 링크 요청
         </button>
       </form>
-
       <div className="flex justify-center items-center text-xs text-center mt-4 space-x-2">
         <Link to="/member/findid" className="text-gray-600 hover:underline">
           아이디 찾기

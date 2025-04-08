@@ -3,6 +3,7 @@ import { useLocation, useParams } from "react-router-dom";
 import { getConcertByCnoAndDate } from "../../api/concertApi";
 import MainMenubar from "../menu/MainMenubar";
 import { addConcertOrder } from "../../api/userApi";
+import AddressSearch from "../customModal/AddressSearch"; // AddressSearch 컴포넌트 임포트
 
 const BookingPaymentComponent = () => {
   const loginUser = JSON.parse(localStorage.getItem("user"));
@@ -26,9 +27,11 @@ const BookingPaymentComponent = () => {
   const [unitPrice, setUnitPrice] = useState(0);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
-
   // 개인정보 수집 동의
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
+
+  // 주소 검색 모달 상태
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedSchedule && cno) {
@@ -85,6 +88,17 @@ const BookingPaymentComponent = () => {
     setAddress(event.target.value);
   };
 
+  // 주소 검색 모달 열기
+  const handleAddressSearchClick = () => {
+    setIsAddressModalOpen(true);
+  };
+
+  // 주소 선택 시 호출될 함수
+  const handleAddressSelect = (selectedAddress) => {
+    setAddress(selectedAddress);
+    setIsAddressModalOpen(false);
+  };
+
   const handleDeliveryMethodChange = (event) => {
     setDeliveryMethod(event.target.value);
   };
@@ -124,6 +138,13 @@ const BookingPaymentComponent = () => {
       // 간단한 유효성 검사
       if (ticketQuantity < 1 || ticketQuantity > 4) {
         alert("티켓 수량은 1~4매 사이여야 합니다.");
+        return;
+      }
+      // 남은 좌석 확인 (추가된 부분)
+      if (concertData.availableSeats < ticketQuantity) {
+        alert(
+          `남은 좌석이 부족합니다. 현재 예매 가능한 좌석은 ${concertData.availableSeats}석입니다.`
+        );
         return;
       }
       setCurrentStep(2);
@@ -561,13 +582,23 @@ const BookingPaymentComponent = () => {
                       <label className="block mb-1">
                         배송지 주소 <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
-                        value={address}
-                        onChange={handleAddressChange}
-                        className="w-full p-2 border rounded"
-                        placeholder="주소 입력"
-                      />
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          value={address}
+                          onChange={handleAddressChange}
+                          className="w-full p-2 border rounded-l"
+                          placeholder="주소 입력"
+                          readOnly
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddressSearchClick}
+                          className="bg-orange-400 hover:bg-orange-500 text-white p-2 rounded-r border border-orange-400"
+                        >
+                          주소 찾기
+                        </button>
+                      </div>
                       <p className="text-sm text-gray-500 mt-1">
                         우편 발송 시 배송비 3,000원이 추가됩니다.
                       </p>
@@ -740,6 +771,15 @@ const BookingPaymentComponent = () => {
           </div>
         </div>
       </div>
+
+      {/* 주소 검색 모달 */}
+      {isAddressModalOpen && (
+        <AddressSearch
+          isOpen={isAddressModalOpen}
+          onClose={() => setIsAddressModalOpen(false)}
+          onAddressSelect={handleAddressSelect}
+        />
+      )}
     </div>
   );
 };

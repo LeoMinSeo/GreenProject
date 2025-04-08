@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { addConcert } from "../../../api/adminApi";
 
 const TicketAddComponent = () => {
   const [concert, setConcert] = useState({
@@ -126,6 +127,7 @@ const TicketAddComponent = () => {
         })),
       };
       console.log(formattedConcert.schedulesDtoList);
+
       const formData = new FormData();
 
       // concertDTO를 JSON 문자열로 변환하여 FormData에 추가
@@ -141,15 +143,8 @@ const TicketAddComponent = () => {
         formData.append("file", file);
       }
 
-      const response = await axios.post(
-        "http://localhost:8089/admin/add/concert",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // 기존 axios.post 직접 호출 대신 API 함수 사용
+      const response = await addConcert(formData);
 
       setSuccess("공연이 성공적으로 등록되었습니다!");
       // 폼 초기화

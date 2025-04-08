@@ -15,4 +15,5 @@ public interface ConcertService {
     public PageResponseDTO<ResponseListDTO> getConcertList(PageRequestDTO dto,String category);
     public ConcertDTO getConcertByCno(Long cno);
     public ScheduleDtoForBooking getConcertScheduleByCnoAndStartTime(Long cno , LocalDateTime startTime);
+
 }

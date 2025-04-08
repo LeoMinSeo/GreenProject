@@ -5,52 +5,81 @@ import com.green.project.Leo.dto.concert.ConcertCustomDataDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.dto.product.*;
 
+import com.green.project.Leo.entity.PasswordResetToken;
+import com.green.project.Leo.entity.concert.ConcertStatus;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.concert.ConcertSchedule;
 import com.green.project.Leo.entity.concert.ConcertTicket;
 import com.green.project.Leo.entity.concert.OrderStatusForConcert;
 import com.green.project.Leo.entity.product.*;
 
+import com.green.project.Leo.repository.PasswordResetTokenRepository;
 import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
 import com.green.project.Leo.repository.product.*;
+import com.green.project.Leo.util.DiscordLogger;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
+import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Service
-public class UserServiceImpl implements UserService{
+@Slf4j
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    private DiscordLogger discordLogger;
     @Autowired
     private IamportClient iamportClient;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private ProductRepository productRepository;
+
     @Autowired
     private ProductCartRepository cartRepository;
+
     @Autowired
     private ProductImageRepository imageRepository;
+
     @Autowired
     private ModelMapper modelMapper;
+
     @Autowired
     private ProductOrderRepository orderRepository;
+
     @Autowired
     private OrderItemRepository itemRepository;
+
+    @Autowired
+    private ConcertScheduleRepository scheduleRepository;
+
     @Autowired
     private ConcertTicketRepository ticketRepository;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private org.springframework.mail.javamail.JavaMailSender mailSender; // ✅ 추가
+
     @Override
     public String addCart(RequestCartDTO cartDTO) {
         ProductCart result = cartRepository.selectDuplicate(cartDTO.getUserId(), cartDTO.getPNo());
@@ -61,12 +90,10 @@ public class UserServiceImpl implements UserService{
                     .numOfItem(cartDTO.getNumOfItem())
                     .build();
             cartRepository.save(productCart);
-        }else {
-            result.setNumOfItem(result.getNumOfItem()+cartDTO.getNumOfItem());
-            System.out.println("동일한상품이라 수량만 증가"+result.getNumOfItem());
+        } else {
+            result.setNumOfItem(result.getNumOfItem() + cartDTO.getNumOfItem());
             cartRepository.save(result);
         }
-
         return "장바구니에 담았습니다.";
     }
 
@@ -76,7 +103,7 @@ public class UserServiceImpl implements UserService{
         List<ProductCartDTO> cartDTOList = new ArrayList<>();
         for(ProductCart i : result){
             List<String> imglist = imageRepository.findFileNamesByPNo(i.getProduct().pNo());
-            ProductDTO productDTO = modelMapper.map(i.getProduct(),ProductDTO.class);
+            ProductDTO productDTO = modelMapper.map(i.getProduct(), ProductDTO.class);
             productDTO.setUploadFileNames(imglist);
             ProductCartDTO cartDTO = ProductCartDTO.builder()
                     .cartNo(i.getCartNo())
@@ -87,19 +114,19 @@ public class UserServiceImpl implements UserService{
             cartDTO.getUserDTO().setUserPw(null);
             cartDTOList.add(cartDTO);
         }
-
         return cartDTOList;
     }
 
     @Override
-    public String addOrder(String imp_uid,ProductOrderDTO orderDTO) throws IamportResponseException, IOException {
-
+    public String addOrder(String imp_uid, ProductOrderDTO orderDTO) throws IamportResponseException, IOException {
         IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
         Payment paymentInformation = payment.getResponse();
         orderDTO.setPayment(paymentInformation.getPayMethod());
         orderDTO.setCardName(paymentInformation.getCardName());
+
         User user = new User();
         user.uId(orderDTO.getUserdto().getUid());
+
         ProductOrder productOrder = new ProductOrder();
         productOrder.setUser(user);
         productOrder.setPayment(orderDTO.getPayment());
@@ -110,12 +137,15 @@ public class UserServiceImpl implements UserService{
         productOrder.setNote(orderDTO.getNote());
         productOrder.setTotalPrice(orderDTO.getTotalPrice());
 
-
         List<OrderItemDTO> itemListDto = orderDTO.getOrderItems();
         List<OrderItem> itemlist = new ArrayList<>();
         for(OrderItemDTO i : itemListDto){
             Product product = productRepository.findById(i.getPno()).orElseThrow();
             product.pStock(product.pStock() - i.getNumOfItem());
+            if(product.pStock()-i.getNumOfItem()<=0){
+                discordLogger.sendMessage("상품명:"+product.pName()+" 품절되었습니다");
+            }
+
             Product updateProduct = productRepository.save(product);
             OrderItem orderItem = OrderItem.builder()
                     .numOfItem(i.getNumOfItem())
@@ -131,10 +161,10 @@ public class UserServiceImpl implements UserService{
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String formatDate = date.format(formatter);
-        String ordercode =  formatDate+orderInformation.getOrderNum();
+        String ordercode =  formatDate + orderInformation.getOrderNum();
         cartRepository.deleteById(orderDTO.getUserdto().getUid());
 
-        return "주문번호:"+ordercode;
+        return "주문번호:" + ordercode;
     }
 
     @Override
@@ -148,17 +178,26 @@ public class UserServiceImpl implements UserService{
         Payment paymentInformation = payment.getResponse();
         NumberFormat formatter = NumberFormat.getNumberInstance(Locale.KOREA);
         String customDataJson = paymentInformation.getCustomData();
+
         ObjectMapper objectMapper = new ObjectMapper();
         ConcertCustomDataDTO customData = objectMapper.readValue(customDataJson, ConcertCustomDataDTO.class);
-        User user =  new User();
+
+        User user = new User();
         user.uId(customData.getUid());
-        ConcertTicket concertTicket =  ConcertTicket.builder()
+        ConcertSchedule concertSchedule = scheduleRepository.findById(customData.getScheduleId()).get();
+        concertSchedule.setAvailableSeats(concertSchedule.getAvailableSeats()- customData.getTicketQuantity());
+        if(concertSchedule.getAvailableSeats()- customData.getTicketQuantity() <= 0){
+            concertSchedule.setStatus(ConcertStatus.SOLD_OUT);
+            discordLogger.sendMessage(concertSchedule.getConcert().getCName()+"의 "+concertSchedule.getStartTime()+"시간이 매진되었습니다");
+        }
+        ConcertSchedule modifyAvailable = scheduleRepository.save(concertSchedule);
+        ConcertTicket concertTicket = ConcertTicket.builder()
                 .shippingAddress(paymentInformation.getBuyerAddr())
                 .buyerName(paymentInformation.getBuyerName())
                 .buyerTel(paymentInformation.getBuyerTel())
-                .price(formatter.format(paymentInformation.getAmount())+"원")
+                .price(formatter.format(paymentInformation.getAmount()) + "원")
                 .buyMethod(paymentInformation.getPayMethod())
-                .concertSchedule(ConcertSchedule.builder().scheduleId(customData.getScheduleId()).build())
+                .concertSchedule(modifyAvailable)
                 .ticketQuantity(customData.getTicketQuantity())
                 .deliveryMethod(customData.getDeliveryMethod())
                 .paymentDate(LocalDate.now())
@@ -166,10 +205,95 @@ public class UserServiceImpl implements UserService{
                 .user(user)
                 .build();
 
-         ticketRepository.save(concertTicket);
-
-
+        ticketRepository.save(concertTicket);
     }
 
+    @Override
+    public User findByUserId(String userId) {
+        return userRepository.findByUserId(userId);
+    }
+    @Transactional
+    @Override
+    public void savePasswordResetToken(User user, String token) {
+        log.info("tokenReset 101) {},  {}", user,token);
+        // 먼저 해당 유저에 대한 기존 토큰 삭제
+        passwordResetTokenRepository.deleteByUser(user);
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    @Override
+    public void sendResetEmail(String toEmail, String resetLink) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("비밀번호 재설정 링크");
+            System.out.println("여기까지옴");
+
+            // HTML에서 % 기호를 %% 로 이스케이프 처리하고, 주황색 테마와 직사각형 디자인으로 변경
+            String htmlContent = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>비밀번호 재설정</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%%" style="background-color: #f9f9f9; padding: 20px;">
+                <tr>
+                    <td align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="500" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                            <!-- 헤더 -->
+                            <tr>
+                                <td align="center" bgcolor="#FF7518" style="padding: 35px 0;">
+                                    <h1 style="color: #ffffff; margin: 0; font-size: 24px;">비밀번호 재설정</h1>
+                                </td>
+                            </tr>
+                            <!-- 콘텐츠 -->
+                            <tr>
+                                <td style="padding: 50px 30px;">
+                                    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">안녕하세요,</p>
+                                    <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">비밀번호 재설정 요청을 받았습니다.<br/> 아래 버튼을 클릭하여 새로운 비밀번호를 설정하세요.</p>
+                                    <p style="text-align: center; margin: 50px 0;">
+                                        <a href="%s" style="display: inline-block; background-color: #FF7518; color: #ffffff; font-weight: bold; text-decoration: none; padding: 15px 40px; border-radius: 4px; font-size: 16px;">비밀번호 재설정하기</a>
+                                    </p>
+                                    <p style="color: #777777; font-size: 14px; line-height: 1.6; margin-bottom: 25px;">메일 수신후 30분안에 변경해주세요! 30분이 지나면 무효화됩니다.</p>
+                                    <p style="color: #777777; font-size: 14px; line-height: 1.6;">버튼이 작동하지 않는 경우, 아래 링크를 복사하여 브라우저에 붙여넣기 해주세요:</p>
+                                    <p style="word-break: break-all; font-size: 13px; color: #888888; margin-top: 5px;">%s</p>
+                                </td>
+                            </tr>
+                            <!-- 푸터 -->
+                            <tr>
+                                <td bgcolor="#f8f8f8" style="padding: 25px 30px; border-top: 1px solid #eeeeee;">
+                                    <p style="color: #999999; font-size: 13px; text-align: center; margin: 0;">© 2025 AudiMew. All rights reserved.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        """.formatted(resetLink, resetLink);
+
+            helper.setText(htmlContent, true);
+            helper.setFrom("audimew0404@naver.com");
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("메일 전송 실패: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void save(User user) {
+        userRepository.save(user);
+    }
 
 }

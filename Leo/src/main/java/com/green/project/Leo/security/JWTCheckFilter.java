@@ -72,6 +72,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         if(path.startsWith("/auth/refresh")){
             return true;
         }
+        if(path.startsWith("/user/send-reset-link"))  return true;
+        if(path.startsWith("/user/reset-password"))  return true;
 
 
 

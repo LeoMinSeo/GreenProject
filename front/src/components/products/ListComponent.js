@@ -129,8 +129,16 @@ const ListComponent = () => {
               .map((product) => (
                 <div
                   key={product.pno}
-                  className="bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg cursor-pointer hover:shadow-xl transition-shadow duration-300"
-                  onClick={() => moveToRead(product.pno)}
+                  className={`bg-white p-4 rounded-lg border border-[#ad9e87] shadow-lg ${
+                    product.pstock > 0
+                      ? "cursor-pointer hover:shadow-xl transition-shadow duration-300"
+                      : "opacity-75"
+                  }`}
+                  onClick={
+                    product.pstock > 0
+                      ? () => moveToRead(product.pno)
+                      : undefined
+                  }
                 >
                   <div className="w-full h-52">
                     <img

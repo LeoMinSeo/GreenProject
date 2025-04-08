@@ -20,10 +20,10 @@ const AdminMenubar = () => {
           <Link to={"/admin/list/TicketList"}>공연 티켓 목록</Link>
         </li> */}
         <li className="font-bold text-gray-500 hover:text-red-500 cursor-pointer">
-          <Link to={"/admin/products/add"}>음원 상품 등록</Link>
+          <Link to={"/admin/products/add"}>음향 상품 등록</Link>
         </li>
         <li className="font-bold text-gray-500 hover:text-red-500 cursor-pointer">
-          <Link to={"/admin/products/list"}>음악 상품 관리</Link>
+          <Link to={"/admin/products/list"}>음향 상품 관리</Link>
         </li>
 
         <li className="font-bold text-gray-500 hover:text-red-500 cursor-pointer">

@@ -41,10 +41,13 @@ public class ConcertController {
         return fileUtil.getFile(fileName);
     }
 
-    @GetMapping("/test")
-    public ScheduleDtoForBooking testPay(@RequestParam Long cno,
+    @GetMapping("/reservation")
+    public ScheduleDtoForBooking forReservation(@RequestParam Long cno,
                                          @RequestParam LocalDateTime startTime){
 
         return  service.getConcertScheduleByCnoAndStartTime(cno,startTime);
     }
+
+
+
 }

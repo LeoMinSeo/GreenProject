@@ -6,6 +6,7 @@ import shoppingRouter from "./shoppingRouter";
 import adminProductsRouter from "./adminProductsRouter";
 import adminConcertRouter from "./adminConcertRouter";
 import ProtectedRoute from "./ProtectedRoute"; // 추가된 부분
+import ResetPasswordComponent from "../components/member/ResetPasswordComponent";
 const { createBrowserRouter } = require("react-router-dom");
 
 const Loading = (
@@ -99,6 +100,14 @@ const root = createBrowserRouter([
     element: (
       <Suspense fallback={Loading}>
         <Testpage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/reset-password",
+    element: (
+      <Suspense fallback={Loading}>
+        <ResetPasswordComponent />
       </Suspense>
     ),
   },

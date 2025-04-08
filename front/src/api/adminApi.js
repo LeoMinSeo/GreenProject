@@ -99,6 +99,12 @@ export const deleteProduct = async (pno) => {
 };
 
 // 콘서트 관련 API
+export const addConcert = async (concertData) => {
+  const header = { headers: { "Content-Type": "multipart/form-data" } };
+  const res = await adminApi.post("/add/concert", concertData, header);
+  return res.data;
+};
+
 export const getConcertList = async () => {
   const res = await adminApi.get("/concert/list");
   return res.data;

@@ -2,7 +2,7 @@ import axios from "axios";
 
 const host = "http://localhost:8089/concert";
 
-export const getList = async (pageRequest,category) => {
+export const getList = async (pageRequest, category) => {
   const res = await axios.get(`${host}/list/${category}`, {
     params: pageRequest,
   });
@@ -15,7 +15,7 @@ export const getConcertByCno = async (cno) => {
 };
 
 export const getConcertByCnoAndDate = async (cno, scheduleDate) => {
-  const res = await axios.get(`${host}/test`, {
+  const res = await axios.get(`${host}/reservation`, {
     params: {
       cno: cno,
       startTime: scheduleDate,

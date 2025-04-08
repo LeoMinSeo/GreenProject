@@ -3,17 +3,21 @@ package com.green.project.Leo.service.user;
 import com.green.project.Leo.dto.product.ProductCartDTO;
 import com.green.project.Leo.dto.product.ProductOrderDTO;
 import com.green.project.Leo.dto.product.RequestCartDTO;
+import com.green.project.Leo.entity.user.User;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
-    public String addCart(RequestCartDTO cartDTO);
-    public List<ProductCartDTO> selectCartList(String userId);
-    public String addOrder(String imp_uid,ProductOrderDTO orderDTO) throws IamportResponseException, IOException;
-    public void deleteFromCart(Long cartNo);
-    public void addConcertOrder(String uid) throws IamportResponseException, IOException;
-
-
+    String addCart(RequestCartDTO cartDTO);
+    List<ProductCartDTO> selectCartList(String userId);
+    String addOrder(String imp_uid, ProductOrderDTO orderDTO) throws IamportResponseException, IOException;
+    void deleteFromCart(Long cartNo);
+    void addConcertOrder(String uid) throws IamportResponseException, IOException;
+    User findByUserId(String userId);
+    void savePasswordResetToken(User user, String token);
+    void sendResetEmail(String toEmail, String resetLink);
+    void save(User user);
 }

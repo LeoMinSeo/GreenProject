@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getOne } from "../../api/productsApi";
 import ReviewComponent from "../menu/ReviewComponent";
 import { addCart } from "../../api/userApi";
@@ -33,6 +33,10 @@ const ReadComponent = () => {
       setProduct(data);
       setFetching(false);
       console.log(data);
+      if (data.productDTO.pstock <= 0) {
+        alert("SoldOut 상품입니다.");
+        navigate("/product/list");
+      }
     });
   }, [pno]);
 

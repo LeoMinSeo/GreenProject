@@ -4,6 +4,7 @@ import com.green.project.Leo.dto.product.OrderItemDTO;
 import com.green.project.Leo.dto.user.MyPageRequestOrderDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.dto.user.userReviewDTO;
+import com.green.project.Leo.entity.product.ProductImage;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.product.OrderItem;
 import com.green.project.Leo.entity.product.ProductOrder;
@@ -229,17 +230,17 @@ public class MemberServiceImple implements MemberService {
             // 주문번호에 해당하는 상품 리스트 가져오기
             List<OrderItem> orderItems = orderItemRepository.getOrderItemByOrderNum(i.getOrderNum());
             System.out.println("오더넘버"+i.getOrderNum());
-
+            System.out.println("오더리스트"+orderItems);
             // 상품 정보를 저장할 리스트 생성
             List<OrderItemDTO> orderItemDTOList = new ArrayList<>();
 
             // 상품 리스트를 DTO로 변환
             for (OrderItem orderItem : orderItems) {
-
+                List<ProductImage> images = orderItem.getProduct().images();
                 OrderItemDTO orderItemDTO = new OrderItemDTO();
                 orderItemDTO.setPno(orderItem.getProduct().pNo()); // 상품 번호
                 orderItemDTO.setProductName(orderItem.getProduct().pName());// 상품명
-                orderItemDTO.setImgFileName(orderItem.getProduct().images().get(0).getFileName());
+                orderItemDTO.setImgFileName(!images.isEmpty() ? images.get(0).getFileName() : "");
                 orderItemDTO.setNumOfItem(orderItem.getNumOfItem()); // 구매 수량
                 orderItemDTO.setProductPrice(orderItem.getProduct().pPrice());// 상품 가격
                 orderItemDTO.setHasReview(productReviewRepository.existsByProduct_PNoAndProductOrder_OrderNum(orderItem.getProduct().pNo(),i.getOrderNum()));
@@ -312,7 +313,5 @@ public class MemberServiceImple implements MemberService {
     public User selectByUserId(String userId) {
         return userRepository.selectByUserId(userId);
     }
-
-
 
 }

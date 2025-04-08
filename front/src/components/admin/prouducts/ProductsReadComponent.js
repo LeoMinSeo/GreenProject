@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import SubMenubar from "../../menu/SubMenubar";
-import { useParams } from "react-router-dom";
-import { getOne } from "../../../api/productsApi";
-import ReviewComponent from "../../menu/ReviewComponent";
-import { addCart } from "../../../api/userApi";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getOne } from "../../api/productsApi";
+import ReviewComponent from "../menu/ReviewComponent";
+import { addCart } from "../../api/userApi";
+import ResultModal from "../common/ResultModal";
+import MainMenubar from "../menu/MainMenubar";
 
 const init = [
   {
@@ -12,15 +13,21 @@ const init = [
   },
 ];
 
-const ProductsReadComponent = () => {
+const ReadComponent = () => {
+  const loginUser = JSON.parse(localStorage.getItem("user"));
   const pno = useParams();
+  const navigate = useNavigate();
   const [returnMsg, setReturnMsg] = useState(null);
   const [product, setProduct] = useState(init);
   const [fetching, setFetching] = useState(true);
   const [quantity, setQuantity] = useState(1);
+
+  // 수량 증가/감소 함수
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  // 상품 정보 불러오기
   useEffect(() => {
     getOne(pno).then((data) => {
       setProduct(data);
@@ -28,22 +35,93 @@ const ProductsReadComponent = () => {
       console.log(data);
     });
   }, [pno]);
+
+  // FormData 객체
   const formDataRef = useRef(new FormData());
+
+  // 사용자 정보 및 상품, 수량 설정
   useEffect(() => {
-    formDataRef.current.set("userId", "leo1657");
-    formDataRef.current.set("pNo", pno.pno);
-    formDataRef.current.set("numOfItem", quantity);
-    console.log(formDataRef.current.get("numOfItem"));
-  }, [pno, quantity]);
+    // 로그인한 사용자라면, 그 ID를 사용
+    if (loginUser) {
+      formDataRef.current.set("userId", loginUser.userId);
+      formDataRef.current.set("pNo", pno.pno);
+      formDataRef.current.set("numOfItem", quantity);
+    }
+  }, [pno, quantity, loginUser]);
+
+  // 장바구니에 상품 추가
   const clickSubmit = () => {
-    addCart(formDataRef.current).then((data) => {
-      setReturnMsg(data);
-    });
+    // 로그인한 경우
+    if (loginUser) {
+      addCart(formDataRef.current).then((data) => {
+        setReturnMsg(data);
+      });
+    } else {
+      // 비회원인 경우
+      alert("로그인 후 이용해 주십시오.");
+      navigate("/member/login", { state: { from: location.pathname } });
+    }
   };
+
+  // 바로구매 기능
+  const handleDirectPurchase = () => {
+    // 로그인한 경우에만 바로구매 가능
+    if (loginUser) {
+      // 바로구매용 데이터 구성
+      const directPurchaseData = [
+        {
+          cartNo: `direct_${Date.now()}`, // 임시 카트번호 (실제 DB에 저장되지 않음)
+          userDTO: {
+            userId: loginUser.userId,
+            userName: loginUser.userName || "",
+            userEmail: loginUser.userEmail || "",
+            userAddress: loginUser.userAddress || "",
+            userPhoneNum: loginUser.userPhoneNum || "",
+            uid: loginUser.uid || null,
+          },
+          productDTO: product.productDTO,
+          numofItem: quantity,
+        },
+      ];
+
+      // 가격 계산 (숫자만 추출)
+      const price = product.productDTO.price.replace(/[^0-9]/g, "");
+      const priceNumber = parseInt(price);
+      if (isNaN(priceNumber)) {
+        alert("상품 가격 정보가 올바르지 않습니다.");
+        return;
+      }
+
+      // 총 가격 계산 및 포맷팅
+      const totalPrice = priceNumber * quantity;
+      const formattedTotalPrice = new Intl.NumberFormat().format(totalPrice);
+
+      // 페이먼트 페이지로 이동 (direct=true 파라미터 추가)
+      navigate(
+        `/shopping/payment?totalPrice=${formattedTotalPrice}&cartData=${encodeURIComponent(
+          JSON.stringify(directPurchaseData)
+        )}&direct=true`
+      );
+    } else {
+      // 비회원인 경우
+      alert("로그인 후 이용해 주십시오.");
+      navigate("/member/login", { state: { from: location.pathname } });
+    }
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setReturnMsg(null);
+  };
+
   return (
     <div className="min-h-screen p-6">
-      {returnMsg ? alert(returnMsg) : <></>}
-      <SubMenubar />
+      {returnMsg ? (
+        <ResultModal content={returnMsg} callbackFn={closeModal} />
+      ) : (
+        <></>
+      )}
+      <MainMenubar currentPage={`/product/read/${pno.pno}`} />
       {/* 전체 컨테이너 */}
       {fetching ? (
         <div className="text-center text-2xl font-bold">로딩 중...</div> // 로딩 상태일 때 표시할 메시지
@@ -54,7 +132,7 @@ const ProductsReadComponent = () => {
             <img
               src={
                 product.productDTO.uploadFileNames.length > 0
-                  ? `http://localhost:8089/product/view/s_${product.productDTO.uploadFileNames[0]}`
+                  ? `http://localhost:8089/product/view/${product.productDTO.uploadFileNames[0]}`
                   : "/images/defalt.jpg"
               }
               alt="상품 이미지"
@@ -74,9 +152,12 @@ const ProductsReadComponent = () => {
 
             {/* 간단설명 */}
             <div className="mt-4 p-3 border rounded-lg">
-              <p className="font-bold">간단설명</p>
-              <p className="text-gray-600 text-sm mt-1">
-                {product.productDTO.pdesc}
+              <p className="font-bold">상품설명</p>
+              <p
+                className="text-gray-600 text-sm mt-1"
+                style={{ whiteSpace: "pre-line" }}
+              >
+                sadffa \n {product.productDTO.pdesc}
               </p>
             </div>
 
@@ -110,7 +191,10 @@ const ProductsReadComponent = () => {
               >
                 장바구니
               </button>
-              <button className="w-1/2 p-3 bg-[#ad9e87] text-white rounded-lg">
+              <button
+                className="w-1/2 p-3 bg-[#ad9e87] text-white rounded-lg"
+                onClick={handleDirectPurchase}
+              >
                 바로구매
               </button>
             </div>
@@ -130,4 +214,4 @@ const ProductsReadComponent = () => {
   );
 };
 
-export default ProductsReadComponent;
+export default ReadComponent;

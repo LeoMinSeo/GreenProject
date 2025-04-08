@@ -15,6 +15,7 @@ import ProfileInputs from "../signup/ProfileInputs";
 import EmailInput from "../signup/EmailInput";
 import PhoneInput from "../signup/PhoneInput";
 import AgreementSection from "../signup/AgreementSection";
+import AddressSearch from "../customModal/AddressSearch";
 
 const SignUpComponent = () => {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ const SignUpComponent = () => {
   const [customDomainInput, setCustomDomainInput] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState("010");
   const [phoneError, setPhoneError] = useState("");
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false); // 주소 모달 상태 추가
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -111,6 +113,16 @@ const SignUpComponent = () => {
 
       return newState;
     });
+  };
+
+  // 주소 검색에서 주소가 선택됐을 때 호출될 함수
+  const handleAddressSelect = (address, zonecode) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      userAddress: address,
+      // 우편번호도 저장하고 싶다면 아래 줄 주석 해제
+      // userZonecode: zonecode,
+    }));
   };
 
   const handleUserIdCheck = async () => {
@@ -219,7 +231,6 @@ const SignUpComponent = () => {
       userEmailDomain: formData.userEmailDomain.trim(),
       userAddress: formData.userAddress.trim(),
       userPhoneNum: formData.userPhoneNum,
-      
     };
 
     const result = await registerUser(filteredData);
@@ -268,7 +279,11 @@ const SignUpComponent = () => {
         toggleConfirmPasswordVisibility={toggleConfirmPasswordVisibility}
       />
 
-      <ProfileInputs formData={formData} onChange={handleChange} />
+      <ProfileInputs
+        formData={formData}
+        onChange={handleChange}
+        onAddressSearchClick={() => setIsAddressModalOpen(true)}
+      />
 
       <EmailInput
         userEmailId={formData.userEmailId}
@@ -289,6 +304,13 @@ const SignUpComponent = () => {
         formData={formData}
         onChange={handleChange}
         handleCheckAll={handleCheckAll}
+      />
+
+      {/* AddressSearch 컴포넌트 추가 */}
+      <AddressSearch
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        onAddressSelect={handleAddressSelect}
       />
 
       <SignupButton
