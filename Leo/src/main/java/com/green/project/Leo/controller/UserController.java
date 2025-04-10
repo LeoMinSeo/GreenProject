@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -66,16 +67,25 @@ public class UserController {
     }
 
     @PostMapping("/purchase/{imp_uid}")
-    public String purchaseProduct(@PathVariable(name = "imp_uid") String imp_uid, @RequestBody  ProductOrderDTO orderDTO)
+    public ResponseEntity<?> purchaseProduct(@PathVariable(name = "imp_uid") String imp_uid, @RequestBody  ProductOrderDTO orderDTO)
             throws IamportResponseException, IOException {
-
-        return service.addOrder(imp_uid,orderDTO);
+        try {
+            String result = service.addOrder(imp_uid, orderDTO);
+            return ResponseEntity.ok(result);
+        }catch (IOException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("/reservation/{imp_uid}")
-    public String reservationTicket(@PathVariable(name = "imp_uid")String imp_uid) throws IamportResponseException,IOException{
+    public ResponseEntity<?> reservationTicket(@PathVariable(name = "imp_uid")String imp_uid) throws IamportResponseException,IOException{
+                try {
                     service.addConcertOrder(imp_uid);
-        return "티켓 예매 성공";
+                    return ResponseEntity.ok("티켓 예매 성공");
+                }catch (IOException e){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                }
+
     }
 
     @PostMapping("/send-reset-link")

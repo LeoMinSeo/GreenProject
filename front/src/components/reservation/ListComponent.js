@@ -137,7 +137,7 @@ const ListComponent = () => {
                   <img
                     src={
                       concert.uploadFileName === null
-                        ? "/images/defalt.jpg"
+                        ? "/images/defalt.png"
                         : `http://localhost:8089/concert/view/${concert.uploadFileName}`
                     }
                     alt={concert.cname}

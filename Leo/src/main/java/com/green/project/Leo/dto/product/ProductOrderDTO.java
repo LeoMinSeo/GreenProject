@@ -22,7 +22,7 @@ public class ProductOrderDTO {
 
     private LocalDateTime orderDate;
 
-    private String shippingAdress;  // 배송 주소
+    private String shippingAddress;  // 배송 주소
     private String trackingNumber;  // 배송 추적 번호
     private String note;
     private String totalPrice;

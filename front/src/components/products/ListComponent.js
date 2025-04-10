@@ -146,7 +146,7 @@ const ListComponent = () => {
                         product.uploadFileNames &&
                         product.uploadFileNames.length > 0
                           ? `http://localhost:8089/product/view/s_${product.uploadFileNames[0]}`
-                          : "/images/defalt.jpg"
+                          : "/images/defalt.png"
                       }
                       alt={product.pname}
                       className="w-full h-full object-contain rounded-lg"

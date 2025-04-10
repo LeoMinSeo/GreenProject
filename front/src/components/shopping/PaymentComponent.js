@@ -107,14 +107,23 @@ const PaymentComponent = () => {
           alert("결제가 완료되었습니다.");
 
           // 서버에 주문 정보 저장
-          addOrder(rsp.imp_uid, send).then((orderId) => {
-            // direct 파라미터를 success 페이지로도 전달하여 바로구매 여부 추적
-            navigate(
-              `/member/success/${orderId}${
-                isDirectPurchase ? "?direct=true" : ""
-              }`
-            );
-          });
+          addOrder(rsp.imp_uid, send)
+            .then((orderId) => {
+              // direct 파라미터를 success 페이지로도 전달하여 바로구매 여부 추적
+              navigate(
+                `/member/success/${orderId}${
+                  isDirectPurchase ? "?direct=true" : ""
+                }`
+              );
+            })
+            .catch((err) => {
+              const errorMessage =
+                err.response?.data ||
+                err.message ||
+                "알 수 없는 오류가 발생했습니다";
+              alert(errorMessage);
+              navigate("/");
+            });
         } else {
           // 결제 실패 시
           alert("결제에 실패하였습니다. 실패 사유: " + rsp.error_msg);
@@ -158,7 +167,7 @@ const PaymentComponent = () => {
                       item.productDTO.uploadFileNames &&
                       item.productDTO.uploadFileNames.length > 0
                         ? `http://localhost:8089/product/view/s_${item.productDTO.uploadFileNames[0]}`
-                        : "/images/defalt.jpg"
+                        : "/images/defalt.png"
                     }
                     alt={item.productDTO.pname}
                     className="w-16 h-16 object-cover rounded-md"

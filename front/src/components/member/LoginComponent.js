@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled, { createGlobalStyle, keyframes } from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginPost } from "../../api/memberApi";
@@ -84,7 +84,7 @@ const FormWrapper = styled.div`
 `;
 
 // 폼 자체의 스타일
-const Form = styled.div`
+const Form = styled.form`
   padding: 1.8rem;
   background-color: var(--white);
   border-radius: 1.5rem;
@@ -234,7 +234,9 @@ const LoginComponent = () => {
   const [showForm, setShowForm] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // 로그인/회원가입 전환 상태
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false); // 자동 로그인 상태
+
+  const passwordInputRef = useRef(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -243,25 +245,24 @@ const LoginComponent = () => {
     }, 1200);
     return () => clearTimeout(timer);
   }, []);
-  // 페이지 로드 시 자동 로그인 상태 확인
-  useEffect(() => {
-    const savedUserId = localStorage.getItem("username");
-    const savedUserPw = localStorage.getItem("password");
-    const savedRememberMe = localStorage.getItem("rememberMe") === "true"; // rememberMe 상태를 가져옴
-
-    if (savedUserId && savedUserPw) {
-      setUserId(savedUserId);
-      setUserPw(savedUserPw);
-    }
-    setRememberMe(savedRememberMe); // rememberMe 상태 설정
-  }, []);
 
   const handleUserIdChange = (e) => setUserId(e.target.value);
   const handleUserPwChange = (e) => setUserPw(e.target.value);
 
+  const handleIdKeyDown = (e) => {
+    if (e.key == "Enter") {
+      e.preventDefault(); // 폼 제출 방지
+      if (userId.trim() === "") {
+        setErrorMessage("아이디를 입력해주세요.");
+        return;
+      }
+      passwordInputRef.current.focus(); //비밀번호 입력창으로 포커스
+    }
+  };
+
   const handleLogin = async () => {
-    if (!userId || !userPw) {
-      setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.");
+    if (!userPw) {
+      setErrorMessage("아이디와 비밀번호를 입력해주세요.");
       return;
     }
 
@@ -272,10 +273,11 @@ const LoginComponent = () => {
       console.log(data);
       if (data === "탈퇴하신분이에요") {
         setErrorMessage("존재하지 않는 계정입니다.");
-      } else if (data === "존재하지 않는 아이디입니다.") {
-        setErrorMessage("아이디를 확인해주세요.");
-      } else if (data === "아이디 또는 비밀번호가 잘못되었습니다.") {
-        setErrorMessage("비밀번호를 확인해주세요");
+      } else if (
+        data === "존재하지 않는 아이디입니다." ||
+        data === "아이디 또는 비밀번호가 잘못되었습니다."
+      ) {
+        setErrorMessage("아이디와 비밀번호를 정확히 입력해 주세요.");
       } else {
         localStorage.setItem("accessToken", response.accessToken);
         localStorage.setItem("refreshToken", response.refreshToken);
@@ -302,12 +304,6 @@ const LoginComponent = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
-  };
-
-  const handleRememberMeChange = (e) => {
-    const isChecked = e.target.checked;
-    setRememberMe(isChecked);
-    localStorage.setItem("rememberMe", isChecked ? "true" : "false"); // 상태를 로컬스토리지에 저장
   };
 
   return (
@@ -371,7 +367,12 @@ const LoginComponent = () => {
         </Column>
         <Column className="form-column" showForm={showForm}>
           <FormWrapper>
-            <Form>
+            <Form
+              onSubmit={(e) => {
+                e.preventDefault(); // 엔터 누르면 새로고침 막기
+                handleLogin(); // 로그인 함수 호출
+              }}
+            >
               {isLogin && (
                 <div className="flex justify-center items-center mb-5">
                   <img src="/images/mainlogo.png" alt="logo" />
@@ -393,6 +394,7 @@ const LoginComponent = () => {
                       placeholder="아이디를 입력해주세요."
                       value={userId}
                       onChange={handleUserIdChange}
+                      onKeyDown={handleIdKeyDown}
                       style={{ paddingLeft: "1rem" }}
                     />
                   </InputGroup>
@@ -403,6 +405,7 @@ const LoginComponent = () => {
                       placeholder="비밀번호를 입력해주세요."
                       value={userPw}
                       onChange={handleUserPwChange}
+                      ref={passwordInputRef}
                       style={{ paddingLeft: "1rem" }}
                     />
                     <span
@@ -422,7 +425,7 @@ const LoginComponent = () => {
                     </span>
                   </InputGroup>
 
-                  <Button onClick={handleLogin}>로그인</Button>
+                  <Button type="submit">로그인</Button>
                 </>
               ) : (
                 <Signup /> // Signup 컴포넌트를 바로 렌더링

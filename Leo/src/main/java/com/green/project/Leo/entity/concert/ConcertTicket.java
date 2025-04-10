@@ -38,6 +38,7 @@ public class ConcertTicket {
             )
     )
     private User user;
+
     private OrderStatusForConcert status;
     private int ticketQuantity;
     private String buyMethod;

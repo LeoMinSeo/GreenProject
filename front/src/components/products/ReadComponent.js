@@ -137,7 +137,7 @@ const ReadComponent = () => {
               src={
                 product.productDTO.uploadFileNames.length > 0
                   ? `http://localhost:8089/product/view/${product.productDTO.uploadFileNames[0]}`
-                  : "/images/defalt.jpg"
+                  : "/images/defalt.png"
               }
               alt="상품 이미지"
               className="h-auto rounded-md mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6"

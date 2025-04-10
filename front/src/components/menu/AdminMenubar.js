@@ -10,7 +10,7 @@ const AdminMenubar = () => {
       <br />
       <ul className="space-y-3 flex flex-col flex-grow ">
         <li className="font-bold text-gray-700 hover:text-red-500 cursor-pointer">
-          <Link to={"/admin"}>관리자 설정</Link>
+          <Link to={"/admin"}>판매 통계 분석</Link>
         </li>
 
         {/* <li className="font-bold text-gray-500 hover:text-red-500 cursor-pointer">

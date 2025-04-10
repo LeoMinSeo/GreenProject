@@ -369,7 +369,7 @@ public class AdminServiceIplm implements AdminService{
         orderDetailDTO.setOrderDate(order.getOrderDate());
         orderDetailDTO.setStatus(order.getStatus());
         orderDetailDTO.setUserDTO(modelMapper.map(order.getUser(), UserDTO.class));
-        orderDetailDTO.setShippingAddress(order.getShippingAdress());
+        orderDetailDTO.setShippingAddress(order.getShippingAddress());
         orderDetailDTO.setTrackingNumber(order.getTrackingNumber());
         orderDetailDTO.setNote(order.getNote());
         orderDetailDTO.setTotalPrice(order.getTotalPrice());

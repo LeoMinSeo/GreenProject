@@ -108,7 +108,7 @@ const BasketComponent = () => {
                     src={
                       item.productDTO.uploadFileNames.length > 0
                         ? `http://localhost:8089/product/view/s_${item.productDTO.uploadFileNames[0]}`
-                        : "/images/defalt.jpg"
+                        : "/images/defalt.png"
                     }
                     alt={item.productDTO.pname}
                     className="w-16 h-16 object-cover rounded-md"

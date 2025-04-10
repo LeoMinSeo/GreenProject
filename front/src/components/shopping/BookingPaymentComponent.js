@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getConcertByCnoAndDate } from "../../api/concertApi";
 import MainMenubar from "../menu/MainMenubar";
 import { addConcertOrder } from "../../api/userApi";
@@ -13,7 +13,7 @@ const BookingPaymentComponent = () => {
   const [concertData, setConcertData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
   // 사용자 입력 필드
   const [customerName, setCustomerName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -211,9 +211,19 @@ const BookingPaymentComponent = () => {
       },
       function (rsp) {
         if (rsp.success) {
-          addConcertOrder(rsp.imp_uid).then((i) => {
-            alert("결제가 완료되었습니다.");
-          });
+          addConcertOrder(rsp.imp_uid)
+            .then((i) => {
+              alert(i);
+              navigate(`/member/mypage/${loginUser.userId}`);
+            })
+            .catch((error) => {
+              const errorMessage =
+                error.response?.data ||
+                error.message ||
+                "알 수 없는 오류가 발생했습니다";
+              alert(errorMessage);
+              navigate("/");
+            });
         } else {
           alert("결제에 실패하였습니다. 실패 사유: " + rsp.error_msg);
         }
@@ -404,7 +414,11 @@ const BookingPaymentComponent = () => {
                   {/* 콘서트 이미지 */}
                   <div className="md:w-1/4 mb-4 md:mb-0">
                     <img
-                      src={`http://localhost:8089/concert/view/s_${concertData.concertDTO.uploadFileName}`}
+                      src={
+                        !concertData.concertDTO.uploadFileName
+                          ? "/images/defalt.png"
+                          : `http://localhost:8089/concert/view/s_${concertData.concertDTO.uploadFileName}`
+                      }
                       alt={concertData.concertDTO.cname}
                       className="w-full h-auto rounded"
                     />
@@ -576,25 +590,25 @@ const BookingPaymentComponent = () => {
                       </label>
                     </div>
                   </div>
-
                   {deliveryMethod === "mail" && (
                     <div>
                       <label className="block mb-1">
                         배송지 주소 <span className="text-red-500">*</span>
                       </label>
-                      <div className="flex items-center">
+                      <div className="flex items-stretch">
+                        {" "}
+                        {/* items-center에서 items-stretch로 변경 */}
                         <input
                           type="text"
                           value={address}
                           onChange={handleAddressChange}
-                          className="w-full p-2 border rounded-l"
+                          className="w-full p-2 border rounded-l focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
                           placeholder="주소 입력"
-                          readOnly
                         />
                         <button
                           type="button"
                           onClick={handleAddressSearchClick}
-                          className="bg-orange-400 hover:bg-orange-500 text-white p-2 rounded-r border border-orange-400"
+                          className="whitespace-nowrap bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-r border-t border-r border-b border-orange-400 focus:outline-none"
                         >
                           주소 찾기
                         </button>

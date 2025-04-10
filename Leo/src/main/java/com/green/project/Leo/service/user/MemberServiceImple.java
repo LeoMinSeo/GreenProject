@@ -255,8 +255,8 @@ public class MemberServiceImple implements MemberService {
                 myPageOrderDto.setOrderItems(orderItemDTOList);// 상품 목록 추가
 
             // 운송장 정보 설정
-            if (i.getTrackingNumber() != null && i.getShippingAdress() != null && !i.getShippingAdress().isEmpty()) {
-                myPageOrderDto.setShippingNum(i.getShippingAdress());
+            if (i.getTrackingNumber() != null && i.getShippingAddress() != null && !i.getShippingAddress().isEmpty()) {
+                myPageOrderDto.setShippingNum(i.getShippingAddress());
             } else {
                 myPageOrderDto.setShippingNum("운송장 등록 전입니다");
             }

@@ -144,7 +144,7 @@ const TicketAddComponent = () => {
       }
 
       // 기존 axios.post 직접 호출 대신 API 함수 사용
-      const response = await addConcert(formData);
+      await addConcert(formData);
 
       setSuccess("공연이 성공적으로 등록되었습니다!");
       // 폼 초기화

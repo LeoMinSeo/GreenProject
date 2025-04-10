@@ -21,6 +21,8 @@ import com.green.project.Leo.repository.product.*;
 import com.green.project.Leo.util.DiscordLogger;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.request.CancelData;
+
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import jakarta.mail.internet.MimeMessage;
@@ -32,11 +34,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
 
 @Service
 @Slf4j
@@ -83,7 +87,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String addCart(RequestCartDTO cartDTO) {
         ProductCart result = cartRepository.selectDuplicate(cartDTO.getUserId(), cartDTO.getPNo());
-        if(result == null) {
+        if (result == null) {
             ProductCart productCart = ProductCart.builder()
                     .product(productRepository.findById(cartDTO.getPNo()).orElse(null))
                     .user(userRepository.selectByUserId(cartDTO.getUserId()))
@@ -101,7 +105,7 @@ public class UserServiceImpl implements UserService {
     public List<ProductCartDTO> selectCartList(String userId) {
         List<ProductCart> result = cartRepository.selectCartByUserId(userId);
         List<ProductCartDTO> cartDTOList = new ArrayList<>();
-        for(ProductCart i : result){
+        for (ProductCart i : result) {
             List<String> imglist = imageRepository.findFileNamesByPNo(i.getProduct().pNo());
             ProductDTO productDTO = modelMapper.map(i.getProduct(), ProductDTO.class);
             productDTO.setUploadFileNames(imglist);
@@ -117,6 +121,7 @@ public class UserServiceImpl implements UserService {
         return cartDTOList;
     }
 
+    @Transactional
     @Override
     public String addOrder(String imp_uid, ProductOrderDTO orderDTO) throws IamportResponseException, IOException {
         IamportResponse<Payment> payment = iamportClient.paymentByImpUid(imp_uid);
@@ -132,20 +137,21 @@ public class UserServiceImpl implements UserService {
         productOrder.setPayment(orderDTO.getPayment());
         productOrder.setCardName(orderDTO.getCardName());
         productOrder.setStatus(OrderStatus.PAY_COMPLETED);
-        productOrder.setShippingAdress(orderDTO.getShippingAdress());
+        productOrder.setShippingAddress(orderDTO.getShippingAddress());
         productOrder.setOrderDate(LocalDateTime.now());
         productOrder.setNote(orderDTO.getNote());
         productOrder.setTotalPrice(orderDTO.getTotalPrice());
-
         List<OrderItemDTO> itemListDto = orderDTO.getOrderItems();
         List<OrderItem> itemlist = new ArrayList<>();
-        for(OrderItemDTO i : itemListDto){
+        BigDecimal realPrice = BigDecimal.ZERO;
+        for (OrderItemDTO i : itemListDto) {
             Product product = productRepository.findById(i.getPno()).orElseThrow();
+            long price = Long.parseLong(product.pPrice().replaceAll("[원,]", ""));
+            realPrice = realPrice.add(BigDecimal.valueOf(i.getNumOfItem() * price));
             product.pStock(product.pStock() - i.getNumOfItem());
-            if(product.pStock()-i.getNumOfItem()<=0){
-                discordLogger.sendMessage("상품명:"+product.pName()+" 품절되었습니다");
+            if (product.pStock() - i.getNumOfItem() <= 0) {
+                discordLogger.sendMessage("상품명:" + product.pName() + " 품절되었습니다");
             }
-
             Product updateProduct = productRepository.save(product);
             OrderItem orderItem = OrderItem.builder()
                     .numOfItem(i.getNumOfItem())
@@ -154,43 +160,81 @@ public class UserServiceImpl implements UserService {
                     .build();
             itemlist.add(orderItem);
         }
-
+        if (paymentInformation.getAmount().compareTo(realPrice) != 0) {
+            discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
+            discordLogger.sendErrorLog("결제 금액: " + paymentInformation.getAmount() + " 계산된 금액: " + realPrice);
+            CancelData cancelData = new CancelData(paymentInformation.getImpUid(), true, paymentInformation.getAmount());
+            cancelData.setReason("결제 금액 불일치");
+            IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
+            if (cancelResponse.getCode() == 0) {
+                discordLogger.sendMessage("결제금액 불일치로 환불처리:" + cancelResponse.getResponse().getImpUid());
+                throw new IOException("비정상적인 결제금액으로 결제가 취소되었습니다");
+            }
+        }
         productOrder.setOrderItems(itemlist);
         ProductOrder orderInformation = orderRepository.save(productOrder);
 
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String formatDate = date.format(formatter);
-        String ordercode =  formatDate + orderInformation.getOrderNum();
+        String ordercode = formatDate + orderInformation.getOrderNum();
         cartRepository.deleteById(orderDTO.getUserdto().getUid());
 
         return "주문번호:" + ordercode;
     }
 
-    @Override
-    public void deleteFromCart(Long cartNo) {
-        cartRepository.deleteById(cartNo);
-    }
-
+    @Transactional
     @Override
     public void addConcertOrder(String uid) throws IamportResponseException, IOException {
         IamportResponse<Payment> payment = iamportClient.paymentByImpUid(uid);
         Payment paymentInformation = payment.getResponse();
         NumberFormat formatter = NumberFormat.getNumberInstance(Locale.KOREA);
+        CancelData cancelData = new CancelData(paymentInformation.getImpUid(), true, paymentInformation.getAmount());
         String customDataJson = paymentInformation.getCustomData();
-
         ObjectMapper objectMapper = new ObjectMapper();
         ConcertCustomDataDTO customData = objectMapper.readValue(customDataJson, ConcertCustomDataDTO.class);
 
         User user = new User();
         user.uId(customData.getUid());
+
         ConcertSchedule concertSchedule = scheduleRepository.findById(customData.getScheduleId()).get();
-        concertSchedule.setAvailableSeats(concertSchedule.getAvailableSeats()- customData.getTicketQuantity());
-        if(concertSchedule.getAvailableSeats()- customData.getTicketQuantity() <= 0){
-            concertSchedule.setStatus(ConcertStatus.SOLD_OUT);
-            discordLogger.sendMessage(concertSchedule.getConcert().getCName()+"의 "+concertSchedule.getStartTime()+"시간이 매진되었습니다");
+
+        if (concertSchedule.getAvailableSeats() < customData.getTicketQuantity()) {
+            cancelData.setReason("티켓 매진");
+            IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
+            if (cancelResponse.getCode() == 0) {
+                discordLogger.sendMessage("티켓매진으로 인하여 환불처리:" + cancelResponse.getResponse().getImpUid());
+                throw new IOException("예약 가능한 티켓 수량이 부족해 취소되었습니다 결제한 금액은 취소처리될 예정입니다");
+            }
         }
+        concertSchedule.setAvailableSeats(concertSchedule.getAvailableSeats() - customData.getTicketQuantity());
+
+        //사용자 결제금액과 상품 금액이 일치하지않는경우 로그남기고 결제취소시킴
+        long price = Long.parseLong(concertSchedule.getConcert().getCPrice().replaceAll("[원,]", ""));
+        BigDecimal calculatedAmount = BigDecimal.valueOf(customData.getTicketQuantity() * price);
+        BigDecimal paymentAmount = paymentInformation.getAmount();
+        if (paymentAmount.compareTo(calculatedAmount) != 0) {
+            discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
+            discordLogger.sendErrorLog("결제 금액: " + paymentAmount + " 계산된 금액: " + calculatedAmount);
+            cancelData.setReason("결제 금액 불일치");
+            IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
+            if (cancelResponse.getCode() == 0) {
+                discordLogger.sendMessage("결제금액 불일치로 환불처리:" + cancelResponse.getResponse().getImpUid());
+                throw new IOException("비정상적인 결제금액으로 결제가 취소되었습니다");
+            }
+        }
+
+        //예매가능티켓수가 없으면 디스코드에 로깅하고 상태변경해주기
+        if (concertSchedule.getAvailableSeats() <= 0) {
+            concertSchedule.setStatus(ConcertStatus.SOLD_OUT);
+            discordLogger.sendMessage(concertSchedule.getConcert().getCName() + "의 " + concertSchedule.getStartTime() + "시간이 매진되었습니다");
+        }
+
+
+        //모든 필터 통과한후 스케줄테이블에 변경사항을 저장함
         ConcertSchedule modifyAvailable = scheduleRepository.save(concertSchedule);
+
+        //티켓정보 생성후 저장
         ConcertTicket concertTicket = ConcertTicket.builder()
                 .shippingAddress(paymentInformation.getBuyerAddr())
                 .buyerName(paymentInformation.getBuyerName())
@@ -204,8 +248,12 @@ public class UserServiceImpl implements UserService {
                 .status(OrderStatusForConcert.RESERVATION)
                 .user(user)
                 .build();
-
         ticketRepository.save(concertTicket);
+    }
+
+    @Override
+    public void deleteFromCart(Long cartNo) {
+        cartRepository.deleteById(cartNo);
     }
 
     @Override

@@ -122,7 +122,7 @@ const MyPageOrders = ({ orders, refreshData }) => {
                                   src={
                                     item.imgFileName
                                       ? `http://localhost:8089/product/view/s_${item.imgFileName}`
-                                      : "/images/defalt.jpg"
+                                      : "/images/defalt.png"
                                   }
                                   alt={item.productName}
                                   className="w-full h-full object-contain rounded-lg"

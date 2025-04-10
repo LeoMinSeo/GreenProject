@@ -372,7 +372,7 @@ const ReadComponent = () => {
       });
     } else {
       alert("로그인 후 이용해주세요.");
-      navigate("/member/login",{ state: { from: location.pathname } });
+      navigate("/member/login", { state: { from: location.pathname } });
     }
   };
 
@@ -394,15 +394,17 @@ const ReadComponent = () => {
             <div className="flex flex-col md:flex-row gap-8">
               {/* 공연 이미지 */}
               <div className="md:w-1/3">
-                {performance.uploadFileName && (
-                  <div className="overflow-hidden rounded-lg shadow-md">
-                    <img
-                      src={`http://localhost:8089/concert/view/${performance.uploadFileName}`}
-                      alt={performance.cname}
-                      className="w-full h-auto"
-                    />
-                  </div>
-                )}
+                <div className="overflow-hidden rounded-lg shadow-md">
+                  <img
+                    src={
+                      !performance.uploadFileName
+                        ? "/images/defalt.png"
+                        : `http://localhost:8089/concert/view/${performance.uploadFileName}`
+                    }
+                    alt={performance.cname}
+                    className="w-full h-auto"
+                  />
+                </div>
               </div>
 
               {/* 공연 상세 정보 */}

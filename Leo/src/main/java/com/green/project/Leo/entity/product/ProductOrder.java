@@ -31,7 +31,7 @@ public class ProductOrder {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    private String shippingAdress;  // 배송 주소
+    private String shippingAddress;  // 배송 주소
     private String trackingNumber;  // 배송 추적 번호
     private String note; // 요청사항
     private String totalPrice;
