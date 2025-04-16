@@ -1,5 +1,6 @@
 package com.green.project.Leo.dto.product;
 
+import com.green.project.Leo.entity.payment.RefundStatus;
 import lombok.*;
 
 @Getter
@@ -15,6 +16,6 @@ public class OrderItemDTO {
     private String imgFileName;
     private Boolean hasReview;
     private Long realOrderNum;
-
+    private RefundStatus refundStatus;
 
 }

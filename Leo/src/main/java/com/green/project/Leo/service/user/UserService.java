@@ -20,5 +20,6 @@ public interface UserService {
     void savePasswordResetToken(User user, String token);
     void sendResetEmail(String toEmail, String resetLink);
     void save(User user);
+    void testRefund(String imp_uid) throws IamportResponseException, IOException;
 
 }

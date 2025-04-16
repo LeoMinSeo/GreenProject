@@ -7,6 +7,7 @@ import adminProductsRouter from "./adminProductsRouter";
 import adminConcertRouter from "./adminConcertRouter";
 import ProtectedRoute from "./ProtectedRoute"; // 추가된 부분
 import ResetPasswordComponent from "../components/member/ResetPasswordComponent";
+import adminRefundRouter from "./adminRefundRouter";
 const { createBrowserRouter } = require("react-router-dom");
 
 const Loading = (
@@ -94,6 +95,10 @@ const root = createBrowserRouter([
         </Suspense>
       </ProtectedRoute>
     ),
+  },
+  {
+    path: "admin/refund",
+    children: adminRefundRouter(),
   },
   {
     path: "test",

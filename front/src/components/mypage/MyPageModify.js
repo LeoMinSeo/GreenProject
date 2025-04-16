@@ -101,7 +101,7 @@ const MyPageModify = ({ userData, refreshData, userId }) => {
       await updateProfile(userId, trimmedData);
       refreshData(trimmedData);
       alert("회원정보가 수정되었습니다.");
-      window.location.reload();
+      refreshData();
     } catch (error) {
       alert("수정 중 오류가 발생했습니다");
       console.error(error);
@@ -114,8 +114,8 @@ const MyPageModify = ({ userData, refreshData, userId }) => {
         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4 select-none">
           회원정보 수정
         </h2>
-        <form>
-          <div className="mb-6 pl-32">
+        <form onSubmit={handleSubmit}>
+          <div className="mt-8 mb-6 pl-32">
             <label
               htmlFor="userId"
               className="block text-sm font-semibold text-gray-700 select-none"
@@ -211,8 +211,7 @@ const MyPageModify = ({ userData, refreshData, userId }) => {
 
           <div className="pl-32">
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               className="w-3/5 py-3 mt-4 bg-orange-400 hover:bg-[#E87A2D] text-white font-semibold rounded-md select-none"
             >
               저장

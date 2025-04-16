@@ -64,11 +64,11 @@ public class ProductServiceIplm implements ProductService{
 
         if (category == null || category.equals("전체")) {
 
-            result = productRepository.findAll(pageable);
+            result = productRepository.findByIsDeletedFalse(pageable);
         } else {
             // 특정 카테고리만 필터링하여 조회
 
-            result = productRepository.findByCategory(category, pageable);
+            result = productRepository.findByCategoryAndIsDeletedFalse(category, pageable);
         }
 
         List<ProductDTO> productDTOList = new ArrayList<>();
@@ -101,6 +101,7 @@ public class ProductServiceIplm implements ProductService{
         ProductReviewRating reviewrating = reviewRatingRepository.reviewRatingByPno(pno).orElse(null);
         ProductDTO productDTO = ProductDTO.builder()
                 .pno(result.pNo())
+                .isDeleted(result.isDeleted())
                 .pname(result.pName())
                 .price(result.pPrice())
                 .pdesc(result.pdesc())

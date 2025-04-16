@@ -1,13 +1,13 @@
 package com.green.project.Leo.controller;
 
 import com.green.project.Leo.dto.product.RequestProductReviewDTO;
-import com.green.project.Leo.dto.user.MyPageRequestOrderDTO;
-import com.green.project.Leo.dto.user.UserDTO;
-import com.green.project.Leo.dto.user.userReviewDTO;
+import com.green.project.Leo.dto.user.*;
+import com.green.project.Leo.entity.payment.ProductRefund;
 import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductReviewRepository;
 
+import com.green.project.Leo.service.payment.PaymentService;
 import com.green.project.Leo.service.product.ProductService;
 import com.green.project.Leo.service.user.MemberService;
 import com.green.project.Leo.util.CustomFileUtil;
@@ -46,6 +46,9 @@ public class MemberController {
 
     @Autowired
     private ProductOrderRepository productOrderRepository;
+
+    @Autowired
+    private PaymentService paymentService;
 
     //회원가입
     @PostMapping("/register")
@@ -144,5 +147,28 @@ public class MemberController {
         userRepository.updateUserPassword(uId,passwordEncoder.encode("asd123!"));
         return "성공";
     }
+
+    @GetMapping("/reservation/{id}")
+    public List<UserReservationListDTO> getReservation(@PathVariable Long id){
+        System.out.println("아이디 확인용"+id);
+        return memberService.getReservation(id);
+
+    }
+
+    @DeleteMapping("/delete/review/{pReviewNo}")
+    public ResponseEntity<String> deleteMyReview(@PathVariable Long pReviewNo) {
+        memberService.deleteMyReview(pReviewNo);
+        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<?> refundProduct(@RequestBody RefundDTO refundDTO){
+        log.info("데이터 확인 refund:{}", refundDTO);
+        List<ProductRefund> list = paymentService.findByAll(refundDTO.getPno(), refundDTO.getRealOrderNum(), refundDTO.getUid());
+        log.info("list:{}",list);
+        if(list.isEmpty()) return memberService.refundProduct(refundDTO);
+        else  return ResponseEntity.ok(list);
+    }
+
 }
 

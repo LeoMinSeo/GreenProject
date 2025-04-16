@@ -30,4 +30,5 @@ public interface AdminService {
     public List<ResponseProductReviewDTO> getReviewList(Long pno);
     public void deleteReview(Long reviewNo);
     public List<UserDTO> getUserList();
+    public List<ProductRefundListDTO> getProductRefundList();
 }

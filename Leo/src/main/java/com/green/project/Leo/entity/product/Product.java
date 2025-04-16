@@ -32,19 +32,21 @@ public class Product {
 
     private String category;
 
-    // 상품 삭제시 이미지도 삭제
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+    private boolean isDeleted = false;
+
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ProductImage> images = new ArrayList<>();
 
-    // 상품 삭제시 리뷰도 삭제
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ProductReview> reviews = new ArrayList<>();
 
-    // 상품 삭제시 주문 아이템은 유지 (필요시 soft delete 또는 별도 처리 필요)
+
     @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    // 상품 삭제시 장바구니 아이템도 삭제
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ProductCart> carts = new ArrayList<>();
 }

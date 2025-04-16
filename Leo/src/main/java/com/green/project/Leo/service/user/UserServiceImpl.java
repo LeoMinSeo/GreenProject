@@ -26,6 +26,7 @@ import com.siot.IamportRestClient.request.CancelData;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,6 +161,7 @@ public class UserServiceImpl implements UserService {
                     .build();
             itemlist.add(orderItem);
         }
+        System.out.println("imp_uid"+imp_uid);
         if (paymentInformation.getAmount().compareTo(realPrice) != 0) {
             discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
             discordLogger.sendErrorLog("결제 금액: " + paymentInformation.getAmount() + " 계산된 금액: " + realPrice);
@@ -183,7 +185,7 @@ public class UserServiceImpl implements UserService {
         return "주문번호:" + ordercode;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class})
     @Override
     public void addConcertOrder(String uid) throws IamportResponseException, IOException {
         IamportResponse<Payment> payment = iamportClient.paymentByImpUid(uid);
@@ -196,59 +198,68 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         user.uId(customData.getUid());
+        try {
+            ConcertSchedule concertSchedule = scheduleRepository.findByIdWithLock(customData.getScheduleId())
+                    .orElseThrow(() -> new EntityNotFoundException("해당 콘서트 스케줄을 찾을 수 없습니다: " + customData.getScheduleId()));
 
-        ConcertSchedule concertSchedule = scheduleRepository.findById(customData.getScheduleId()).get();
+            if (concertSchedule.getAvailableSeats() < customData.getTicketQuantity()) {
+                cancelData.setReason("티켓 매진");
+                IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
+                if (cancelResponse.getCode() == 0) {
+                    discordLogger.sendMessage("티켓매진으로 인하여 환불처리:" + cancelResponse.getResponse().getImpUid());
+                    throw new IOException("예약 가능한 티켓 수량이 부족해 취소되었습니다 결제한 금액은 취소처리될 예정입니다");
+                }
+            }
+            concertSchedule.setAvailableSeats(concertSchedule.getAvailableSeats() - customData.getTicketQuantity());
 
-        if (concertSchedule.getAvailableSeats() < customData.getTicketQuantity()) {
-            cancelData.setReason("티켓 매진");
+            //사용자 결제금액과 상품 금액이 일치하지않는경우 로그남기고 결제취소시킴
+            long price = Long.parseLong(concertSchedule.getConcert().getCPrice().replaceAll("[원,]", ""));
+            BigDecimal calculatedAmount = BigDecimal.valueOf(customData.getTicketQuantity() * price);
+            BigDecimal paymentAmount = paymentInformation.getAmount();
+            if (paymentAmount.compareTo(calculatedAmount) != 0) {
+                discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
+                discordLogger.sendErrorLog("결제 금액: " + paymentAmount + " 계산된 금액: " + calculatedAmount);
+                cancelData.setReason("결제 금액 불일치");
+                IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
+                if (cancelResponse.getCode() == 0) {
+                    discordLogger.sendMessage("결제금액 불일치로 환불처리:" + cancelResponse.getResponse().getImpUid());
+                    throw new IOException("비정상적인 결제금액으로 결제가 취소되었습니다");
+                }
+            }
+
+            //예매가능티켓수가 없으면 디스코드에 로깅하고 상태변경해주기
+            if (concertSchedule.getAvailableSeats() <= 0) {
+                concertSchedule.setStatus(ConcertStatus.SOLD_OUT);
+                discordLogger.sendMessage(concertSchedule.getConcert().getCName() + "의 " + concertSchedule.getStartTime() + "시간이 매진되었습니다");
+            }
+
+
+            //모든 필터 통과한후 스케줄테이블에 변경사항을 저장함
+            ConcertSchedule modifyAvailable = scheduleRepository.save(concertSchedule);
+
+            //티켓정보 생성후 저장
+            ConcertTicket concertTicket = ConcertTicket.builder()
+                    .shippingAddress(paymentInformation.getBuyerAddr())
+                    .buyerName(paymentInformation.getBuyerName())
+                    .buyerTel(paymentInformation.getBuyerTel())
+                    .price(formatter.format(paymentInformation.getAmount()) + "원")
+                    .buyMethod(paymentInformation.getPayMethod())
+                    .concertSchedule(modifyAvailable)
+                    .ticketQuantity(customData.getTicketQuantity())
+                    .deliveryMethod(customData.getDeliveryMethod())
+                    .paymentDate(LocalDate.now())
+                    .status(OrderStatusForConcert.RESERVATION)
+                    .user(user)
+                    .build();
+            ticketRepository.save(concertTicket);
+        }catch (EntityNotFoundException e){
+            cancelData.setReason("존재하지 않는 콘서트 스케줄");
             IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
             if (cancelResponse.getCode() == 0) {
-                discordLogger.sendMessage("티켓매진으로 인하여 환불처리:" + cancelResponse.getResponse().getImpUid());
-                throw new IOException("예약 가능한 티켓 수량이 부족해 취소되었습니다 결제한 금액은 취소처리될 예정입니다");
+                discordLogger.sendMessage("존재하지 않는 스케줄로 환불처리:" + cancelResponse.getResponse().getImpUid());
             }
+            throw new IOException("요청하신 콘서트 정보를 찾을수없어 취소처리되었습니다.");
         }
-        concertSchedule.setAvailableSeats(concertSchedule.getAvailableSeats() - customData.getTicketQuantity());
-
-        //사용자 결제금액과 상품 금액이 일치하지않는경우 로그남기고 결제취소시킴
-        long price = Long.parseLong(concertSchedule.getConcert().getCPrice().replaceAll("[원,]", ""));
-        BigDecimal calculatedAmount = BigDecimal.valueOf(customData.getTicketQuantity() * price);
-        BigDecimal paymentAmount = paymentInformation.getAmount();
-        if (paymentAmount.compareTo(calculatedAmount) != 0) {
-            discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
-            discordLogger.sendErrorLog("결제 금액: " + paymentAmount + " 계산된 금액: " + calculatedAmount);
-            cancelData.setReason("결제 금액 불일치");
-            IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
-            if (cancelResponse.getCode() == 0) {
-                discordLogger.sendMessage("결제금액 불일치로 환불처리:" + cancelResponse.getResponse().getImpUid());
-                throw new IOException("비정상적인 결제금액으로 결제가 취소되었습니다");
-            }
-        }
-
-        //예매가능티켓수가 없으면 디스코드에 로깅하고 상태변경해주기
-        if (concertSchedule.getAvailableSeats() <= 0) {
-            concertSchedule.setStatus(ConcertStatus.SOLD_OUT);
-            discordLogger.sendMessage(concertSchedule.getConcert().getCName() + "의 " + concertSchedule.getStartTime() + "시간이 매진되었습니다");
-        }
-
-
-        //모든 필터 통과한후 스케줄테이블에 변경사항을 저장함
-        ConcertSchedule modifyAvailable = scheduleRepository.save(concertSchedule);
-
-        //티켓정보 생성후 저장
-        ConcertTicket concertTicket = ConcertTicket.builder()
-                .shippingAddress(paymentInformation.getBuyerAddr())
-                .buyerName(paymentInformation.getBuyerName())
-                .buyerTel(paymentInformation.getBuyerTel())
-                .price(formatter.format(paymentInformation.getAmount()) + "원")
-                .buyMethod(paymentInformation.getPayMethod())
-                .concertSchedule(modifyAvailable)
-                .ticketQuantity(customData.getTicketQuantity())
-                .deliveryMethod(customData.getDeliveryMethod())
-                .paymentDate(LocalDate.now())
-                .status(OrderStatusForConcert.RESERVATION)
-                .user(user)
-                .build();
-        ticketRepository.save(concertTicket);
     }
 
     @Override
@@ -342,6 +353,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    @Override
+    public void testRefund(String imp_uid) throws IamportResponseException, IOException {
+        
+        CancelData cancelData = new CancelData(imp_uid,true, BigDecimal.valueOf(100));
+        try {
+            cancelData.setReason("테스트");
+            IamportResponse<Payment> cancelResponse = iamportClient.cancelPaymentByImpUid(cancelData);
+            if(cancelResponse.getCode()==0){
+                discordLogger.refundRequest("환불테스트 성공");
+            }
+        }catch (IOException e){
+            throw new IOException(e);
+        }
     }
 
 }

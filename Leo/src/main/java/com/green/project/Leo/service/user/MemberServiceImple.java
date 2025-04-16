@@ -1,18 +1,22 @@
 package com.green.project.Leo.service.user;
 
 import com.green.project.Leo.dto.product.OrderItemDTO;
-import com.green.project.Leo.dto.user.MyPageRequestOrderDTO;
-import com.green.project.Leo.dto.user.UserDTO;
-import com.green.project.Leo.dto.user.userReviewDTO;
-import com.green.project.Leo.entity.product.ProductImage;
+import com.green.project.Leo.dto.user.*;
+import com.green.project.Leo.entity.concert.Concert;
+import com.green.project.Leo.entity.concert.ConcertImage;
+import com.green.project.Leo.entity.concert.ConcertTicket;
+import com.green.project.Leo.entity.concert.OrderStatusForConcert;
+import com.green.project.Leo.entity.payment.ProductRefund;
+import com.green.project.Leo.entity.payment.RefundStatus;
+import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.entity.user.User;
-import com.green.project.Leo.entity.product.OrderItem;
-import com.green.project.Leo.entity.product.ProductOrder;
-import com.green.project.Leo.entity.product.ProductReview;
 import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.concert.ConcertTicketRepository;
+import com.green.project.Leo.repository.payment.RefundRepository;
 import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductReviewRepository;
+import com.green.project.Leo.util.DiscordLogger;
 import com.green.project.Leo.util.JWTUtil;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -22,13 +26,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
 public class MemberServiceImple implements MemberService {
 
+    @Autowired
+    private RefundRepository refundRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -48,6 +57,11 @@ public class MemberServiceImple implements MemberService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ConcertTicketRepository concertTicketRepository;
+
+    @Autowired
+    private DiscordLogger discordLogger;
     @Override
     public  ResponseEntity<Map<String, Object>> registerMember(UserDTO userDTO){
         System.out.println("서비스 : " + userDTO);
@@ -245,6 +259,7 @@ public class MemberServiceImple implements MemberService {
                 orderItemDTO.setProductPrice(orderItem.getProduct().pPrice());// 상품 가격
                 orderItemDTO.setHasReview(productReviewRepository.existsByProduct_PNoAndProductOrder_OrderNum(orderItem.getProduct().pNo(),i.getOrderNum()));
                 orderItemDTO.setRealOrderNum(i.getOrderNum());
+                orderItemDTO.setRefundStatus(orderItem.getRefundStatus());
                 orderItemDTOList.add(orderItemDTO);
             }
 
@@ -256,7 +271,7 @@ public class MemberServiceImple implements MemberService {
 
             // 운송장 정보 설정
             if (i.getTrackingNumber() != null && i.getShippingAddress() != null && !i.getShippingAddress().isEmpty()) {
-                myPageOrderDto.setShippingNum(i.getShippingAddress());
+                myPageOrderDto.setShippingNum(i.getTrackingNumber());
             } else {
                 myPageOrderDto.setShippingNum("운송장 등록 전입니다");
             }
@@ -294,6 +309,61 @@ public class MemberServiceImple implements MemberService {
         return userReviewList;
     }
 
+    @Override
+    public List<UserReservationListDTO> getReservation(Long uid) {
+        // 1. 사용자 예약 티켓 정보 가져오기
+        List<ConcertTicket> concertTickets = concertTicketRepository.findByUser_UId(uid);
+
+        // 2. DTO로 변환하여 리스트로 반환
+        return concertTickets.stream()
+                .map(this::convertToDTO) // 공통 변환 로직 호출
+                .collect(Collectors.toList());
+    }
+
+    // 티켓 정보를 DTO로 변환하는 공통 메소드
+    private UserReservationListDTO convertToDTO(ConcertTicket ticket) {
+        // 공연 정보
+        Concert concert = ticket.getConcertSchedule().getConcert(); //  Concert 객체 따로 저장
+        Long cNo = concert.getCNo(); //  콘서트 ID 추출
+
+        // 공연 정보
+        String concertName = ticket.getConcertSchedule().getConcert().getCName();
+        String concertPlace = ticket.getConcertSchedule().getConcert().getCPlace();
+        LocalDateTime concertStartTime = ticket.getConcertSchedule().getStartTime();
+
+        // 예매 정보
+        int ticketQuantity = ticket.getTicketQuantity();
+        String price = ticket.getPrice();
+        OrderStatusForConcert status = ticket.getStatus();
+        LocalDate paymentDate = ticket.getPaymentDate();
+        String deliveryMethod = ticket.getDeliveryMethod();
+        // 포스터 이미지 URL
+        String posterImageUrl = ticket.getConcertSchedule().getConcert().getImages().stream()
+                .findFirst()
+                .map(ConcertImage::getFileName)
+                .orElse(""); // 이미지가 없으면 빈 문자열 반환
+
+        // DTO 반환
+        return UserReservationListDTO.builder()
+                .ticketId(ticket.getId())
+                .cNo(cNo) //0411
+                .concertName(concertName)
+                .concertPlace(concertPlace)
+                .concertStartTime(concertStartTime)
+                .ticketQuantity(ticketQuantity)
+                .price(price)
+                .status(status)
+                .paymentDate(paymentDate)
+                .deliveryMethod(deliveryMethod)
+                .posterImageUrl(posterImageUrl) // 포스터 이미지 URL 추가
+                .build();
+    }
+
+    @Override
+    public void deleteMyReview(Long pReviewNo) {
+        productReviewRepository.deleteById(pReviewNo);
+    }
+
 
     // 회원 탈퇴 삭제
     @Override
@@ -312,6 +382,37 @@ public class MemberServiceImple implements MemberService {
     @Override
     public User selectByUserId(String userId) {
         return userRepository.selectByUserId(userId);
+    }
+
+    //0415 주문 취소
+    @Override
+    public ResponseEntity<?> refundProduct(RefundDTO dto) {
+
+        ProductRefund productRefund = new ProductRefund();
+        productRefund.setProduct(new Product().pNo(dto.getPno()));
+        productRefund.setUser(new User().uId(dto.getUid()));
+
+        ProductOrder order = new ProductOrder();
+        order.setOrderNum(dto.getRealOrderNum());
+
+        productRefund.setProductOrder(order);
+        productRefund.setReason(dto.getReason());
+        productRefund.setStatus(RefundStatus.WAITING);
+
+        refundRepository.save(productRefund);
+
+        // 실제 DB에서 해당 주문의 상품 리스트 가져오기
+        List<OrderItem> orderItems = orderItemRepository.getOrderItemByOrderNum(dto.getRealOrderNum());
+
+        // 개별 상품 환불 상태 업데이트 (주문 내 모든 상품 중 해당 상품만 환불 처리)
+        for (OrderItem orderItem : orderItems) {
+            if (orderItem.getProduct().pNo().equals(dto.getPno())&& orderItem.getProductOrder().getOrderNum().equals(dto.getRealOrderNum())) {
+                orderItem.setRefundStatus(RefundStatus.WAITING); // 환불 상태 변경
+                orderItemRepository.save(orderItem); // 상태 업데이트
+            }
+        }
+        discordLogger.refundRequest(dto.getPno()+"번 상품 환불 요청이 들어왔습니다.");
+        return ResponseEntity.ok("환불요청이 완료되었습니다");
     }
 
 }

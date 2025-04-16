@@ -9,6 +9,7 @@ import com.green.project.Leo.dto.product.ProductDTO;
 import com.green.project.Leo.dto.product.ResponseProductReviewDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.concert.*;
+import com.green.project.Leo.entity.payment.ProductRefund;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.repository.UserRepository;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
@@ -16,10 +17,12 @@ import com.green.project.Leo.repository.concert.ConcertRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
+import com.green.project.Leo.repository.payment.RefundRepository;
 import com.green.project.Leo.repository.product.*;
 
 import com.green.project.Leo.util.CustomConcertFileUtil;
 import com.green.project.Leo.util.CustomFileUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 
@@ -49,6 +52,7 @@ public class AdminServiceIplm implements AdminService{
     private final OrderItemRepository orderItemRepository;
     private final ProductReviewRepository productReviewRepository;
     private final UserRepository userRepository;
+    private final RefundRepository refundRepository;
     @Override
     public void addProduct(ProductDTO dto) {
 
@@ -141,13 +145,9 @@ public class AdminServiceIplm implements AdminService{
     @Transactional
     public void removeProduct(Long pno) {
         try {
-            List<String> imglist = imageRepository.findFileNamesByPNo(pno);
-            productRepository.deleteById(pno);
-
-            // 데이터베이스 작업이 성공한 후에만 파일 삭제
-            if(!imglist.isEmpty()){
-                fileUtil.deleteFiles(imglist);
-            }
+            Product product = productRepository.findById(pno).orElseThrow(()-> new EntityNotFoundException("상품을 찾을수없습니다"));
+            product.isDeleted(true);
+            productRepository.save(product);
         } catch (Exception e) {
             // 예외 발생 시 트랜잭션 롤백 (자동으로 이루어짐)
             throw new RuntimeException("제품 삭제 중 오류가 발생했습니다: " + e.getMessage(), e);
@@ -220,6 +220,7 @@ public class AdminServiceIplm implements AdminService{
 
         //스케줄 수정및 새로운스케줄이면 추가 작업
         for (ConcertScheduleDTO i : concertDTO.getSchedulesDtoList()) {
+            System.out.println("스케줄아이디"+i.getScheduleId());
             if (i.getScheduleId() == null) {
                 ConcertSchedule schedule = new ConcertSchedule();
                 schedule.setStartTime(i.getStartTime());
@@ -278,7 +279,7 @@ public class AdminServiceIplm implements AdminService{
     @Override
     public List<AdminProductDTO> getProductList() {
 
-        return productRepository.findAll().stream().map(i ->{
+        return productRepository.findByIsDeletedFalse().stream().map(i ->{
            AdminProductDTO adminProductDTO = new AdminProductDTO();
            adminProductDTO.setPno(i.pNo());
            adminProductDTO.setPname(i.pName());
@@ -496,6 +497,18 @@ public class AdminServiceIplm implements AdminService{
 
         return userRepository.findAll().stream().map(i ->{
             return modelMapper.map(i, UserDTO.class);
+        }).toList();
+    }
+
+    @Override
+    public List<ProductRefundListDTO> getProductRefundList() {
+        return refundRepository.findAll().stream().map(i->{
+            ProductRefundListDTO productRefundListDTO= new ProductRefundListDTO();
+            productRefundListDTO.setRefundId(i.getRefundId());
+            productRefundListDTO.setStatus(i.getStatus());
+            productRefundListDTO.setUserId(i.getUser().userId());
+            productRefundListDTO.setOrderNum(i.getProductOrder().getOrderNum());
+            return productRefundListDTO;
         }).toList();
     }
 

@@ -60,12 +60,11 @@ const MyPageDelete = ({ userId }) => {
 
   return (
     <div className="flex justify-end ml-20 min-h-[92vh] ">
-      <div className="bg-white pl-32 pt-5 rounded-lg shadow-lg mt-20 w-full ">
-        {/* <h2 className="text-2xl  text-left font-semibold text-gray-800 mb-2 border-b pb-2 pl-0"> */}
-        <h2 className="text-2xl font-bold  text-gray-800 mb-6 border-b pb-4 select-none ml-[-108px]">
+      <div className="bg-white p-6 rounded-lg shadow-md mt-20 w-full">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4 select-none">
           회원 탈퇴
         </h2>
-        <div className="w-4/5">
+        <div className="w-4/5 pl-32 mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-2">
             회원 탈퇴 유의사항
           </h2>
@@ -109,10 +108,10 @@ const MyPageDelete = ({ userId }) => {
             </li>
           </ul>
         </div>
-        <p className="text-xl text-gray-800 mb-2 text-left">
+        <p className="text-xl text-gray-800 mb-2 pl-32 text-left">
           계정을 삭제하시려는 이유를 말씀해주세요.사이트 개선에 중요 자료로
           활용됩니다
-          <p className="text-base font-light text-gray-800 mb-2">
+          <p className="text-base font-light text-gray-800 mb-2 ">
             (선택 이후 회원 탈퇴가 가능합니다. 최대 두 개까지 선택할 수
             있습니다.)
           </p>
@@ -126,7 +125,7 @@ const MyPageDelete = ({ userId }) => {
             "사용 빈도가 낮아서",
             "기타",
           ].map((reason, index) => (
-            <label key={index} className="flex items-left cursor-pointer">
+            <label key={index} className="flex items-left cursor-pointer pl-32">
               <input
                 type="checkbox"
                 className="hidden peer"
@@ -142,27 +141,31 @@ const MyPageDelete = ({ userId }) => {
           ))}
         </div>
 
-        <p className="text-xl text-gray-800 mb-2 mt-4 text-left">
-          현재 사용 중인 비밀번호
-        </p>
-        <input
-          type="password"
-          placeholder="비밀번호 입력"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-3/5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
-        />
-        <button
-          className={`w-3/5 py-2 mt-4  rounded ${
-            selectedReasons.length > 0
-              ? "bg-red-500 text-white"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
-          onClick={handleOpenModal}
-          disabled={selectedReasons.length === 0}
-        >
-          회원탈퇴
-        </button>
+        <div className="pl-32 w-full">
+          <p className="text-xl text-gray-800 mb-2 mt-8 text-left">
+            현재 사용 중인 비밀번호
+          </p>
+          <input
+            type="password"
+            placeholder="비밀번호 입력"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-3/5 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+          />
+        </div>
+        <div className="pl-32 w-full">
+          <button
+            className={`w-3/5 py-2 mt-4 rounded ${
+              selectedReasons.length > 0
+                ? "bg-red-500 text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+            onClick={handleOpenModal}
+            disabled={selectedReasons.length === 0}
+          >
+            회원탈퇴
+          </button>
+        </div>
 
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">

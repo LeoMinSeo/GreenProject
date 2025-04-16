@@ -135,4 +135,11 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
     }
 
+    @GetMapping("/test/{imp_uid}")
+    public String testRefund(@PathVariable (name = "imp_uid") String imp_uid) throws IamportResponseException, IOException {
+            service.testRefund(imp_uid);
+
+            return "환불테스트 성공";
+    }
+
 }

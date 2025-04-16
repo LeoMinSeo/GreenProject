@@ -103,13 +103,12 @@ const PaymentComponent = () => {
       },
       function (rsp) {
         if (rsp.success) {
-          // 결제 성공 시
-          alert("결제가 완료되었습니다.");
 
           // 서버에 주문 정보 저장
           addOrder(rsp.imp_uid, send)
             .then((orderId) => {
               // direct 파라미터를 success 페이지로도 전달하여 바로구매 여부 추적
+              alert("결제가 완료되었습니다.");
               navigate(
                 `/member/success/${orderId}${
                   isDirectPurchase ? "?direct=true" : ""

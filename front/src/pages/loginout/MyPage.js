@@ -53,6 +53,7 @@ const MyPage = () => {
 
   const sidebar = [
     { id: "orders", label: "주문내역" },
+    { id: "reservation", label: "예약내역" },
     { id: "reviews", label: "내 리뷰" },
     { id: "settings", label: "내 정보 수정" },
     { id: "deleteMember", label: "회원탈퇴" },
@@ -111,7 +112,7 @@ const MyPage = () => {
 
         {/* 메인 콘텐츠 */}
         <main className="ml-[20%] lg:ml-[25%] flex-grow bg-gray-100 p-8 min-h-screen">
-          <MyPageComponent data={data} userId={userId} />
+          <MyPageComponent data={data} userId={userId}  />
         </main>
       </div>
     </div>

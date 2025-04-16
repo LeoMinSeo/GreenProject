@@ -1,5 +1,6 @@
 package com.green.project.Leo.entity.product;
 
+import com.green.project.Leo.entity.payment.RefundStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,4 +28,7 @@ public class OrderItem {
     private Product product;
 
     private int numOfItem;
+
+    @Enumerated(EnumType.STRING)
+    private RefundStatus refundStatus;// 환불 상태 추가
 }

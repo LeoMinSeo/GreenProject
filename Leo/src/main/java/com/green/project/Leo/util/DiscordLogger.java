@@ -12,6 +12,9 @@ public class DiscordLogger {
     @Value("${discord.webhook.url}")
     private String webhookUrl;
 
+    @Value("${discord.webhook.second.url}")
+    private String refundWebhookUrl;
+
     private final WebClient webClient;
 
     public DiscordLogger(WebClient.Builder webClientBuilder) {
@@ -40,5 +43,16 @@ public class DiscordLogger {
                 .retrieve()
                 .toBodilessEntity()
                 .subscribe();
+    }
+
+    public void refundRequest(String message){
+        webClient.post()
+                .uri(refundWebhookUrl)
+                .bodyValue(Map.of(
+                        "content",message))
+                .retrieve()
+                .toBodilessEntity()
+                .subscribe();
+
     }
 }

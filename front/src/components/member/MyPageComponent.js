@@ -3,13 +3,21 @@ import MyPageModify from "../../components/mypage/MyPageModify";
 import MyPageOrders from "../../components/mypage/MyPageOrders";
 import MyPageReview from "../../components/mypage/MyPageReview";
 import DeleteAccount from "../../components/mypage/MyPageDelete";
-import { getProfile, ordersResponse, productReview } from "../../api/memberApi";
+import MyPageReservation from "../../components/mypage/MyPageReservation";
+
+import {
+  getProfile,
+  ordersResponse,
+  productReview,
+  getReservation,
+} from "../../api/memberApi";
 
 const MyPageComponent = ({ userId, data }) => {
   const [userData, setUserData] = useState(null);
   const [orders, setOrders] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [reservation, setReservation] = useState([]);
 
   const loginUser = JSON.parse(localStorage.getItem("user"));
 
@@ -29,6 +37,14 @@ const MyPageComponent = ({ userId, data }) => {
         console.log("주문내역불러오기 에러");
       });
 
+    getReservation(loginUser.uid)
+      .then((data) => {
+        setReservation(data);
+      })
+      .catch((error) => {
+        console.log("예약내역 불러오기 에러!!");
+      });
+
     productReview(loginUser.uid)
       .then((data) => {
         setReviews(data || []);
@@ -37,6 +53,7 @@ const MyPageComponent = ({ userId, data }) => {
         console.log("리뷰불러오기 에러");
       });
   }, [userId, refreshTrigger]);
+
   const refreshData = () => {
     setRefreshTrigger((prev) => prev + 1); // 값만 변경하면 useEffect가 다시 실행됨
   };
@@ -52,9 +69,19 @@ const MyPageComponent = ({ userId, data }) => {
         />
       );
     case "orders":
-      return <MyPageOrders orders={orders} refreshData={refreshData} />;
+      return (
+        <MyPageOrders
+          orders={orders}
+          refreshData={refreshData}
+          uid={loginUser.uid}
+        />
+      );
+
+    case "reservation":
+      return <MyPageReservation reservation={reservation} />;
+
     case "reviews":
-      return <MyPageReview reviews={reviews} />;
+      return <MyPageReview reviews={reviews} refreshData={refreshData} />;
     case "deleteMember":
       return <DeleteAccount userId={userId} />;
     default:

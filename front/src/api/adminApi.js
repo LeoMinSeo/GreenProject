@@ -179,3 +179,8 @@ export const getUserList = async () => {
   const res = await adminApi.get("/user/list");
   return res.data;
 };
+
+export const getProductRefundList = async () => {
+  const res = await adminApi.get("/product/refund/list");
+  return res.data;
+};

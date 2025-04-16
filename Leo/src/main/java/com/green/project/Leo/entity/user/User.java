@@ -44,23 +44,18 @@ public class User {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;  // 기본값을 false로 설정
 
-    // 유저가 삭제되면 콘서트 티켓도 삭제
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ConcertTicket> concertTickets = new ArrayList<>();
 
-    // 유저가 삭제되면 콘서트 리뷰도 삭제
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ConcertReview> concertReviews = new ArrayList<>();
 
-    // 유저가 삭제되면 상품 리뷰도 삭제
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ProductReview> productReviews = new ArrayList<>();
 
-    // 유저가 삭제되면 장바구니도 삭제
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ProductCart> productCarts = new ArrayList<>();
 
-    // 유저가 삭제되면 주문은 별도 처리 필요 (주문 기록은 남겨야 하므로)
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ProductOrder> productOrders = new ArrayList<>();
 

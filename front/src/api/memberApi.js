@@ -165,9 +165,30 @@ export const productReview = async (id) => {
   return res.data;
 };
 
+//회원 탈퇴
 export const deleteUser = async (userId, password) => {
   const res = await memberApi.delete(`/delete/${userId}`, {
     data: { userPw: password, userId },
   });
+  return res.data;
+};
+
+// 예약 내역 조회 0409
+export const getReservation = async (id) => {
+  const res = await memberApi.get(`/reservation/${id}`);
+  console.log(("예약 내역 잘 불러왔나요???", res.data));
+  return res.data;
+};
+
+//내 리뷰 삭제 0410
+export const deleteReview = async (previewNo) => {
+  const res = await memberApi.delete(`delete/review/${previewNo}`);
+  console.log("리뷰 삭제 잘 됐나요?", res.data);
+  return res.data;
+};
+
+//주문 취소 0415
+export const refundProduct = async (data) => {
+  const res = await memberApi.post(`refund`, data);
   return res.data;
 };

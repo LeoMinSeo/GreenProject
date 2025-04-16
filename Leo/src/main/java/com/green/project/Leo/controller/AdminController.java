@@ -156,4 +156,9 @@ public class AdminController {
     public List<UserDTO> getUserList(){
         return service.getUserList();
     }
+
+    @GetMapping("/product/refund/list")
+    public List<ProductRefundListDTO> getProductRefundList(){
+        return service.getProductRefundList();
+    }
 }

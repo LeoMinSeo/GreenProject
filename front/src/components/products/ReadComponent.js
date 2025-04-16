@@ -33,6 +33,11 @@ const ReadComponent = () => {
       setProduct(data);
       setFetching(false);
       console.log(data);
+      if (data.productDTO.deleted === true) {
+        alert("삭제된 상품입니다.");
+        navigate("/product/list");
+        return;
+      }
       if (data.productDTO.pstock <= 0) {
         alert("SoldOut 상품입니다.");
         navigate("/product/list");
