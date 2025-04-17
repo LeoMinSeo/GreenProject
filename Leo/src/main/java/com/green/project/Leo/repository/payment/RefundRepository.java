@@ -1,5 +1,6 @@
 package com.green.project.Leo.repository.payment;
 
+
 import com.green.project.Leo.entity.payment.ProductRefund;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,5 @@ import java.util.List;
         List<ProductRefund> findByAll(@Param("productId") Long productId,
                                       @Param("orderNum") Long orderNum,
                                       @Param("userId") Long userId);
+
     }

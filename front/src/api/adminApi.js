@@ -142,6 +142,24 @@ export const modifyProductOrder = async (orderData) => {
   return res.data;
 };
 
+export const getProductRefundList = async () => {
+  const res = await adminApi.get("/product/refund/list");
+  return res.data;
+};
+
+export const getProductRefundDetail = async (refundNo) => {
+  const res = await adminApi.get(`/product/refund/${refundNo}`);
+  return res.data;
+};
+
+export const approveProductRefund = async (refundId, amount) => {
+  const res = await adminApi.put(`/product/refund/approve`, {
+    refundId: refundId,
+    amount: amount,
+  });
+  return res.data;
+};
+
 // 티켓 관련 API
 export const getConcertTicketList = async () => {
   const res = await adminApi.get("/concert/ticket/list");
@@ -177,10 +195,5 @@ export const deleteReview = async (reviewNo) => {
 // 사용자 관련 API
 export const getUserList = async () => {
   const res = await adminApi.get("/user/list");
-  return res.data;
-};
-
-export const getProductRefundList = async () => {
-  const res = await adminApi.get("/product/refund/list");
   return res.data;
 };

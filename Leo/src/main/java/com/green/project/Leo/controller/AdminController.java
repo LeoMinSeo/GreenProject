@@ -4,12 +4,18 @@ package com.green.project.Leo.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.green.project.Leo.dto.admin.*;
+import com.green.project.Leo.dto.admin.concert.AdminConcertDTO;
+import com.green.project.Leo.dto.admin.concert.ConcertTicketDetailDTO;
+import com.green.project.Leo.dto.admin.concert.ConcertTicketListDTO;
+import com.green.project.Leo.dto.admin.concert.RequestTicketModifyDTO;
+import com.green.project.Leo.dto.admin.payment.*;
+import com.green.project.Leo.dto.admin.product.AdminProductDTO;
 import com.green.project.Leo.dto.concert.ConcertDTO;
 import com.green.project.Leo.dto.product.ProductDTO;
 import com.green.project.Leo.dto.product.ResponseProductReviewDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.service.Admin.AdminService;
+import com.green.project.Leo.service.payment.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -30,6 +36,8 @@ public class AdminController {
     @Autowired
     private AdminService service;
 
+    @Autowired
+    private PaymentService paymentService;
     @PostMapping("/add/product")
     public String addProduct(@ModelAttribute ProductDTO productDTO){
         log.info("add로 들어옴"+productDTO);
@@ -160,5 +168,17 @@ public class AdminController {
     @GetMapping("/product/refund/list")
     public List<ProductRefundListDTO> getProductRefundList(){
         return service.getProductRefundList();
+    }
+
+    @GetMapping("/product/refund/{refundId}")
+    public ProductRefundDetailDTO getProductRefundDetail(@PathVariable(name = "refundId")Long refundId){
+
+      return  paymentService.getRefundDetail(refundId);
+    }
+
+    @PutMapping("/product/refund/approve")
+    public ResponseEntity<?> approveProductRefund(@RequestBody RefundApprovalRequestDTO refundApprovalRequestDTO){
+
+        return paymentService.approveProductRefund(refundApprovalRequestDTO);
     }
 }

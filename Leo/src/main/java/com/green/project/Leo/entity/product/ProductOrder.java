@@ -35,6 +35,7 @@ public class ProductOrder {
     private String trackingNumber;  // 배송 추적 번호
     private String note; // 요청사항
     private String totalPrice;
+    private String imp_uid;
 
     // 주문 삭제시 주문 아이템도 삭제
 

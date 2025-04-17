@@ -142,6 +142,7 @@ public class UserServiceImpl implements UserService {
         productOrder.setOrderDate(LocalDateTime.now());
         productOrder.setNote(orderDTO.getNote());
         productOrder.setTotalPrice(orderDTO.getTotalPrice());
+        productOrder.setImp_uid(imp_uid);
         List<OrderItemDTO> itemListDto = orderDTO.getOrderItems();
         List<OrderItem> itemlist = new ArrayList<>();
         BigDecimal realPrice = BigDecimal.ZERO;
@@ -161,7 +162,6 @@ public class UserServiceImpl implements UserService {
                     .build();
             itemlist.add(orderItem);
         }
-        System.out.println("imp_uid"+imp_uid);
         if (paymentInformation.getAmount().compareTo(realPrice) != 0) {
             discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
             discordLogger.sendErrorLog("결제 금액: " + paymentInformation.getAmount() + " 계산된 금액: " + realPrice);
