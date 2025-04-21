@@ -3,9 +3,11 @@ package com.green.project.Leo.service.user;
 
 import com.green.project.Leo.dto.user.*;
 import com.green.project.Leo.entity.user.User;
+import com.siot.IamportRestClient.exception.IamportResponseException;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,11 +25,9 @@ public interface MemberService {
     public List<userReviewDTO> getMyReview(Long uid);
     //0409 공연 티켓 예약 내역 조회
     public List<UserReservationListDTO> getReservation(Long uid);
-    //0410 작성한 리뷰 삭제
-    public void deleteMyReview(Long pReviewNo);
     public ResponseEntity<?> refundProduct(RefundDTO dto);
-
-
+    public void cancelTicket(Long ticketID, String userPw, Long uid) throws IamportResponseException, IOException;
+    public Boolean deleteReview(userReviewDTO userReviewDTO);
 
 
 }

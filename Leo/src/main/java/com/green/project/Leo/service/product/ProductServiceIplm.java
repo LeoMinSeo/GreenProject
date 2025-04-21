@@ -5,7 +5,7 @@ import com.green.project.Leo.dto.pageable.PageResponseDTO;
 import com.green.project.Leo.dto.product.*;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.product.*;
-import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.user.UserRepository;
 import com.green.project.Leo.repository.product.*;
 import com.green.project.Leo.util.CustomFileUtil;
 import org.modelmapper.ModelMapper;

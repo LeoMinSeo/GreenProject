@@ -27,29 +27,37 @@ const ConcertOrderComponent = () => {
     }
   }, [statusFilter, ticketList]);
 
-  // 예약 상태에 따른 한글 표시
+  // 상태 텍스트 변환
   const getStatusText = (status) => {
     switch (status) {
       case "RESERVATION":
         return "예약완료";
-      case "CANCEL":
-        return "예약취소";
-      case "TICKETINGCOMPLETED":
+      case "TICKETING_COMPLETED":
         return "발권완료";
+      case "CANCEL_REQUEST":
+        return "예약취소요청";
+      case "CANCEL_COMPLETED":
+        return "예약취소완료";
+      case "REJECTED":
+        return "예약 취소 거절";
       default:
         return status;
     }
   };
 
-  // 상태에 따른 색상 클래스
+  // 상태 색상 클래스
   const getStatusColorClass = (status) => {
     switch (status) {
       case "RESERVATION":
         return "bg-blue-100 text-blue-800";
-      case "CANCEL":
+      case "CANCEL_COMPLETED":
         return "bg-red-100 text-red-800";
-      case "TICKETINGCOMPLETED":
+      case "TICKETING_COMPLETED":
         return "bg-green-100 text-green-800";
+      case "CANCEL_REQUEST":
+        return "bg-yellow-100 text-yellow-800";
+      case "REJECTED":
+        return "bg-purple-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -81,8 +89,10 @@ const ConcertOrderComponent = () => {
         >
           <option value="전체">전체</option>
           <option value="RESERVATION">예약완료</option>
-          <option value="CANCEL">예약취소</option>
-          <option value="TICKETINGCOMPLETED">발권완료</option>
+          <option value="TICKETING_COMPLETED">발권완료</option>
+          <option value=" CANCEL_REQUEST">예약 취소 요청</option>
+          <option value="CANCEL_COMPLETED">예약 취소 완료</option>
+          <option value="REJECTED">예약 취소 거절</option>
         </select>
       </div>
 

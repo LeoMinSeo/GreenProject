@@ -181,4 +181,10 @@ public class AdminController {
 
         return paymentService.approveProductRefund(refundApprovalRequestDTO);
     }
+
+    @PutMapping("/product/refund/reject")
+    public ResponseEntity<?> rejectProductRefund(@RequestBody RefundRejectRequestDTO refundRejectRequestDTO){
+
+        return paymentService.rejectProductRefund(refundRejectRequestDTO.getRefundId(),refundRejectRequestDTO.getReason());
+    }
 }

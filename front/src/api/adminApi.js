@@ -160,6 +160,15 @@ export const approveProductRefund = async (refundId, amount) => {
   return res.data;
 };
 
+export const rejectProductRefund = async (refundId, reason) => {
+  const res = await adminApi.put(`/product/refund/reject`, {
+    refundId: refundId,
+    reason: reason,
+  });
+
+  return res.data;
+};
+
 // 티켓 관련 API
 export const getConcertTicketList = async () => {
   const res = await adminApi.get("/concert/ticket/list");

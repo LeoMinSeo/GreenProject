@@ -41,7 +41,6 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
         return "배송 중";
       case "DELIVERED":
         return "배송 완료";
-
       default:
         return status;
     }
@@ -58,6 +57,83 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
         return "text-green-600";
       default:
         return "text-gray-600 bg-gray-50";
+    }
+  };
+
+  // 환불 상태에 따른 UI 스타일
+  const getRefundStyle = (refundStatus) => {
+    switch (refundStatus) {
+      case "WAITING":
+        return {
+          bgColor: "bg-yellow-50",
+
+          textColor: "text-yellow-600",
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          ),
+          text: "환불 요청 중",
+        };
+      case "COMPLETE":
+        return {
+          bgColor: "bg-green-50",
+
+          textColor: "text-green-600",
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          ),
+          text: "환불 처리 완료",
+        };
+      case "REJECTED":
+        return {
+          bgColor: "bg-red-50",
+
+          textColor: "text-red-600",
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ),
+          text: "환불 요청 거절",
+        };
+      default:
+        return null;
     }
   };
 
@@ -99,6 +175,16 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
 
   // 날짜 기준으로 리스트 변환
   const groupedDateList = Object.entries(groupedOrders);
+
+  //0417 일주일이라는 기한 주기
+  const isWithinWeek = (orderDate) => {
+    const now = new Date();
+    const orderDateObj = new Date(orderDate);
+    const timeDifference = now - orderDateObj; // 밀리초 단위로 차이 계산
+    const oneWeekInMs = 7 * 24 * 60 * 60 * 1000; // 일주일을 밀리초로 변환
+
+    return timeDifference <= oneWeekInMs; // 일주일 이내면 true 반환
+  };
 
   // 페이지네이션
   const indexOfLastOrder = currentPage * ordersPerPage;
@@ -167,21 +253,53 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
                             )}
 
                             <div className="flex items-start mt-2 p-3 rounded-md">
+                              {/* 환불 상태 리본 표시 */}
+                              {item.refundStatus && (
+                                <div
+                                  className={`absolute -ml-2 -mt-6 px-3 py-1 rounded-full 
+                                  ${getRefundStyle(item.refundStatus)?.bgColor} 
+                                  ${
+                                    getRefundStyle(item.refundStatus)?.textColor
+                                  } 
+                                  border ${
+                                    getRefundStyle(item.refundStatus)
+                                      ?.borderColor
+                                  }
+                                  flex items-center text-xs font-bold shadow-sm`}
+                                >
+                                  {getRefundStyle(item.refundStatus)?.icon}
+                                  {getRefundStyle(item.refundStatus)?.text}
+                                </div>
+                              )}
+
                               <div className="flex-shrink-0 mr-5">
-                                <div className="w-36 h-36 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden shadow-sm">
+                                <div
+                                  className={`w-36 h-36 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden shadow-sm
+                                  ${
+                                    item.refundStatus === "COMPLETE"
+                                      ? "opacity-60"
+                                      : ""
+                                  }`}
+                                >
                                   <img
                                     src={
                                       item.imgFileName
                                         ? `http://localhost:8089/product/view/s_${item.imgFileName}`
-                                        : "/images/defalt.png"
+                                        : "/images/defalt.jpg"
                                     }
                                     alt={item.productName}
                                     className="w-full h-full object-cover rounded-lg"
                                   />
                                 </div>
                               </div>
-                              <div className="flex-1">
-                                <div className="font-bold text-xl mb-2 text-gray-800">
+                              <div
+                                className={`flex-1 ${
+                                  item.refundStatus === "COMPLETE"
+                                    ? "opacity-75"
+                                    : ""
+                                }`}
+                              >
+                                <div className="font-bold text-xl mb-2 text-gray-800 flex items-center">
                                   <Link
                                     to={`/product/read/${item.pno}`}
                                     className="text-black hover:text-orange-400"
@@ -232,25 +350,28 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
                                   )}
                                 </div>
 
-                                {/* 리뷰 등록 버튼 */}
-                                {order.status === "DELIVERED" &&
-                                  !item.hasReview && (
-                                    <div className="flex justify-end mt-2">
-                                      <button
-                                        className="px-2 py-1  text-sm text-orange-500 bg-orange-100 rounded-lg hover:bg-orange-100 transition-colors"
-                                        onClick={() => handleReviewClick(item)}
-                                      >
-                                        리뷰 등록
-                                      </button>
-                                    </div>
-                                  )}
-                                <div className="flex justify-end mt-2">
-                                  {item.refundStatus === "WAITING" ? (
-                                    <div className="flex justify-end mt-2 text-sm text-red-500">
-                                      환불 요청 중
-                                    </div>
-                                  ) : (
-                                    <div className="flex justify-end mt-2">
+                                <div className="flex flex-col mt-4">
+                                  {/* 리뷰 등록 버튼 */}
+                                  {order.status === "DELIVERED" &&
+                                    item.refundStatus === null &&
+                                    !item.hasReview &&
+                                    isWithinWeek(order.orderDate) && (
+                                      <div className="flex justify-end mb-2">
+                                        <button
+                                          className="px-2 py-1 text-sm text-orange-500 bg-orange-100 rounded-lg hover:bg-orange-500 hover:text-white transition-colors "
+                                          onClick={() =>
+                                            handleReviewClick(item)
+                                          }
+                                        >
+                                          리뷰 등록
+                                        </button>
+                                      </div>
+                                    )}
+
+                                  {/* 주문 취소 버튼 또는 환불 불가능 메시지 */}
+                                  <div className="flex justify-end">
+                                    {item.refundStatus === null &&
+                                    isWithinWeek(order.orderDate) ? (
                                       <button
                                         className="px-2 py-1 text-sm text-red-500 bg-red-200 rounded-lg hover:bg-red-500 hover:text-white transition-colors active:scale-105"
                                         onClick={(e) =>
@@ -263,8 +384,13 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
                                       >
                                         주문 취소
                                       </button>
-                                    </div>
-                                  )}
+                                    ) : !item.refundStatus &&
+                                      !isWithinWeek(order.orderDate) ? (
+                                      <div className="text-sm text-gray-500 italic">
+                                        환불 불가능 (기간 만료)
+                                      </div>
+                                    ) : null}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -278,20 +404,51 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
                 {/* 페이지네이션 */}
                 {totalPages > 1 && (
                   <div className="flex justify-center mt-8">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (number) => (
-                        <button
-                          key={number}
-                          onClick={() => paginate(number)}
-                          className={`mx-1 px-4 py-2 rounded-md transition-colors duration-200 ${
-                            currentPage === number
-                              ? "bg-orange-500 text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {number}
-                        </button>
-                      )
+                    {/* 이전 페이지 그룹으로 이동하는 버튼 */}
+                    {currentPage > 5 && (
+                      <button
+                        onClick={() =>
+                          paginate(Math.floor((currentPage - 1) / 5) * 5)
+                        }
+                        className="mx-1 px-4 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        &lt;
+                      </button>
+                    )}
+
+                    {/* 현재 페이지 그룹에 속하는 페이지 버튼들 */}
+                    {Array.from(
+                      {
+                        length: Math.min(
+                          5,
+                          totalPages - Math.floor((currentPage - 1) / 5) * 5
+                        ),
+                      },
+                      (_, i) => Math.floor((currentPage - 1) / 5) * 5 + i + 1
+                    ).map((number) => (
+                      <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`mx-1 px-4 py-2 rounded-md transition-colors duration-200 ${
+                          currentPage === number
+                            ? "bg-orange-500 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {number}
+                      </button>
+                    ))}
+
+                    {/* 다음 페이지 그룹으로 이동하는 버튼 */}
+                    {Math.floor((currentPage - 1) / 5) * 5 + 5 < totalPages && (
+                      <button
+                        onClick={() =>
+                          paginate(Math.floor((currentPage - 1) / 5) * 5 + 6)
+                        }
+                        className="mx-1 px-4 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        &gt;
+                      </button>
                     )}
                   </div>
                 )}

@@ -27,4 +27,6 @@ public class ProductOrderDTO {
     private String note;
     private String totalPrice;
     private List<OrderItemDTO> orderItems;
+
+    private int usingPoint;
 }

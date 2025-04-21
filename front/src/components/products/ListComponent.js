@@ -76,7 +76,7 @@ const ListComponent = () => {
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-80"
-          src="https://videos.pexels.com/video-files/6862376/6862376-uhd_2732_1440_25fps.mp4"
+          src="/videos/product.mp4"
           loop
           playsInline
           autoPlay

@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import CancelTicketModal from "../customModal/CancelTicketModal";
 
-const MyPageReservation = ({ reservation }) => {
+const MyPageReservation = ({ reservation, refreshData, uid }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const reservationsPerPage = 2;
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [cancelingTickets, setCancelingTickets] = useState([]);
+
+  // 취소 모달 상태 관리
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   useEffect(() => {
     console.log("받은 예약 내역:", reservation);
@@ -61,10 +67,64 @@ const MyPageReservation = ({ reservation }) => {
     switch (status) {
       case "RESERVATION":
         return "예매 완료";
-      case "CANCEL":
-        return "예매 취소";
+      case "CANCEL_COMPLETED":
+        return "환불 처리 완료";
       default:
         return status;
+    }
+  };
+
+  // 예약 상태에 따른 텍스트 색상 클래스 반환
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "RESERVATION":
+        return "text-black";
+      case "CANCEL_COMPLETED":
+        return "text-green-600";
+      default:
+        return "text-gray-600 bg-gray-50";
+    }
+  };
+
+  // 환불 상태에 따른 아이콘
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "RESERVATION":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+            />
+          </svg>
+        );
+      case "CANCEL_COMPLETED":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        );
+      default:
+        return null;
     }
   };
 
@@ -94,6 +154,25 @@ const MyPageReservation = ({ reservation }) => {
     const formattedHours = hours % 12 || 12;
 
     return `${year}.${month}.${day} ${period} ${formattedHours}:${minutes}`;
+  };
+
+  // 취소 버튼 클릭 핸들러
+  const handleCancelClick = (ticket) => {
+    setSelectedTicket(ticket);
+    setIsCancelModalOpen(true);
+  };
+
+  //0421 환불 가능 기간은 공연 날짜 하루 전(23시 59분 59초)까지.
+  const Refundable = (concertStartTime) => {
+    const now = new Date();
+    const concertDate = new Date(concertStartTime);
+
+    // 공연 하루 전 23:59:59
+    const deadline = new Date(concertDate);
+    deadline.setDate(deadline.getDate() - 1); // 하루 전
+    deadline.setHours(23, 59, 59, 999); // 23시 59분 59초
+
+    return now <= deadline;
   };
 
   return (
@@ -131,11 +210,17 @@ const MyPageReservation = ({ reservation }) => {
                     {items.map((item) => (
                       <div
                         key={item.ticketId}
-                        className="mb-6 border border-gray-200 p-5 rounded-lg hover:shadow-md transition-shadow duration-200"
+                        className="mb-6 border p-5 rounded-lg hover:shadow-md transition-shadow duration-200"
                       >
                         {/* 상태와 예약번호를 항상 같은 위치에 표시 */}
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="flex items-center text-sm font-semibold px-3 py-1 rounded-full">
+                        <div className="flex justify-between items-center">
+                          <div
+                            className={`flex items-center text-sm font-semibold px-3 py-1 ${getStatusColor(
+                              item.status
+                            )}`}
+                          >
+                            {/* 상태 아이콘 추가 */}
+                            {getStatusIcon(item.status)}
                             {getStatusText(item.status)}
                           </div>
                           {/* 예약번호 표시 */}
@@ -151,9 +236,16 @@ const MyPageReservation = ({ reservation }) => {
                         </div>
 
                         {/* 예약 상세 정보 */}
-                        <div className="flex items-start mt-3">
+                        <div className="flex items-start mt-2 p-3 rounded-md">
                           <div className="flex-shrink-0 mr-5">
-                            <div className="w-32 h-44 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden shadow-sm">
+                            <div
+                              className={`w-32 h-44 bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden shadow-sm
+                              ${
+                                item.status !== "RESERVATION"
+                                  ? "opacity-55"
+                                  : ""
+                              }`}
+                            >
                               {item.posterImageUrl ? (
                                 // 이미지가 있을 경우
                                 <img
@@ -181,7 +273,11 @@ const MyPageReservation = ({ reservation }) => {
                             </div>
                           </div>
 
-                          <div className="flex-1">
+                          <div
+                            className={`flex-1 ${
+                              item.status !== "RESERVATION" ? "opacity-55" : ""
+                            }`}
+                          >
                             <div className="font-bold text-xl mb-2 text-gray-800">
                               <Link
                                 to={`/reservation/read/${item.cno}`}
@@ -261,6 +357,24 @@ const MyPageReservation = ({ reservation }) => {
                               </span>
                               {getdeliveryMethod(item.deliveryMethod)}
                             </div>
+
+                            {/* 예매 취소 버튼 */}
+                            <div className="flex justify-end mt-4">
+                              {item.status === "RESERVATION" &&
+                              Refundable(item.concertStartTime) ? (
+                                <button
+                                  onClick={() => handleCancelClick(item)}
+                                  className="px-2 py-1 text-sm text-red-500 bg-red-200 rounded-lg hover:bg-red-500 hover:text-white transition-colors active:scale-105"
+                                >
+                                  예매 취소
+                                </button>
+                              ) : item.status === "RESERVATION" &&
+                                !Refundable(item.concertStartTime) ? (
+                                <div className="text-sm text-gray-500 italic">
+                                  환불 불가능 (기간 만료)
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -271,20 +385,51 @@ const MyPageReservation = ({ reservation }) => {
                 {/* 페이지네이션 */}
                 {totalPages > 1 && (
                   <div className="flex justify-center mt-8">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (number) => (
-                        <button
-                          key={number}
-                          onClick={() => paginate(number)}
-                          className={`mx-1 px-4 py-2 rounded-md transition-colors duration-200 ${
-                            currentPage === number
-                              ? "bg-orange-500 text-white"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {number}
-                        </button>
-                      )
+                    {/* 이전 페이지 그룹으로 이동하는 버튼 */}
+                    {currentPage > 5 && (
+                      <button
+                        onClick={() =>
+                          paginate(Math.floor((currentPage - 1) / 5) * 5)
+                        }
+                        className="mx-1 px-4 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        &lt;
+                      </button>
+                    )}
+
+                    {/* 현재 페이지 그룹에 속하는 페이지 버튼들 */}
+                    {Array.from(
+                      {
+                        length: Math.min(
+                          5,
+                          totalPages - Math.floor((currentPage - 1) / 5) * 5
+                        ),
+                      },
+                      (_, i) => Math.floor((currentPage - 1) / 5) * 5 + i + 1
+                    ).map((number) => (
+                      <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`mx-1 px-4 py-2 rounded-md transition-colors duration-200 ${
+                          currentPage === number
+                            ? "bg-orange-500 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {number}
+                      </button>
+                    ))}
+
+                    {/* 다음 페이지 그룹으로 이동하는 버튼 */}
+                    {Math.floor((currentPage - 1) / 5) * 5 + 5 < totalPages && (
+                      <button
+                        onClick={() =>
+                          paginate(Math.floor((currentPage - 1) / 5) * 5 + 6)
+                        }
+                        className="mx-1 px-4 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200"
+                      >
+                        &gt;
+                      </button>
                     )}
                   </div>
                 )}
@@ -293,6 +438,15 @@ const MyPageReservation = ({ reservation }) => {
           </div>
         </div>
       </div>
+
+      {/* 취소 모달 컴포넌트 */}
+      <CancelTicketModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        ticketId={selectedTicket?.ticketId}
+        refreshData={refreshData}
+        uid={uid}
+      />
     </div>
   );
 };

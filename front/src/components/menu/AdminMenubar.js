@@ -218,7 +218,7 @@ const AdminMenubar = () => {
                   onClick={() => handleNavigation("/admin/refund/product/list")}
                 >
                   <Users className="w-5 h-5 mr-3" />
-                  <span>환불 요청 관리</span>
+                  <span>상품 환불 요청 관리</span>
                   <ChevronsRight
                     className={`w-4 h-4 ml-auto ${
                       activePath === "/admin/refund/product/list"

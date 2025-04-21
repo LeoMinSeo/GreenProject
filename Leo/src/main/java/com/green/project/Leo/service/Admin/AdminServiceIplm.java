@@ -19,7 +19,7 @@ import com.green.project.Leo.dto.product.ResponseProductReviewDTO;
 import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.concert.*;
 import com.green.project.Leo.entity.product.*;
-import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.user.UserRepository;
 import com.green.project.Leo.repository.concert.ConcertImageRepository;
 import com.green.project.Leo.repository.concert.ConcertRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
@@ -435,6 +435,9 @@ public class AdminServiceIplm implements AdminService{
     @Override
     public void modifyConcertTicket(RequestTicketModifyDTO modifyDTO) {
         ConcertTicket ticket = ticketRepository.findById(modifyDTO.getId()).orElse(null);
+        if(modifyDTO.getStatus().equals(OrderStatusForConcert.CANCEL_COMPLETED)){
+
+        }
         ticket.setStatus(modifyDTO.getStatus());
         ticket.setTrackingNumber(modifyDTO.getTrackingNumber());
         ticketRepository.save(ticket);

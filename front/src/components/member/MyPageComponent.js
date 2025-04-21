@@ -78,7 +78,13 @@ const MyPageComponent = ({ userId, data }) => {
       );
 
     case "reservation":
-      return <MyPageReservation reservation={reservation} />;
+      return (
+        <MyPageReservation
+          reservation={reservation}
+          refreshData={refreshData}
+          uid={loginUser.uid}
+        />
+      );
 
     case "reviews":
       return <MyPageReview reviews={reviews} refreshData={refreshData} />;

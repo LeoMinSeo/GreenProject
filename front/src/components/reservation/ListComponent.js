@@ -81,19 +81,17 @@ const ListComponent = () => {
         <MainMenubar currentPage="/reservation/list" />
       </div>
 
-      {/* 헤더 비디오 섹션 - 높이와 배경색 수정 */}
       <div className="mt-24 relative flex items-center justify-center h-[40vh] w-full bg-cover bg-center group overflow-hidden">
         <video
           ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-80"
-          src="https://videos.pexels.com/video-files/7095842/7095842-uhd_2732_1440_25fps.mp4"
+          src="/videos/reservation.mp4"
           loop
           playsInline
           autoPlay
           muted
         ></video>
         <div className="absolute inset-0 bg-[#ad9e87] opacity-30"></div>
-
         <div className="relative text-center z-10 flex flex-col items-center text-white font-bold text-3xl uppercase tracking-widest lg:text-4xl">
           Culture And Art
         </div>

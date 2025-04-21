@@ -49,4 +49,5 @@ public class ConcertTicket {
     private LocalDate paymentDate;
     private String trackingNumber;
     private String shippingAddress;
+    private String imp_uid;
 }

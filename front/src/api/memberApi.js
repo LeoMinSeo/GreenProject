@@ -192,3 +192,8 @@ export const refundProduct = async (data) => {
   const res = await memberApi.post(`refund`, data);
   return res.data;
 };
+
+export const cancelTicket = async (data) => {
+  const res = await memberApi.post(`cancel`, data);
+  return res.data;
+};

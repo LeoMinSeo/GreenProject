@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, CheckCircle, Truck, ShoppingBag } from "lucide-react";
+import {
+  CreditCard,
+  CheckCircle,
+  Truck,
+  ShoppingBag,
+  Coins,
+} from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addOrder } from "../../api/userApi";
 import MainMenubar from "../menu/MainMenubar";
+import PointModal from "../customModal/PointModal";
 
 const PaymentComponent = () => {
   const [form, setForm] = useState({
@@ -15,6 +22,12 @@ const PaymentComponent = () => {
   const [cartData, setCartData] = useState([]);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card"); // 기본값: 신용카드/소셜페이
+  const [userPoint, setUserPoint] = useState(5000); // 사용자 포인트
+  const [usingPoint, setUsingPoint] = useState(0); // 사용할 포인트
+  const [isPointModalOpen, setIsPointModalOpen] = useState(false); // 포인트 모달 상태
+  const [pointInput, setPointInput] = useState(""); // 포인트 입력값
+  const [finalPrice, setFinalPrice] = useState(0); // 포인트 적용 후 최종 가격
+
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -32,9 +45,16 @@ const PaymentComponent = () => {
       setForm({
         name: requestData[0].userDTO.userName || "",
         address: requestData[0].userDTO.userAddress || "",
-        phonenumber: requestData[0].userDTO.userPhoneNum || "", // 전화번호 정보가 없으므로 빈값으로 처리
-        note: "", // 요청사항은 빈값으로 처리
+        phonenumber: requestData[0].userDTO.userPhoneNum || "",
+        note: "",
       });
+
+      // 사용자 포인트 조회는 백엔드 API로 구현해야 함
+      // TODO: 포인트 조회 API 호출 구현
+      // 예: getUserPoint(uid) 함수 호출
+
+      // 콤마 제거 후 숫자로 변환하여 초기 최종 가격 설정
+      setFinalPrice(parseInt(totalPrice.replace(/,/g, "")));
     }
   }, []);
 
@@ -67,6 +87,66 @@ const PaymentComponent = () => {
     }
   };
 
+  // 포인트 모달 열기
+  const openPointModal = () => {
+    setIsPointModalOpen(true);
+  };
+
+  // 포인트 모달 닫기
+  const closePointModal = () => {
+    setIsPointModalOpen(false);
+    setPointInput("");
+  };
+
+  // 포인트 입력값 변경 처리
+  const handlePointInputChange = (e) => {
+    // 숫자만 입력 가능하도록
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setPointInput(value);
+  };
+
+  // 포인트 사용 적용
+  const applyPoint = () => {
+    const pointValue = parseInt(pointInput);
+
+    // 입력값 검증
+    if (isNaN(pointValue) || pointValue < 1000) {
+      alert("최소 1,000 포인트부터 사용 가능합니다.");
+      return;
+    }
+
+    // 100 단위 확인
+    if (pointValue % 100 !== 0) {
+      alert("포인트는 100단위로 사용 가능합니다.");
+      return;
+    }
+
+    // 보유 포인트보다 많이 사용하려는 경우
+    if (pointValue > userPoint) {
+      alert("보유한 포인트보다 많은 금액을 사용할 수 없습니다.");
+      return;
+    }
+
+    const originalPrice = parseInt(totalPrice.replace(/,/g, ""));
+
+    // 상품 가격보다 많은 포인트를 사용하려는 경우
+    if (pointValue > originalPrice) {
+      alert("결제 금액보다 많은 포인트를 사용할 수 없습니다.");
+      return;
+    }
+
+    // 포인트 적용 및 최종 가격 계산
+    setUsingPoint(pointValue);
+    setFinalPrice(originalPrice - pointValue);
+    closePointModal();
+  };
+
+  // 포인트 사용 취소
+  const cancelPoint = () => {
+    setUsingPoint(0);
+    setFinalPrice(parseInt(totalPrice.replace(/,/g, "")));
+  };
+
   const handlePayment = () => {
     // 결제 데이터 준비
     const send = {
@@ -75,14 +155,15 @@ const PaymentComponent = () => {
       },
       shippingAddress: form.address,
       note: form.note,
-      totalPrice: totalPrice,
+      totalPrice: finalPrice, // 포인트 적용된 최종 가격
+      usingPoint: usingPoint, // 사용한 포인트
       orderItems: cartData.map((i) => {
         return { pno: i.productDTO.pno, numOfItem: i.numofItem };
       }),
     };
 
     // 콤마 제거 후 숫자로 변환
-    const realprice = parseInt(totalPrice.replace(/,/g, ""));
+    const realprice = finalPrice; // 이미 숫자 타입
 
     // 상품 개수 계산
     const ProductCount = new Set(cartData.map((item) => item.productDTO.pno))
@@ -103,7 +184,6 @@ const PaymentComponent = () => {
       },
       function (rsp) {
         if (rsp.success) {
-
           // 서버에 주문 정보 저장
           addOrder(rsp.imp_uid, send)
             .then((orderId) => {
@@ -135,13 +215,23 @@ const PaymentComponent = () => {
     <div>
       <MainMenubar />
 
-      <div className="h-screen overflow-hidden mt-24 bg-gray-100 flex flex-col md:flex-row items-start justify-center p-6 gap-8">
+      {/* 외부 모달 컴포넌트 사용 */}
+      <PointModal
+        isOpen={isPointModalOpen}
+        onClose={closePointModal}
+        userPoint={userPoint}
+        pointInput={pointInput}
+        onPointInputChange={handlePointInputChange}
+        onApplyPoint={applyPoint}
+      />
+
+      <div className="h-[89.9vh] mt-24 bg-gray-100 flex flex-col md:flex-row items-start justify-center p-6 gap-8">
         {/* 왼쪽 - 배송 정보 */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white shadow-2xl rounded-2xl p-8 w-full md:w-2/3"
+          className="bg-white shadow-2xl rounded-2xl p-8 w-full md:w-2/3  h-[805px]"
         >
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             {isDirectPurchase ? (
@@ -258,9 +348,60 @@ const PaymentComponent = () => {
               <CreditCard size={24} /> 결제 정보
             </h2>
 
+            {/* 포인트 사용 */}
+            <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-lg font-semibold flex items-center">
+                    <Coins size={20} className="mr-2 text-yellow-500" /> 포인트
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    사용 가능: {userPoint.toLocaleString()}P
+                  </p>
+                </div>
+                <button
+                  onClick={openPointModal}
+                  disabled={!canProceedToPayment || userPoint < 1000}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                    canProceedToPayment && userPoint >= 1000
+                      ? "bg-orange-400 text-white hover:bg-orange-500"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  포인트 사용
+                </button>
+              </div>
+
+              {usingPoint > 0 && (
+                <div className="mt-3 p-3 bg-orange-50 rounded-lg flex justify-between items-center">
+                  <p className="text-orange-600 font-medium">
+                    <span className="font-bold">
+                      {usingPoint.toLocaleString()}
+                    </span>
+                    P 사용
+                  </p>
+                  <button
+                    onClick={cancelPoint}
+                    className="text-xs text-gray-500 hover:text-red-500"
+                  >
+                    취소
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
               <p className="text-lg font-semibold">총 결제 금액</p>
-              <p className="text-2xl font-bold mt-2">{totalPrice}원</p>
+              <div className="flex items-end justify-between mt-2">
+                <p className="text-2xl font-bold">
+                  {finalPrice.toLocaleString()}원
+                </p>
+                {usingPoint > 0 && (
+                  <p className="text-sm text-gray-500 line-through">
+                    {parseInt(totalPrice.replace(/,/g, "")).toLocaleString()}원
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* 결제 방법 선택 */}

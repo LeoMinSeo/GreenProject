@@ -10,7 +10,8 @@ import com.green.project.Leo.entity.payment.ProductRefund;
 import com.green.project.Leo.entity.payment.RefundStatus;
 import com.green.project.Leo.entity.product.*;
 import com.green.project.Leo.entity.user.User;
-import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.user.UserRepository;
+import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
 import com.green.project.Leo.repository.payment.RefundRepository;
 import com.green.project.Leo.repository.product.OrderItemRepository;
@@ -18,6 +19,11 @@ import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductReviewRepository;
 import com.green.project.Leo.util.DiscordLogger;
 import com.green.project.Leo.util.JWTUtil;
+import com.siot.IamportRestClient.IamportClient;
+import com.siot.IamportRestClient.exception.IamportResponseException;
+import com.siot.IamportRestClient.request.CancelData;
+import com.siot.IamportRestClient.response.IamportResponse;
+import com.siot.IamportRestClient.response.Payment;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +31,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -59,6 +69,11 @@ public class MemberServiceImple implements MemberService {
 
     @Autowired
     private ConcertTicketRepository concertTicketRepository;
+
+    @Autowired
+    private ConcertScheduleRepository scheduleRepository;
+    @Autowired
+    private IamportClient iamportClient;
 
     @Autowired
     private DiscordLogger discordLogger;
@@ -358,13 +373,6 @@ public class MemberServiceImple implements MemberService {
                 .posterImageUrl(posterImageUrl) // 포스터 이미지 URL 추가
                 .build();
     }
-
-    @Override
-    public void deleteMyReview(Long pReviewNo) {
-        productReviewRepository.deleteById(pReviewNo);
-    }
-
-
     // 회원 탈퇴 삭제
     @Override
     public Boolean deleteUser(UserDTO userDTO) {
@@ -413,6 +421,47 @@ public class MemberServiceImple implements MemberService {
         }
         discordLogger.refundRequest(dto.getPno()+"번 상품 환불 요청이 들어왔습니다.");
         return ResponseEntity.ok("환불요청이 완료되었습니다");
+    }
+
+    @Transactional
+    @Override
+    public void cancelTicket(Long ticketID, String userPw, Long uid) throws IamportResponseException, IOException {
+        // 비밀번호 검증
+        User user = userRepository.findById(uid).get();
+        if (!passwordEncoder.matches(userPw, user.userPw())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다!");
+        }
+
+        ConcertTicket ticket = concertTicketRepository.findById(ticketID).get();
+        ticket.setStatus(OrderStatusForConcert.CANCEL_COMPLETED);
+        concertTicketRepository.save(ticket);
+        try {
+            CancelData cancelData = new CancelData(ticket.getImp_uid(), true);
+            IamportResponse<Payment> response = iamportClient.cancelPaymentByImpUid(cancelData);
+            if(response.getCode()==0){
+                ticket.getConcertSchedule().setAvailableSeats(ticket.getConcertSchedule().getAvailableSeats()+ticket.getTicketQuantity());
+                scheduleRepository.save(ticket.getConcertSchedule());
+                discordLogger.refundRequest(ticket.getConcertSchedule().getConcert().getCName()+" 의"+ticket.getConcertSchedule().getStartTime()+"타임 티켓이 환불처리됨");
+            }else {
+                throw new RemoteException();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public Boolean deleteReview(userReviewDTO userReviewDTO) {
+
+        ProductReview productReview = productReviewRepository.findById(userReviewDTO.getPReviewNo()).orElse(null);
+
+        if(productReview == null || productReview.isReviewDeleted()){
+            return  false;
+        }
+        productReview.setReviewDeleted(true); // 논리 삭제 처리!!!
+        productReviewRepository.save(productReview);
+        return true;
     }
 
 }

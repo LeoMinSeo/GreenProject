@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   approveProductRefund,
   getProductRefundDetail,
+  rejectProductRefund,
 } from "../../../api/adminApi";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -47,7 +48,14 @@ const ProductDetailComponent = () => {
     const rejectReason = window.prompt("환불 거절 사유를 입력해주세요:");
     if (rejectReason) {
       setProcessing(true);
-      alert("환불 거절 로직이 실행될 예정입니다.");
+      rejectProductRefund(refundId, rejectReason)
+        .then((i) => {
+          alert(i);
+          navigate("/admin/refund/product/list");
+        })
+        .catch((err) => {
+          alert(err.response.data);
+        });
       setProcessing(false);
     }
   };

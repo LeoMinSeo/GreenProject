@@ -1,16 +1,17 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { HiOutlineMail, HiOutlineUser } from "react-icons/hi";
 
 function FindidComponent() {
-  const [email, setEmail] = useState(""); // 이메일
-  const [name, setName] = useState(""); // 이름
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [userId, setUserId] = useState(null);
+  const [message, setMessage] = useState(""); // 상태 메시지
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // console.log("이메일:", email);
-    // console.log("이름:", name);
+    setMessage(""); // 메시지 초기화
 
     try {
       const response = await axios.post(
@@ -21,33 +22,36 @@ function FindidComponent() {
         }
       );
 
-      // console.log("아이디 찾기:", response.data);
-
-      // 성공적으로 아이디를 찾은 경우
       if (response.data.success) {
-        alert(`${name} 님의 아이디는 ${response.data.data} 입니다.`);
-        setUserId(response.data.data); // 상태 업데이트
+        setUserId(response.data.data);
+        setMessage(`${name} 님의 아이디는 ${response.data.data} 입니다.`);
       } else if (response.data.data === "탈퇴한 계정입니다.") {
-        // 실패한 경우 (탈퇴한 계정이나 존재하지 않는 계정)
-        alert("탈퇴한 계정"); // 에러 메시지 표시
+        setMessage("탈퇴한 계정입니다.");
       } else if (response.data.data === "사용자가 없습니다.") {
-        alert("해당 사용자를 찾을 수 없습니다.");
+        setMessage("해당 사용자를 찾을 수 없습니다.");
       }
     } catch (error) {
-      alert("서버 오류가 발생했습니다.");
+      setMessage("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
 
   return (
-    // <div className="max-w-sm w-full max-h-md p-6 bg-white rounded-lg shadow-md mx-auto mt-24 border border-gray-300">
-    <div className="max-w-lg w-full h-[500px] p-6 mx-auto mt-24 border border-gray-300 rounded-lg shadow-lg bg-white">
-      <h2 className="text-center text-2xl font-semibold text-gray-800 mb-8">
+    <div className="w-full max-w-xl p-20 bg-white rounded-2xl shadow-2xl border">
+      <h2 className="text-3xl font-bold text-orange-500 text-center mb-6">
         아이디 찾기
       </h2>
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-6 mt-12">
-          <div className="flex items-center pb-1 px-4">
+        {/* 이름 입력 */}
+        <div className="mb-6">
+          <label
+            htmlFor="name"
+            className="block text-gray-700 font-semibold mb-2"
+          >
+            이름
+          </label>
+          <div className="relative">
+            <HiOutlineUser className="absolute left-3 top-3 text-orange-400 text-xl" />
             <input
               type="text"
               id="name"
@@ -56,13 +60,21 @@ function FindidComponent() {
               onChange={(e) => setName(e.target.value)}
               required
               autoComplete="off"
-              className="w-full py-3 pl-2 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-orange-400 rounded-lg"
+              className="w-full py-3 pl-10 pr-3 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 rounded-lg transition"
             />
           </div>
         </div>
 
-        <div className="mb-3">
-          <div className="flex items-center pb-1 px-4">
+        {/* 이메일 입력 */}
+        <div className="mb-8">
+          <label
+            htmlFor="email"
+            className="block text-gray-700 font-semibold mb-2"
+          >
+            이메일
+          </label>
+          <div className="relative">
+            <HiOutlineMail className="absolute left-3 top-3 text-orange-400 text-xl" />
             <input
               type="email"
               id="email"
@@ -71,20 +83,31 @@ function FindidComponent() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="off"
-              className="w-full py-3 pl-2 bg-gray-100 focus:outline-none focus:ring-1 focus:ring-orange-400 rounded-lg"
+              className="w-full py-3 pl-10 pr-3 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 rounded-lg transition"
             />
           </div>
         </div>
 
+        {/* 메시지 표시 */}
+        {message && (
+          <div
+            className={`mb-4 text-center text-sm font-semibold ${
+              message.includes("아이디는") ? "text-green-600" : "text-red-500"
+            }`}
+          >
+            {message}
+          </div>
+        )}
+
         <button
           type="submit"
-          className="w-[430px] py-3 ml-4 bg-orange-400 text-white text-lg font-semibold rounded-lg hover:bg-orange-500 transition duration-300 mt-6"
+          className="w-full py-3 bg-orange-400 text-white text-lg font-bold rounded-lg hover:bg-orange-500 transition duration-300"
         >
           아이디 찾기
         </button>
       </form>
 
-      <div className="flex justify-center items-center text-xs text-center mt-4 space-x-2">
+      <div className="flex justify-center items-center text-xs text-center mt-6 space-x-2">
         <Link to="/member/findpw" className="text-gray-600 hover:underline">
           비밀번호 찾기
         </Link>

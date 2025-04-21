@@ -7,14 +7,16 @@ import com.green.project.Leo.dto.product.*;
 
 import com.green.project.Leo.entity.PasswordResetToken;
 import com.green.project.Leo.entity.concert.ConcertStatus;
+import com.green.project.Leo.entity.user.Point;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.entity.concert.ConcertSchedule;
 import com.green.project.Leo.entity.concert.ConcertTicket;
 import com.green.project.Leo.entity.concert.OrderStatusForConcert;
 import com.green.project.Leo.entity.product.*;
 
-import com.green.project.Leo.repository.PasswordResetTokenRepository;
-import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.user.PasswordResetTokenRepository;
+import com.green.project.Leo.repository.user.PointRepository;
+import com.green.project.Leo.repository.user.UserRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
 import com.green.project.Leo.repository.product.*;
@@ -83,7 +85,10 @@ public class UserServiceImpl implements UserService {
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
-    private org.springframework.mail.javamail.JavaMailSender mailSender; // ✅ 추가
+    private org.springframework.mail.javamail.JavaMailSender mailSender; //
+
+    @Autowired
+    private PointRepository pointRepository;
 
     @Override
     public String addCart(RequestCartDTO cartDTO) {
@@ -162,6 +167,7 @@ public class UserServiceImpl implements UserService {
                     .build();
             itemlist.add(orderItem);
         }
+        realPrice = realPrice.subtract(BigDecimal.valueOf(orderDTO.getUsingPoint()));
         if (paymentInformation.getAmount().compareTo(realPrice) != 0) {
             discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
             discordLogger.sendErrorLog("결제 금액: " + paymentInformation.getAmount() + " 계산된 금액: " + realPrice);
@@ -175,6 +181,10 @@ public class UserServiceImpl implements UserService {
         }
         productOrder.setOrderItems(itemlist);
         ProductOrder orderInformation = orderRepository.save(productOrder);
+
+        Point point = new Point(null,user,null,-orderDTO.getUsingPoint(),"포인트 결제",LocalDate.now());
+        pointRepository.save(point);
+
 
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -250,6 +260,7 @@ public class UserServiceImpl implements UserService {
                     .paymentDate(LocalDate.now())
                     .status(OrderStatusForConcert.RESERVATION)
                     .user(user)
+                    .imp_uid(uid)
                     .build();
             ticketRepository.save(concertTicket);
         }catch (EntityNotFoundException e){

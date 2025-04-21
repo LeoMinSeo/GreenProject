@@ -3,7 +3,7 @@ package com.green.project.Leo.controller;
 import com.green.project.Leo.dto.product.RequestProductReviewDTO;
 import com.green.project.Leo.dto.user.*;
 import com.green.project.Leo.entity.payment.ProductRefund;
-import com.green.project.Leo.repository.UserRepository;
+import com.green.project.Leo.repository.user.UserRepository;
 import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductReviewRepository;
 
@@ -11,14 +11,16 @@ import com.green.project.Leo.service.payment.PaymentService;
 import com.green.project.Leo.service.product.ProductService;
 import com.green.project.Leo.service.user.MemberService;
 import com.green.project.Leo.util.CustomFileUtil;
+import com.siot.IamportRestClient.exception.IamportResponseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -156,9 +158,13 @@ public class MemberController {
     }
 
     @DeleteMapping("/delete/review/{pReviewNo}")
-    public ResponseEntity<String> deleteMyReview(@PathVariable Long pReviewNo) {
-        memberService.deleteMyReview(pReviewNo);
-        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
+    public ResponseEntity<Boolean> deleteReview(@PathVariable Long pReviewNo) {
+        userReviewDTO dto = userReviewDTO.builder()
+                .pReviewNo(pReviewNo)
+                .build();
+
+        Boolean result = memberService.deleteReview(dto);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/refund")
@@ -168,6 +174,19 @@ public class MemberController {
         log.info("list:{}",list);
         if(list.isEmpty()) return memberService.refundProduct(refundDTO);
         else  return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelTicket(@RequestBody CacncelDTO cancelDTO) throws IamportResponseException, IOException {
+        System.out.println("확인" + cancelDTO);
+        try {
+            memberService.cancelTicket(cancelDTO.getTicketId(), cancelDTO.getUserPw(), cancelDTO.getUid());
+            return ResponseEntity.ok("예매 취소 요청 완료");
+        } catch (ResponseStatusException e){
+            return ResponseEntity.badRequest().body("비밀번호 불일치!!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("환불처리중 오류발생으로 취소 불가 관리자에게 문의");
+        }
     }
 
 }

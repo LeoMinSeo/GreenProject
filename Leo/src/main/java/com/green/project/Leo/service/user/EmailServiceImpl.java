@@ -20,4 +20,9 @@ public class EmailServiceImpl implements EmailService {
         message.setText("다음 링크를 클릭하여 비밀번호를 재설정하세요: " + resetUrl);
         mailSender.send(message);
     }
+
+    @Override
+    public void sendRefundEmail(String toEmail) {
+
+    }
 }

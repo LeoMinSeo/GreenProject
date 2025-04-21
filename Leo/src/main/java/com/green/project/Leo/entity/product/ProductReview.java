@@ -36,6 +36,8 @@ public class ProductReview {
     @JoinColumn(name = "orderNum")
     private ProductOrder productOrder;
 
+    @Column(name = "review_deleted")
+    private boolean reviewDeleted = false;
     // 리뷰->유저 방향으로는 cascade 설정 없음
     @ManyToOne
     @JoinColumn(name = "uId")

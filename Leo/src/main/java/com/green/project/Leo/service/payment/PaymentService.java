@@ -12,4 +12,5 @@ public interface PaymentService {
     List<ProductRefund> findByAll( Long productId, Long orderNum, Long userId);
     ProductRefundDetailDTO getRefundDetail(Long refundId);
     ResponseEntity<?> approveProductRefund(RefundApprovalRequestDTO requestDTO);
+    ResponseEntity<?> rejectProductRefund(Long refundId,String reason);
 }
