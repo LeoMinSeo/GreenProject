@@ -7,11 +7,13 @@ import com.green.project.Leo.entity.payment.RefundStatus;
 import com.green.project.Leo.entity.product.OrderItem;
 import com.green.project.Leo.entity.product.Product;
 import com.green.project.Leo.entity.product.ProductOrder;
+import com.green.project.Leo.entity.user.Point;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.repository.payment.RefundRepository;
 import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductImageRepository;
 import com.green.project.Leo.repository.product.ProductRepository;
+import com.green.project.Leo.repository.user.PointRepository;
 import com.green.project.Leo.util.DiscordLogger;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
@@ -31,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -53,6 +57,8 @@ public class PaymentServiceImpl  implements PaymentService {
     private DiscordLogger discordLogger;
     @Autowired
     private JavaMailSender mailSender;
+    @Autowired
+    private PointRepository pointRepository;
     @Override
     public List<ProductRefund> findByAll(Long productId, Long orderNum, Long userId) {
         log.info("service refund: productId {},orderNum:{},userId:{}", productId, orderNum, userId);
@@ -129,10 +135,12 @@ public class PaymentServiceImpl  implements PaymentService {
         String imp_uid = refund.getProductOrder().getImp_uid();
 
         try {
-            CancelData cancelData = new CancelData(imp_uid, true, requestDTO.getAmount());
+            CancelData cancelData = new CancelData(imp_uid, true, requestDTO.getAmount().subtract(BigDecimal.valueOf(orderItem.getUsingPoint())));
             IamportResponse<Payment> response = iamportClient.cancelPaymentByImpUid(cancelData);
 
             if (response.getCode() == 0) {
+                Point point = new Point(null,refund.getUser(),"상품 환불로 결제에 사용한 포인트 환불", orderItem.getUsingPoint(),"포인트 환불", LocalDate.now());
+                pointRepository.save(point);
                 discordLogger.refundRequest(requestDTO.getRefundId()+"번 주문의 환불 승인 완료후 환불 처리 진행하였습니다");
                 return ResponseEntity.ok("승인완료 후 정상적으로 환불처리 진행하였습니다.");
             } else {

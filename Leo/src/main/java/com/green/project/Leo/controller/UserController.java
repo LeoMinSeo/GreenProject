@@ -9,6 +9,7 @@ import com.green.project.Leo.dto.user.UserDTO;
 import com.green.project.Leo.entity.PasswordResetToken;
 import com.green.project.Leo.entity.user.User;
 import com.green.project.Leo.repository.user.PasswordResetTokenRepository;
+import com.green.project.Leo.repository.user.PointRepository;
 import com.green.project.Leo.service.user.UserService;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,9 @@ public class UserController {
 
     @Autowired
     private UserService service;
+
+    @Autowired
+    private PointRepository pointRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -129,11 +133,10 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
     }
 
-    @GetMapping("/test/{imp_uid}")
-    public String testRefund(@PathVariable (name = "imp_uid") String imp_uid) throws IamportResponseException, IOException {
-            service.testRefund(imp_uid);
-
-            return "환불테스트 성공";
+    @GetMapping("/point/{uid}")
+    public int getPointSum(@PathVariable(name = "uid")Long uId){
+        System.out.println("여기까지옴?"+uId);
+            return pointRepository.getTotalPointsByUId(uId);
     }
 
 }

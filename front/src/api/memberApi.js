@@ -197,3 +197,12 @@ export const cancelTicket = async (data) => {
   const res = await memberApi.post(`cancel`, data);
   return res.data;
 };
+
+export const updateProfileImage = async (userId, formData) => {
+  const res = await memberApi.post(`/profile-image/${userId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data", // 파일 업로드를 위해 Content-Type 설정
+    },
+  });
+  return res.data;
+};

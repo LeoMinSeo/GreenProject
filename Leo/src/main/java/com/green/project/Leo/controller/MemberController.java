@@ -11,13 +11,17 @@ import com.green.project.Leo.service.payment.PaymentService;
 import com.green.project.Leo.service.product.ProductService;
 import com.green.project.Leo.service.user.MemberService;
 import com.green.project.Leo.util.CustomFileUtil;
+import com.green.project.Leo.util.CustomProfileUtil;
 import com.siot.IamportRestClient.exception.IamportResponseException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -51,6 +55,9 @@ public class MemberController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private CustomProfileUtil profileUtil;
 
     //회원가입
     @PostMapping("/register")
@@ -187,6 +194,23 @@ public class MemberController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("환불처리중 오류발생으로 취소 불가 관리자에게 문의");
         }
+    }
+
+    @PostMapping("/profile-image/{userId}")
+    public ResponseEntity<?> updateProfileImage(
+            @PathVariable String userId,
+            @RequestParam("profileImage") MultipartFile profileImage) {
+
+        System.out.println("받은 파일 이름: " + profileImage.getOriginalFilename());
+        System.out.println("파일 크기: " + profileImage.getSize());
+
+        UserDTO updatedMember = memberService.updateProfileImage(userId, profileImage);
+        return ResponseEntity.ok(updatedMember); // 업데이트된 멤버 정보 반환
+    }
+    //0422
+    @GetMapping("/profile-image/{fileName}")
+    public ResponseEntity<Resource> getProfileImage(@PathVariable String fileName) {
+        return profileUtil.getProfileImage(fileName);
     }
 
 }

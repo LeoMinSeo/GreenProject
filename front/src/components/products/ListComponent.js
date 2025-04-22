@@ -26,7 +26,7 @@ const ListComponent = () => {
 
   // 제품 데이터를 가져오는 useEffect - 페이지 변경이나 카테고리 변경 시 재실행
   useEffect(() => {
-    getList({ page: currentPage, size: 10 }, selectedCategory)
+    getList({ page: currentPage, size: 12 }, selectedCategory)
       .then((data) => {
         console.log(data); // data 확인
         setProductData({

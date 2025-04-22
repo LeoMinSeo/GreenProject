@@ -8,7 +8,7 @@ import {
   Coins,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { addOrder } from "../../api/userApi";
+import { addOrder, getUserPoint } from "../../api/userApi";
 import MainMenubar from "../menu/MainMenubar";
 import PointModal from "../customModal/PointModal";
 
@@ -22,7 +22,7 @@ const PaymentComponent = () => {
   const [cartData, setCartData] = useState([]);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card"); // 기본값: 신용카드/소셜페이
-  const [userPoint, setUserPoint] = useState(5000); // 사용자 포인트
+  const [userPoint, setUserPoint] = useState(0); // 사용자 포인트
   const [usingPoint, setUsingPoint] = useState(0); // 사용할 포인트
   const [isPointModalOpen, setIsPointModalOpen] = useState(false); // 포인트 모달 상태
   const [pointInput, setPointInput] = useState(""); // 포인트 입력값
@@ -34,7 +34,7 @@ const PaymentComponent = () => {
   const totalPrice = queryParams.get("totalPrice");
   const requestData = JSON.parse(queryParams.get("cartData"));
   const direct = queryParams.get("direct") === "true";
-
+  const loginUser = JSON.parse(localStorage.getItem("user"));
   useEffect(() => {
     // 데이터 로드 및 초기화
     if (requestData && requestData.length > 0) {
@@ -52,6 +52,9 @@ const PaymentComponent = () => {
       // 사용자 포인트 조회는 백엔드 API로 구현해야 함
       // TODO: 포인트 조회 API 호출 구현
       // 예: getUserPoint(uid) 함수 호출
+      getUserPoint(loginUser.uid).then((data) => {
+        setUserPoint(data);
+      });
 
       // 콤마 제거 후 숫자로 변환하여 초기 최종 가격 설정
       setFinalPrice(parseInt(totalPrice.replace(/,/g, "")));
@@ -282,7 +285,7 @@ const PaymentComponent = () => {
           </h2>
 
           <div className="space-y-4">
-            <div>
+            <div className="pt-4">
               <label className="text-gray-600">이름</label>
               <input
                 type="text"
@@ -294,7 +297,7 @@ const PaymentComponent = () => {
               />
             </div>
 
-            <div>
+            <div className="pt-4">
               <label className="text-gray-600">전화번호</label>
               <input
                 type="text"
@@ -306,7 +309,7 @@ const PaymentComponent = () => {
               />
             </div>
 
-            <div>
+            <div className="pt-4">
               <label className="text-gray-600">주소</label>
               <input
                 type="text"
@@ -317,7 +320,7 @@ const PaymentComponent = () => {
               />
             </div>
 
-            <div>
+            <div className="pt-4">
               <label className="text-gray-600">요청사항</label>
               <input
                 type="text"
@@ -329,16 +332,18 @@ const PaymentComponent = () => {
               />
             </div>
 
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={handleFormCompletion}
-              disabled={!isFormCompleted}
-              className={`mt-6 w-full ${
-                isFormCompleted ? "bg-orange-400" : "bg-gray-300"
-              } text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-600 transition`}
-            >
-              기본정보 입력 완료
-            </motion.button>
+            <div className="pt-8">
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleFormCompletion}
+                disabled={!isFormCompleted}
+                className={`mt-2 h-14 w-full ${
+                  isFormCompleted ? "bg-orange-400" : "bg-gray-300"
+                } text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-600 transition `}
+              >
+                기본정보 입력 완료
+              </motion.button>
+            </div>
           </div>
         </motion.div>
 

@@ -44,6 +44,8 @@ public class User {
     @Column(name = "is_deleted")
     private boolean isDeleted = false;  // 기본값을 false로 설정
 
+    private String profileImagePath;
+
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<ConcertTicket> concertTickets = new ArrayList<>();
 
@@ -60,7 +62,7 @@ public class User {
     private List<ProductOrder> productOrders = new ArrayList<>();
 
     @Builder
-    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted,UserRole userRole , String userPhoneNum) {
+    public User(String userId, String userPw, String userName, String userEmail, String userAddress,boolean isDeleted,UserRole userRole , String userPhoneNum ,  String profileImagePath) {
         this.userId = userId;
         this.userPw = userPw;
         this.userName = userName;
@@ -69,5 +71,6 @@ public class User {
         this.isDeleted = isDeleted;
         this.userRole = userRole;
         this.userPhoneNum =userPhoneNum;
+        this.profileImagePath = profileImagePath;
     }
 }

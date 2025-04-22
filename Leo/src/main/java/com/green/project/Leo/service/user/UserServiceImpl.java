@@ -135,9 +135,14 @@ public class UserServiceImpl implements UserService {
         orderDTO.setPayment(paymentInformation.getPayMethod());
         orderDTO.setCardName(paymentInformation.getCardName());
 
+        //환불때 포인트 계산을 위해 , 주문시 적립을 위해
+        int totalPrice = Integer.parseInt(orderDTO.getTotalPrice().replaceAll("[원,]",""));
+        int calcPrice = totalPrice + orderDTO.getUsingPoint();
+        //유저 객체 생성
         User user = new User();
         user.uId(orderDTO.getUserdto().getUid());
 
+        //주문정보 셋 하기
         ProductOrder productOrder = new ProductOrder();
         productOrder.setUser(user);
         productOrder.setPayment(orderDTO.getPayment());
@@ -150,24 +155,41 @@ public class UserServiceImpl implements UserService {
         productOrder.setImp_uid(imp_uid);
         List<OrderItemDTO> itemListDto = orderDTO.getOrderItems();
         List<OrderItem> itemlist = new ArrayList<>();
+
+        //가격 검증을 위해 ( iamport가 빅데시말을 사용해서)
         BigDecimal realPrice = BigDecimal.ZERO;
+
+        //오더 아이템 정보 ( 주문한 상품, 개수 저장하는곳)
         for (OrderItemDTO i : itemListDto) {
             Product product = productRepository.findById(i.getPno()).orElseThrow();
-            long price = Long.parseLong(product.pPrice().replaceAll("[원,]", ""));
-            realPrice = realPrice.add(BigDecimal.valueOf(i.getNumOfItem() * price));
+
+            //상품 실제 가격
+            int price = Integer.parseInt((product.pPrice().replaceAll("[원,]", "")));
+            //결제한금액 과 실제금액의 비교를 위해
+            realPrice = realPrice.add(BigDecimal.valueOf((long) i.getNumOfItem() * price));
+
+            //재고 관리
             product.pStock(product.pStock() - i.getNumOfItem());
             if (product.pStock() - i.getNumOfItem() <= 0) {
                 discordLogger.sendMessage("상품명:" + product.pName() + " 품절되었습니다");
             }
             Product updateProduct = productRepository.save(product);
+
+
+            // 포인트를 사용했을때 환불 과정에서 환불 금액 계산을 위해 비율로 계산해서 포인트 사용내역을 저장했음
+            double ratio =  ((double) price / calcPrice);
+            int usingPoint = (int) Math.ceil(orderDTO.getUsingPoint() * ratio);
             OrderItem orderItem = OrderItem.builder()
                     .numOfItem(i.getNumOfItem())
                     .product(updateProduct)
                     .productOrder(productOrder)
+                    .usingPoint(usingPoint)
                     .build();
             itemlist.add(orderItem);
         }
         realPrice = realPrice.subtract(BigDecimal.valueOf(orderDTO.getUsingPoint()));
+
+        //결제한금액과 실제 db에 금액이 맞지 않을때
         if (paymentInformation.getAmount().compareTo(realPrice) != 0) {
             discordLogger.sendErrorLog("비정상적인 결제요청이 들어왔습니다 !!!!!!");
             discordLogger.sendErrorLog("결제 금액: " + paymentInformation.getAmount() + " 계산된 금액: " + realPrice);
@@ -182,17 +204,23 @@ public class UserServiceImpl implements UserService {
         productOrder.setOrderItems(itemlist);
         ProductOrder orderInformation = orderRepository.save(productOrder);
 
+        //포인트 사용했을때 사용내역 디비에 남기기
         Point point = new Point(null,user,null,-orderDTO.getUsingPoint(),"포인트 결제",LocalDate.now());
         pointRepository.save(point);
 
+        //주문금액 대비 3% 포인트 적립
+        int points = (int) Math.ceil(totalPrice * 0.03);
+        Point rewardPoint = new Point(null,user,"결제금액 3% 포인트 적립",points,"구매 적립",LocalDate.now());
+        pointRepository.save(rewardPoint);
 
+        //주문번호 제조
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String formatDate = date.format(formatter);
-        String ordercode = formatDate + orderInformation.getOrderNum();
+        String orderCode = formatDate + orderInformation.getOrderNum();
         cartRepository.deleteById(orderDTO.getUserdto().getUid());
 
-        return "주문번호:" + ordercode;
+        return "주문번호:" + orderCode;
     }
 
     @Transactional(rollbackFor = {Exception.class})

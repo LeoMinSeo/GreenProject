@@ -9,7 +9,9 @@ import com.green.project.Leo.entity.concert.OrderStatusForConcert;
 import com.green.project.Leo.entity.payment.ProductRefund;
 import com.green.project.Leo.entity.payment.RefundStatus;
 import com.green.project.Leo.entity.product.*;
+import com.green.project.Leo.entity.user.Point;
 import com.green.project.Leo.entity.user.User;
+import com.green.project.Leo.repository.user.PointRepository;
 import com.green.project.Leo.repository.user.UserRepository;
 import com.green.project.Leo.repository.concert.ConcertScheduleRepository;
 import com.green.project.Leo.repository.concert.ConcertTicketRepository;
@@ -17,6 +19,7 @@ import com.green.project.Leo.repository.payment.RefundRepository;
 import com.green.project.Leo.repository.product.OrderItemRepository;
 import com.green.project.Leo.repository.product.ProductOrderRepository;
 import com.green.project.Leo.repository.product.ProductReviewRepository;
+import com.green.project.Leo.util.CustomProfileUtil;
 import com.green.project.Leo.util.DiscordLogger;
 import com.green.project.Leo.util.JWTUtil;
 import com.siot.IamportRestClient.IamportClient;
@@ -32,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -74,17 +78,22 @@ public class MemberServiceImple implements MemberService {
     private ConcertScheduleRepository scheduleRepository;
     @Autowired
     private IamportClient iamportClient;
-
+    @Autowired
+    private PointRepository pointRepository;
     @Autowired
     private DiscordLogger discordLogger;
+    @Autowired
+    private CustomProfileUtil profileUtil;
     @Override
     public  ResponseEntity<Map<String, Object>> registerMember(UserDTO userDTO){
         System.out.println("서비스 : " + userDTO);
         userDTO.setUserPw(passwordEncoder.encode(userDTO.getUserPw()));
         User user = userRepository.convertToEntity(userDTO);
         System.out.println("유저 에 폰넘"+user.userPhoneNum());
-        userRepository.save(user);
-
+        User userEntity = userRepository.save(user);
+        //회원가입시 2000p 적립
+        Point point = new Point(null,userEntity,"가입기념 포인트 적립",2000,"포인트 적립",LocalDate.now());
+        pointRepository.save(point);
         // 응답을 JSON 객체로 반환
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -462,6 +471,31 @@ public class MemberServiceImple implements MemberService {
         productReview.setReviewDeleted(true); // 논리 삭제 처리!!!
         productReviewRepository.save(productReview);
         return true;
+    }
+
+    @Override
+    public UserDTO updateProfileImage(String userId, MultipartFile profileImage) {
+        // 1. 사용자 엔티티 조회
+        User user = userRepository.findByUserId(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자가 존재하지 않습니다.");
+        }
+
+        // 2. 기존 프로필 이미지 삭제 (있다면)
+        String currentProfileImage = user.profileImagePath();
+        if (currentProfileImage != null && !currentProfileImage.equals("default.png")) {
+            profileUtil.deleteProfileImage(currentProfileImage);
+        }
+
+        // 3. 새 프로필 이미지 저장
+        String newProfileImageName = profileUtil.saveProfileImage(profileImage);
+
+        // 4. 사용자 엔티티에 새 프로필 이미지 경로 설정
+        user.profileImagePath(newProfileImageName);
+
+        // 5. 엔티티 저장 (프로필 이미지 경로 업데이트)
+        userRepository.save(user);
+        return null;
     }
 
 }

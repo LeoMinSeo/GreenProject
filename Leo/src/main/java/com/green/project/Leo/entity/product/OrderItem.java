@@ -29,6 +29,7 @@ public class OrderItem {
 
     private int numOfItem;
 
+    private int usingPoint;
     @Enumerated(EnumType.STRING)
     private RefundStatus refundStatus;// 환불 상태 추가
 }

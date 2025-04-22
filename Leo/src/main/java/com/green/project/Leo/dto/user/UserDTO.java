@@ -31,6 +31,8 @@ public class UserDTO {
 
     private UserRole userRole;
 
+    private String profileImagePath;
+
     public Map<String, Object> getClaims() {
         Map<String, Object> dataMap = new HashMap<>();
 

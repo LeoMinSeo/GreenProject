@@ -81,6 +81,12 @@ export const addCart = async (data) => {
   return res.data;
 };
 
+export const getUserPoint = async (uId) => {
+  console.log("유아이디가 잘못옴?", uId);
+  const res = await userApi.get(`/point/${uId}`);
+  return res.data;
+};
+
 export const getCartlist = async (userId) => {
   const res = await userApi.get(`/cartlist/${userId}`);
   return res.data;
