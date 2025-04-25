@@ -157,7 +157,7 @@ const ListComponent = () => {
                     {product.pname}
                   </h2>
                   <p className="text-gray-500">
-                    {product.price.toLocaleString()}원
+                    {product.price.toLocaleString()}
                   </p>
                   {product.pstock <= 0 ? (
                     <p className="text-red-500 font-bold">SoldOut</p>

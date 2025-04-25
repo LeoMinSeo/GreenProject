@@ -59,9 +59,10 @@ const MyPageDelete = ({ userId }) => {
   };
 
   return (
-    <div className="flex justify-end ml-20 min-h-[92vh] ">
-      <div className="bg-white p-6 rounded-lg shadow-md mt-20 w-full">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4 select-none">
+    // <div className="flex justify-end ml-20 min-h-[92vh] ">
+    <div className="flex justify-end ml-[1rem] mt-[0.5rem] min-h-[92vh] select-none">
+      <div className="bg-white p-8 rounded-lg shadow-lg mt-20 w-full">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4 border-b pb-4">
           회원 탈퇴
         </h2>
         <div className="w-4/5 pl-32 mb-8">
@@ -168,7 +169,7 @@ const MyPageDelete = ({ userId }) => {
         </div>
 
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-md w-96">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">
                 정말 탈퇴하시겠어요?

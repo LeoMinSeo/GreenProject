@@ -30,5 +30,6 @@ public interface MemberService {
     public void cancelTicket(Long ticketID, String userPw, Long uid) throws IamportResponseException, IOException;
     public Boolean deleteReview(userReviewDTO userReviewDTO);
     public UserDTO updateProfileImage(String userId, MultipartFile profileImage);
-
+    public List<PointDTO> getPoint(Long uId);
+    public void deleteProfileImage(String userId);
 }

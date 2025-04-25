@@ -176,17 +176,27 @@ const MyPageReservation = ({ reservation, refreshData, uid }) => {
   };
 
   return (
-    <div className="flex justify-end ml-20 h-auto select-none">
+    // <div className="flex justify-end ml-20 h-auto select-none">
+    <div className="flex justify-end ml-[1rem] mt-[0.5rem] min-h-[85vh] select-none">
       <div className="bg-white p-8 rounded-lg shadow-lg mt-20 w-full">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4 select-none border-gray-200">
           예매 내역
         </h2>
 
+        {reservation && reservation.length > 0 && (
+          <div className="text-orange-700 text-sm rounded-md border-orange-200 mb-6">
+            예매 변경 및 환불은 <strong>관람일 1일 전</strong>까지 가능합니다.
+          </div>
+        )}
         <div className="overflow-x-auto">
           <div className="min-w-full">
             {!reservation || reservation.length === 0 ? (
-              <div className="text-center text-gray-600 py-12 select-none text-lg">
-                예매 내역이 없습니다.
+              <div className="h-[656px]">
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500 text-center select-none text-lg">
+                    예매 내역이 없습니다.
+                  </p>
+                </div>
               </div>
             ) : (
               <>

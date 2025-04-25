@@ -177,7 +177,7 @@ public class UserServiceImpl implements UserService {
 
 
             // 포인트를 사용했을때 환불 과정에서 환불 금액 계산을 위해 비율로 계산해서 포인트 사용내역을 저장했음
-            double ratio =  ((double) price / calcPrice);
+            double ratio =  (((double) price * i.getNumOfItem())/ calcPrice);
             int usingPoint = (int) Math.ceil(orderDTO.getUsingPoint() * ratio);
             OrderItem orderItem = OrderItem.builder()
                     .numOfItem(i.getNumOfItem())

@@ -198,17 +198,28 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="flex justify-end ml-20 h-auto select-none">
-      <div className="bg-white p-8 rounded-lg shadow-lg mt-20 w-full">
+    // <div className="flex justify-end ml-20 h-auto select-none">
+    <div className="flex justify-end ml-[1rem] mt-[0.5rem] min-h-[85vh] select-none">
+      <div className="bg-white p-8 rounded-lg shadow-lg mt-20 w-full max-w-full">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4 select-none border-gray-200">
           주문 내역
         </h2>
-
+        {orders && orders.length > 0 && (
+          <div className="text-orange-700 text-sm rounded-md border-orange-200 mb-6">
+            상품 리뷰 작성 및 환불 요청은 <strong>구매일 기준 7일 이내</strong>
+            에만 가능합니다. <br></br>
+            부분 환불은 카드사 영업일 기준 3~5일정도 소요될수 있습니다.
+          </div>
+        )}
         <div className="overflow-x-auto">
           <div className="min-w-full">
             {!orders || orders.length === 0 ? (
-              <div className="text-center text-gray-600 py-12 select-none text-lg">
-                주문 내역이 없습니다.
+              <div className="h-[656px]">
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500 text-center select-none text-lg">
+                    주문 내역이 없습니다.
+                  </p>
+                </div>
               </div>
             ) : (
               <>
@@ -225,7 +236,7 @@ const MyPageOrders = ({ orders, refreshData, uid }) => {
                     {orders.map((order) => (
                       <div
                         key={order.orderNo}
-                        className="mb-6 border border-gray-200 p-5 rounded-lg hover:shadow-md transition-shadow duration-200"
+                        className="mb-6 border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow duration-200"
                       >
                         {/* 주문 상태와 주문번호 */}
                         <div className="flex justify-between items-center mb-3">

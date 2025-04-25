@@ -498,4 +498,45 @@ public class MemberServiceImple implements MemberService {
         return null;
     }
 
+    @Override
+    public List<PointDTO> getPoint(Long uId) {
+        List<Point> points = pointRepository.findByUser_UId(uId);
+        Integer totalPoint = pointRepository.getTotalPointsByUId(uId); // 총 포인트 계산
+        List<PointDTO> pointDTOS = new ArrayList<>();
+
+        for(Point p : points){
+            PointDTO pointDTO = new PointDTO().builder()
+                    .uId(p.getUser().uId())
+                    .pointId(p.getPointId())
+                    .reason(p.getReason())
+                    .pointAmount(p.getPointAmount())
+                    .eventType(p.getEventType())
+                    .issueDate(p.getIssueDate())
+                    .totalPoint(totalPoint)
+                    .build();
+            pointDTOS.add(pointDTO);
+        }
+        System.out.println("확인용0422"+pointDTOS);
+        return pointDTOS;
+    }
+    @Override
+    public void deleteProfileImage(String userId)   {
+        // 1. 사용자 엔티티 조회
+        User user = userRepository.findByUserId(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("사용자가 존재하지 않습니다.");
+        }
+
+        // 2. 기존 프로필 이미지 삭제 (있다면)
+        String currentProfileImage = user.profileImagePath();
+        if (currentProfileImage != null && !currentProfileImage.equals("default.png")) {
+            profileUtil.deleteProfileImage(currentProfileImage);
+        }
+        // 3. 프로필 이미지 경로를 null로 설정
+        user.profileImagePath(null);
+
+        // 4. 사용자 엔티티 저장
+        userRepository.save(user);
+    }
+
 }

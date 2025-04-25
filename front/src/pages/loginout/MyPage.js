@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import MainMenubar from "../../components/menu/MainMenubar"; // 메뉴바 컴포넌트
-import MyPageComponent from "../../components/member/MyPageComponent"; // 마이페이지 콘텐츠 컴포넌트
-import { getProfile, updateProfileImage } from "../../api/memberApi"; // 프로필 이미지 업데이트 API 추가
+import MainMenubar from "../../components/menu/MainMenubar";
+import MyPageComponent from "../../components/member/MyPageComponent";
 import { jwtDecode } from "jwt-decode";
+import ProfileImageModal from "../../components/customModal/ProfileImageModal";
+import {
+  getProfile,
+  updateProfileImage,
+  deleteProfileImage,
+} from "../../api/memberApi";
 
 const MyPage = () => {
   const { userId } = useParams();
   const [data, setData] = useState("orders");
   const [userData, setUserData] = useState({});
-  const [newProfileImage, setNewProfileImage] = useState(null); // 새로운 프로필 이미지 미리보기
-  const [loading, setLoading] = useState(false); // 로딩 상태 관리
+  const [newProfileImage, setNewProfileImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  // 사용자 정보 및 인증 확인
   const fetchUserData = async () => {
     try {
       const response = await getProfile(userId);
@@ -24,34 +30,24 @@ const MyPage = () => {
   };
 
   useEffect(() => {
-    // 로컬 스토리지에서 토큰 가져오기
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
-      // 토큰이 없는 경우
       alert("로그인이 필요한 서비스입니다.");
       navigate("/");
       return;
     }
 
     try {
-      // 토큰 디코딩하여 저장된 userId 추출
       const decodedToken = jwtDecode(token);
-      const tokenUserId = decodedToken.userId; // JWT 토큰 내 userId 필드명에 맞게 수정
+      const tokenUserId = decodedToken.userId;
 
-      // URL의 userId와 토큰의 userId 비교
       if (userId !== tokenUserId) {
-        // 불일치할 경우 경고창 표시
         alert("접근 권한이 없습니다.");
-
-        // 로컬 스토리지 데이터 모두 삭제
         localStorage.clear();
-
-        // 홈페이지로 리다이렉트
         navigate("/");
         return;
       }
-      // userId가 일치하면 프로필 정보 가져오기
       fetchUserData();
     } catch (error) {
       console.error("토큰 검증 오류:", error);
@@ -61,21 +57,43 @@ const MyPage = () => {
     }
   }, [userId, navigate]);
 
-  // 프로필 이미지 클릭 시 파일 선택창 열기
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   const handleImageClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleEditImage = () => {
+    setIsModalOpen(false);
     document.getElementById("fileInput").click();
   };
 
-  // 파일이 선택되었을 때 처리
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setNewProfileImage(URL.createObjectURL(file)); // 미리보기 설정
-      uploadProfileImage(file); // 서버에 이미지 업로드
+  const handleDeleteImage = async () => {
+    setLoading(true);
+    try {
+      await deleteProfileImage(userId);
+      setNewProfileImage(null);
+      fetchUserData();
+      alert("프로필 이미지가 삭제되었습니다.");
+    } catch (error) {
+      console.error("프로필 이미지 삭제 실패:", error);
+      alert("프로필 이미지 삭제에 실패했습니다.");
+    } finally {
+      setLoading(false);
+      setIsModalOpen(false);
     }
   };
 
-  // 서버에 이미지를 업로드하는 함수
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setNewProfileImage(URL.createObjectURL(file));
+      uploadProfileImage(file);
+    }
+  };
+
   const uploadProfileImage = async (file) => {
     setLoading(true);
 
@@ -83,9 +101,7 @@ const MyPage = () => {
     formData.append("profileImage", file);
 
     try {
-      // API 호출하여 프로필 이미지 변경
-      const response = await updateProfileImage(userId, formData);
-      // 성공 시 프로필 정보 다시 로드하여 이미지 갱신
+      await updateProfileImage(userId, formData);
       fetchUserData();
       alert("프로필 이미지가 변경되었습니다.");
     } catch (error) {
@@ -96,86 +112,146 @@ const MyPage = () => {
     }
   };
 
-  // 사이드바 메뉴 데이터
   const sidebar = [
-    { id: "orders", label: "주문내역" },
-    { id: "reservation", label: "예약내역" },
-    { id: "reviews", label: "내 리뷰" },
-    { id: "settings", label: "내 정보 수정" },
-    { id: "deleteMember", label: "회원탈퇴" },
+    {
+      id: "account",
+      label: "이용 내역",
+      items: [
+        { id: "orders", label: "주문내역" },
+        { id: "reservation", label: "예매내역" },
+        { id: "reviews", label: "내 리뷰" },
+      ],
+    },
+    {
+      id: "finance",
+      label: "포인트",
+      items: [{ id: "point", label: "포인트 내역" }],
+    },
+    {
+      id: "settings",
+      label: "계정 관리",
+      items: [
+        { id: "settings", label: "내 정보 수정" },
+        { id: "deleteMember", label: "회원탈퇴" },
+      ],
+    },
   ];
 
   return (
     <div className="flex flex-col min-h-screen">
       <MainMenubar />
       <div className="flex bg-gray-100">
-        <aside className="fixed left-[5%]  top-[110px] h-[84vh] w-1/5 lg:w-1/4 bg-white shadow-xl rounded-r-xl p-6">
-          <h2 className="text-3xl text-center font-bold text-gray-800 mb-6 select-none">
+        <aside
+          className="fixed top-[120px] left-[2%] transition-all duration-1000 ease-in-out bg-white shadow-xl rounded-xl p-6 z-40 flex-shrink-0 
+min-w-[450px] max-w-sm w-[2%] h-[calc(100vh-154px)] overflow-y-auto"
+        >
+          {/* 마이페이지 타이틀 */}
+          <h2 className="text-3xl font-bold  mb-4 select-none text-center">
             마이페이지
           </h2>
-          {/* 사이드바에 프로필 정보 추가 */}
-          <div className="mb-6 p-4 select-none">
-            <div className="text-center mb-4 flex justify-center items-center">
-              {/* 프로필 이미지를 클릭하여 파일 선택 */}
-              <div className="relative">
+
+          {/* 프로필 정보 섹션 */}
+          <div className="flex flex-col items-center mb-8 border-b border-gray-200 pb-6">
+            {/* 프로필 이미지 */}
+            <div className="relative mb-4">
+              {!userData.profileImagePath ? (
+                <div
+                  className="w-32 h-32 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center cursor-pointer shadow-sm"
+                  onClick={handleImageClick}
+                >
+                  <svg
+                    className="w-40 h-40 text-gray-400 -translate-y-1"
+                    viewBox="0 0 100 100"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="50" cy="35" r="18" fill="currentColor" />
+                    <path
+                      d="M25 90 L25 75 C25 55 75 55 75 75 L75 90 Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+              ) : (
                 <img
                   src={
                     newProfileImage ||
-                    (userData.profileImagePath
-                      ? `http://localhost:8089/api/member/profile-image/${
-                          userData.profileImagePath
-                        }?t=${new Date().getTime()}`
-                      : "/images/mainlogo.png")
+                    `http://localhost:8089/api/member/profile-image/${
+                      userData.profileImagePath
+                    }?t=${new Date().getTime()}`
                   }
                   alt="프로필 사진"
-                  className="w-36 h-36 rounded-full object-cover mb-6 border-4 border-gray-300 transform transition-transform hover:scale-110 cursor-pointer"
+                  className="w-32 h-32 rounded-full object-cover border-3 border-white shadow-sm cursor-pointer"
                   onClick={handleImageClick}
                 />
-                {loading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white"></div>
-                  </div>
-                )}
-              </div>
-              {/* 파일 input (보이지 않게 설정) */}
-              <input
-                type="file"
-                id="fileInput"
-                className="hidden"
-                accept="image/*"
-                onChange={handleImageChange} // 파일 선택 시 처리
-              />
+              )}
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                </div>
+              )}
             </div>
-            <h3 className="text-xl text-center font-semibold text-gray-800">
-              {userData.userName}
-            </h3>
-            <p className="text-sm text-center text-gray-600">
-              아이디: {userData.userId}
-            </p>
-            <p className="text-sm text-center text-gray-600">
-              이메일: {userData.userEmail}
-            </p>
+
+            {/* 사용자 정보 */}
+            <div className="text-center w-full">
+              <h3 className="text-xl font-medium text-gray-800 mb-1">
+                {userData.userName}
+              </h3>
+              {/* <p className="text-sm text-gray-600 mb-1">{userData.userId}</p> */}
+              <p className="text-sm text-gray-500 overflow-hidden text-ellipsis">
+                {userData.userEmail}
+              </p>
+            </div>
+
+            {/* 파일 input (보이지 않게 설정) */}
+            <input
+              type="file"
+              id="fileInput"
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
           </div>
 
-          {/* 사이드바 메뉴 */}
-          <nav>
-            <ul className="space-y-4 select-none">
-              {sidebar.map((item) => (
-                <li key={item.id}>
-                  <button
-                    className={`w-full text-left py-3 px-5 text-lg font-semibold relative ${
-                      data === item.id ? "text-orange-400" : "text-gray-800"
-                    }`}
-                    onClick={() => setData(item.id)}
-                  >
-                    {item.label}
-                    {data === item.id && (
-                      <span className="absolute bottom-[0] left-5 w-3/5 h-[0.5px] bg-orange-400"></span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <nav className="select-none space-y-4">
+            {sidebar.map((category) => (
+              <div key={category.id} className="mb-5">
+                <h3 className="text-md uppercase tracking-wider font-semibold mb-3 pl-2">
+                  {category.label}
+                </h3>
+                <ul className="border-l-2 border-gray-200">
+                  {category.items.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        className={`w-full text-left pl-4 py-3 relative ${
+                          data === item.id
+                            ? "text-orange-500 font-medium border-l-2 border-orange-500 -ml-0.5"
+                            : "hover:text-orange-500"
+                        }`}
+                        onClick={() => setData(item.id)}
+                      >
+                        {item.label}
+                        {data === item.id && (
+                          <span className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-orange-500"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </nav>
         </aside>
 
@@ -184,6 +260,13 @@ const MyPage = () => {
           <MyPageComponent data={data} userId={userId} />
         </main>
       </div>
+
+      <ProfileImageModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onEdit={handleEditImage}
+        onDelete={handleDeleteImage}
+      />
     </div>
   );
 };

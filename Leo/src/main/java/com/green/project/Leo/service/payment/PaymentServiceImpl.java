@@ -130,7 +130,7 @@ public class PaymentServiceImpl  implements PaymentService {
         productRepository.save(refund.getProduct());
         refundRepository.save(refund);
         orderItemRepository.save(orderItem);
-
+       int pointsToCancel = (int) Math.floor(Integer.parseInt(refund.getProductOrder().getTotalPrice().replaceAll("[원,]", "")) * 0.03);
 
         String imp_uid = refund.getProductOrder().getImp_uid();
 
@@ -141,6 +141,8 @@ public class PaymentServiceImpl  implements PaymentService {
             if (response.getCode() == 0) {
                 Point point = new Point(null,refund.getUser(),"상품 환불로 결제에 사용한 포인트 환불", orderItem.getUsingPoint(),"포인트 환불", LocalDate.now());
                 pointRepository.save(point);
+                Point CancelPoint = new Point(null,refund.getUser(),"상품 환불로 구매시 적립된 포인트 회수",pointsToCancel,"포인트 회수",LocalDate.now());
+                pointRepository.save(CancelPoint);
                 discordLogger.refundRequest(requestDTO.getRefundId()+"번 주문의 환불 승인 완료후 환불 처리 진행하였습니다");
                 return ResponseEntity.ok("승인완료 후 정상적으로 환불처리 진행하였습니다.");
             } else {

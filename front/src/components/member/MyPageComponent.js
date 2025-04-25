@@ -4,18 +4,22 @@ import MyPageOrders from "../../components/mypage/MyPageOrders";
 import MyPageReview from "../../components/mypage/MyPageReview";
 import DeleteAccount from "../../components/mypage/MyPageDelete";
 import MyPageReservation from "../../components/mypage/MyPageReservation";
+import MyPagePoint from "../../components/mypage/MyPagePoint";
 
 import {
   getProfile,
   ordersResponse,
   productReview,
   getReservation,
+  getPointList,
 } from "../../api/memberApi";
 
 const MyPageComponent = ({ userId, data }) => {
   const [userData, setUserData] = useState(null);
   const [orders, setOrders] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [points, setPoints] = useState([]);
+  const [totalPoint, setTotalPoint] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [reservation, setReservation] = useState([]);
 
@@ -43,6 +47,16 @@ const MyPageComponent = ({ userId, data }) => {
       })
       .catch((error) => {
         console.log("예약내역 불러오기 에러!!");
+      });
+
+    getPointList(loginUser.uid)
+      .then((data) => {
+        setPoints(data);
+        const total = data.reduce((acc, point) => acc + point.pointAmount, 0);
+        setTotalPoint(total);
+      })
+      .catch((error) => {
+        console.log("포인트 내역 불러오기 에러!!");
       });
 
     productReview(loginUser.uid)
@@ -85,6 +99,9 @@ const MyPageComponent = ({ userId, data }) => {
           uid={loginUser.uid}
         />
       );
+
+    case "point":
+      return <MyPagePoint points={points} totalPoint={totalPoint} />;
 
     case "reviews":
       return <MyPageReview reviews={reviews} refreshData={refreshData} />;

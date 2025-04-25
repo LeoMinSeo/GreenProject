@@ -213,5 +213,19 @@ public class MemberController {
         return profileUtil.getProfileImage(fileName);
     }
 
+    //0422 포인트 조회
+    @GetMapping("/point/{uId}")
+    public List<PointDTO> getPointList(@PathVariable(name = "uId")Long uid){
+        System.out.println("포인트 확인을 위한 아이디"+uid);
+        return memberService.getPoint(uid);
+    }
+
+    //0422 프로필 이미지 삭제
+    @DeleteMapping("/profile/{userId}")
+    public ResponseEntity<?> deleteProfileImage(@PathVariable String userId) {
+        memberService.deleteProfileImage(userId);
+        return ResponseEntity.ok().build(); // 바디 없이 200 OK 응답
+    }
+
 }
 

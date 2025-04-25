@@ -109,8 +109,9 @@ const MyPageModify = ({ userData, refreshData, userId }) => {
   };
 
   return (
-    <div className="flex justify-end ml-20 min-h-[92vh] ">
-      <div className="bg-white p-6 rounded-lg shadow-md mt-20 w-full">
+    // <div className="flex justify-end ml-20 min-h-[92vh] ">
+    <div className="flex justify-end ml-[1rem] mt-[0.5rem] min-h-[92vh] select-none">
+      <div className="bg-white p-8 rounded-lg shadow-lg mt-20 w-full">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4 select-none">
           회원정보 수정
         </h2>

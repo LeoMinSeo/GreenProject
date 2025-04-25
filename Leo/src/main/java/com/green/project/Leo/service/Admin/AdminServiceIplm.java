@@ -500,7 +500,10 @@ public class AdminServiceIplm implements AdminService{
 
     @Override
     public void deleteReview(Long reviewNo) {
-        productReviewRepository.deleteById(reviewNo);
+        ProductReview review = productReviewRepository.findById(reviewNo).orElseThrow(() -> new RuntimeException("해당 리뷰를 찾을수 없음 리뷰번호:" + reviewNo));
+        review.setReviewDeleted(true);
+        productReviewRepository.save(review);
+
     }
 
     @Override

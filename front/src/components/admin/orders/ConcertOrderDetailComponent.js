@@ -406,7 +406,6 @@ const ConcertOrderDetailComponent = () => {
               >
                 <option value="RESERVATION">예약완료</option>
                 <option value="TICKETING_COMPLETED">발권완료</option>
-                <option value="CANCEL_COMPLETED">취소된 티켓</option>
               </select>
             </div>
 

@@ -206,3 +206,15 @@ export const updateProfileImage = async (userId, formData) => {
   });
   return res.data;
 };
+
+//0422 포인트 조회
+export const getPointList = async (id) => {
+  const res = await memberApi.get(`point/${id}`);
+  return res.data;
+};
+
+//0422 마이페이지 프로필 이미지 삭제
+export const deleteProfileImage = async (userId) => {
+  const res = await memberApi.delete(`/profile/${userId}`);
+  return res.data;
+};
