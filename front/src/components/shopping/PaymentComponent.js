@@ -49,9 +49,6 @@ const PaymentComponent = () => {
         note: "",
       });
 
-      // 사용자 포인트 조회는 백엔드 API로 구현해야 함
-      // TODO: 포인트 조회 API 호출 구현
-      // 예: getUserPoint(uid) 함수 호출
       getUserPoint(loginUser.uid).then((data) => {
         setUserPoint(data);
       });
@@ -190,7 +187,6 @@ const PaymentComponent = () => {
           // 서버에 주문 정보 저장
           addOrder(rsp.imp_uid, send)
             .then((orderId) => {
-              // direct 파라미터를 success 페이지로도 전달하여 바로구매 여부 추적
               alert("결제가 완료되었습니다.");
               navigate(
                 `/member/success/${orderId}${
@@ -228,13 +224,13 @@ const PaymentComponent = () => {
         onApplyPoint={applyPoint}
       />
 
-      <div className="h-[89.9vh] mt-24 bg-gray-100 flex flex-col md:flex-row items-start justify-center p-6 gap-8">
+      <div className="h-auto min-h-[89.9vh] mt-24 bg-gray-100 flex flex-col md:flex-row items-start justify-center p-6 gap-8">
         {/* 왼쪽 - 배송 정보 */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white shadow-2xl rounded-2xl p-8 w-full md:w-2/3  h-[805px]"
+          className="bg-white shadow-2xl rounded-2xl p-8 w-full md:w-2/3  h-auto min-h-[85vh] "
         >
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             {isDirectPurchase ? (

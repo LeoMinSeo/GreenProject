@@ -76,7 +76,7 @@ public class MemberController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody UserDTO userDTO) {
-            System.out.println("controller login : " + userDTO);
+
             return memberService.login(userDTO);
     }
 

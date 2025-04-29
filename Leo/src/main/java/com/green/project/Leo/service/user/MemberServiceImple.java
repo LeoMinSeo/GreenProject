@@ -160,9 +160,7 @@ public class MemberServiceImple implements MemberService {
         String accessToken = JWTUtil.generateToken(claims,10);
         String refreshToken = JWTUtil.generateToken(claims,60*24);
 
-        log.info("엑세스"+ accessToken);
-        // 응답 생성
-
+        //응답 생성
         response.put("success", true);
         response.put("data", data);
         response.put("accessToken", accessToken);    // 액세스 토큰 추가

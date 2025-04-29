@@ -65,7 +65,9 @@ public class UserController {
     }
 
     @PostMapping("/purchase/{imp_uid}")
-    public ResponseEntity<?> purchaseProduct(@PathVariable(name = "imp_uid") String imp_uid, @RequestBody  ProductOrderDTO orderDTO)
+    public ResponseEntity<?> purchaseProduct(
+            @PathVariable(name = "imp_uid") String imp_uid,
+            @RequestBody  ProductOrderDTO orderDTO)
             throws IamportResponseException, IOException {
         try {
             String result = service.addOrder(imp_uid, orderDTO);

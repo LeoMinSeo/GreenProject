@@ -135,7 +135,10 @@ public class PaymentServiceImpl  implements PaymentService {
         String imp_uid = refund.getProductOrder().getImp_uid();
 
         try {
-            CancelData cancelData = new CancelData(imp_uid, true, requestDTO.getAmount().subtract(BigDecimal.valueOf(orderItem.getUsingPoint())));
+            CancelData cancelData = new CancelData(
+                    imp_uid,
+                    true,
+                    requestDTO.getAmount().subtract(BigDecimal.valueOf(orderItem.getUsingPoint())));
             IamportResponse<Payment> response = iamportClient.cancelPaymentByImpUid(cancelData);
 
             if (response.getCode() == 0) {

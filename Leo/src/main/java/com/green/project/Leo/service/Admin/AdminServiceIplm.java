@@ -34,6 +34,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -287,7 +288,7 @@ public class AdminServiceIplm implements AdminService{
     @Override
     public List<AdminProductDTO> getProductList() {
 
-        return productRepository.findByIsDeletedFalse().stream().map(i ->{
+        return productRepository.findByIsDeletedFalse(Sort.by(Sort.Direction.DESC, "pNo")).stream().map(i ->{
            AdminProductDTO adminProductDTO = new AdminProductDTO();
            adminProductDTO.setPno(i.pNo());
            adminProductDTO.setPname(i.pName());
@@ -312,7 +313,7 @@ public class AdminServiceIplm implements AdminService{
 
     @Override
     public List<AdminConcertDTO> getConcertList() {
-        return concertRepository.findAll().stream().map(i->{
+        return concertRepository.findAll(Sort.by(Sort.Direction.DESC, "cNo")).stream().map(i->{
             AdminConcertDTO concertDTO = new AdminConcertDTO();
             concertDTO.setCno(i.getCNo());
             concertDTO.setCname(i.getCName());
@@ -348,7 +349,7 @@ public class AdminServiceIplm implements AdminService{
 
     @Override
     public List<ProductOrderListDTO> getProductOrderList() {
-        List<ProductOrder> productOrderList = productOrderRepository.findAll();
+        List<ProductOrder> productOrderList = productOrderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderNum"));
         List<ProductOrderListDTO> ListOfOrderDTO = new ArrayList<>();
         for(ProductOrder i: productOrderList){
             ProductOrderListDTO orderListDTO = new ProductOrderListDTO();
@@ -397,7 +398,7 @@ public class AdminServiceIplm implements AdminService{
 
     @Override
     public List<ConcertTicketListDTO> getConcertTicketList() {
-        List<ConcertTicket> ticketList = ticketRepository.findAll();
+        List<ConcertTicket> ticketList = ticketRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
         List<ConcertTicketListDTO> ticketListDTO =new ArrayList<>();
         for(ConcertTicket i : ticketList){
             ConcertTicketListDTO ticketDto = new ConcertTicketListDTO();
@@ -516,7 +517,7 @@ public class AdminServiceIplm implements AdminService{
 
     @Override
     public List<ProductRefundListDTO> getProductRefundList() {
-        return refundRepository.findAll().stream().map(i->{
+        return refundRepository.findAll(Sort.by(Sort.Direction.DESC, "refundId")).stream().map(i->{
             ProductRefundListDTO productRefundListDTO= new ProductRefundListDTO();
             productRefundListDTO.setRefundId(i.getRefundId());
             productRefundListDTO.setStatus(i.getStatus());
