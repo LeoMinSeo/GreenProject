@@ -1,33 +1,33 @@
 #AudiMew 프로젝트
 
 **📌 프로젝트 소개** <br/>
-AudiMew는 공연 예매 및 관련 굿즈 판매를 위한 통합 플랫폼입니다.<br> 사용자는 다양한 공연을 예매하고, 관련 상품을 구매할 수 있으며, 관리자는 공연과 상품을 관리할 수 있습니다. 결제는 아임포트(I'mport) API를 통해 이루어집니다.
+AudiMew는 공연 예매 및 관련 굿즈 판매를 위한 통합 플랫폼입니다.<br> 사용자는 다양한 공연을 예매하고, 관련 상품을 구매할 수 있으며, 관리자는 공연과 상품을 관리할 수 있습니다.<br> 결제는 아임포트(I'mport) API를 통해 이루어집니다.
 
-**🛠️ 기술 스택**
+**🛠️ 기술 스택**<br>
 
-**백엔드**
-프레임워크: Spring Boot
-언어: Java
-데이터베이스: MySQL
-ORM: JPA/Hibernate
-보안: Spring Security, JWT
-API 통신: RESTful API
+**백엔드**<br>
+프레임워크: Spring Boot<br>
+언어: Java<br>
+데이터베이스: MySQL<br>
+ORM: JPA/Hibernate<br>
+보안: Spring Security, JWT<br>
+API 통신: RESTful API<br>
 
-**주요 라이브러리**
-ModelMapper: DTO-Entity 변환
-I'mport: 결제 시스템 연동
-Discord Webhook: 로깅 및 알림
-JavaMail: 이메일 전송
+**주요 라이브러리**<br>
+ModelMapper: DTO-Entity 변환<br>
+I'mport: 결제 시스템 연동<br>
+Discord Webhook: 로깅 및 알림<br>
+JavaMail: 이메일 전송<br>
 
-**🏗️ 시스템 아키텍처**
-com.green.project.Leo/
-├── config/                  # 설정 클래스
-├── controller/              # REST 컨트롤러
-├── dto/                     # 데이터 전송 객체
-├── entity/                  # 데이터베이스 엔티티
-├── repository/              # JPA 레포지토리
-├── service/                 # 비즈니스 로직
-└── util/                    # 유틸리티 클래스
+**🏗️ 시스템 아키텍처**<br>
+com.green.project.Leo/<br>
+├── config/                  # 설정 클래스<br>
+├── controller/              # REST 컨트롤러<br>
+├── dto/                     # 데이터 전송 객체<br>
+├── entity/                  # 데이터베이스 엔티티<br>
+├── repository/              # JPA 레포지토리<br>
+├── service/                 # 비즈니스 로직<br>
+└── util/                    # 유틸리티 클래스<br>
 
 **🔧 주요 기능**
 
