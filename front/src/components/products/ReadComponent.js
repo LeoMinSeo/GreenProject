@@ -155,9 +155,6 @@ const ReadComponent = () => {
             <p className="mt-2 text-xl font-bold text-red-600">
               {product.productDTO.price}
             </p>
-            <div className="mt-4 p-3 border rounded-lg bg-gray-100">
-              <p className="text-gray-600">쿠폰에 관한 정보를 입력하시오</p>
-            </div>
 
             {/* 간단설명 */}
             <div className="mt-4 p-3 border rounded-lg">
@@ -190,7 +187,7 @@ const ReadComponent = () => {
             </div>
 
             {/* 장바구니 & 바로구매 버튼 */}
-            <div className="mt-6 flex gap-2 ">
+            <div className="mt-12 flex gap-2 ">
               <button
                 className="w-1/2 p-3 bg-[#ad9e87] text-white rounded-lg"
                 onClick={clickSubmit}

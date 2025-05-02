@@ -25,7 +25,7 @@ public interface ConcertScheduleRepository extends JpaRepository<ConcertSchedule
     @Query(value = "select * from concert_schedule where c_no = :cNo and start_time = :startTime",nativeQuery = true)
     ConcertSchedule getScheduleByCnoAndStartTime(@Param("cNo")Long cNo, @Param("startTime")LocalDateTime startTime);
 
-
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM ConcertSchedule c WHERE c.scheduleId = :scheduleId")
     Optional<ConcertSchedule> findByIdWithLock(@Param("scheduleId") Long scheduleId);
 }
