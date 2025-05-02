@@ -154,44 +154,63 @@ BCrypt 인코딩으로 안전한 비밀번호 저장
 
 **사용자 관리**
 
-POST /api/member/register: 회원가입
-POST /api/member/login: 로그인
-GET /api/member/getprofile/{userId}: 사용자 정보 조회
-PUT /api/member/updateprofile/{userId}: 사용자 정보 수정
+POST /api/member/register: 회원가입  
+
+POST /api/member/login: 로그인  
+
+GET /api/member/getprofile/{userId}: 사용자 정보 조회  
+
+PUT /api/member/updateprofile/{userId}: 사용자 정보 수정  
+
 
 **공연 관리**
 
-GET /concert/list/{category}: 공연 목록 조회
-GET /concert/read/{cno}: 공연 상세 조회
-POST /admin/add/concert: 공연 등록 (관리자)
-PUT /admin/modify/concert: 공연 수정 (관리자)
+GET /concert/list/{category}: 공연 목록 조회  
+
+GET /concert/read/{cno}: 공연 상세 조회  
+
+POST /admin/add/concert: 공연 등록 (관리자)  
+
+PUT /admin/modify/concert: 공연 수정 (관리자)  
+
 
 **상품 관리**
 
-GET /product/list/{category}: 상품 목록 조회
-GET /product/read/{pno}: 상품 상세 조회
-POST /admin/add/product: 상품 등록 (관리자)
-PUT /admin/modify/product: 상품 수정 (관리자)
+GET /product/list/{category}: 상품 목록 조회  
+
+GET /product/read/{pno}: 상품 상세 조회  
+
+POST /admin/add/product: 상품 등록 (관리자)  
+
+PUT /admin/modify/product: 상품 수정 (관리자)  
+
 
 **주문 및 결제**
 
-POST /user/purchase/{imp_uid}: 상품 구매 처리
-POST /user/reservation/{imp_uid}: 공연 예매 처리
-POST /user/refund: 환불 요청
+POST /user/purchase/{imp_uid}: 상품 구매 처리  
 
-**🔜 향후 개발 계획**
+POST /user/reservation/{imp_uid}: 공연 예매 처리  
 
-**실시간 알림 시스템 구현**
+POST /user/refund: 환불 요청  
+
+
+**🔜 향후 개발 계획**  
+
+
+**실시간 알림 시스템 구현**  
+
 
 WebSocket을 활용한 실시간 알림 기능
 
 
-**추천 시스템 도입**
+**추천 시스템 도입**  
+
 
 사용자 취향 및 구매 이력 기반 추천 알고리즘
 
 
-**모바일 앱 지원**
+**모바일 앱 지원**  
+
 
 모바일 애플리케이션용 API 확장
 
@@ -199,6 +218,8 @@ WebSocket을 활용한 실시간 알림 기능
 
 **👥 팀원**
 
-백엔드 개발:김민서,김은혜
-프론트엔드 개발: 김민서,김은혜
+백엔드 개발:김민서,김은혜  
+
+프론트엔드 개발: 김민서,김은혜  
+
 UI/UX 디자인: 백승호
