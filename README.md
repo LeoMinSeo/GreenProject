@@ -83,6 +83,7 @@ JWT 기반 인증 및 인가
 [User] 1---* [Point]
 [Product] 1---* [ProductImage]
 [Concert] 1---* [ConcertImage]
+
 🔐 보안 설계
 
 JWT 인증 - 토큰 기반 사용자 인증 구현
