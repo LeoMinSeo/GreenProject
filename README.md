@@ -1,8 +1,5 @@
-AudiMew (Leo) 프로젝트
-<div align="center">
-  <img src="https://via.placeholder.com/200x200" alt="AudiMew 로고" width="200" />
-  <h3>공연 예매 및 굿즈 판매 플랫폼</h3>
-</div>
+AudiMew 프로젝트
+
 📌 프로젝트 소개
 AudiMew는 공연 예매 및 관련 굿즈 판매를 위한 통합 플랫폼입니다. 사용자는 다양한 공연을 예매하고, 관련 상품을 구매할 수 있으며, 관리자는 공연과 상품을 관리할 수 있습니다. 결제는 아임포트(I'mport) API를 통해 이루어집니다.
 🛠️ 기술 스택
