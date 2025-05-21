@@ -17,6 +17,7 @@ const UserIdInput = ({ userId, onChange, onCheck }) => {
         }}
       />
       <IdCheckButton
+      className="w"
         type="button"
         onClick={onCheck}
         style={{

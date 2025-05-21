@@ -191,7 +191,7 @@ const BookingPaymentComponent = () => {
     console.log(concertData.scheduleId);
     const imp = window.IMP; // 아이엠포트 객체
 
-    imp.init("imp82633673");
+    imp.init("%REACT_APP_IMP_MERCHANT_ID%");
 
     imp.request_pay(
       {
